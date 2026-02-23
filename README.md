@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Caregiver SaaS (Next.js + Supabase)
 
-## Getting Started
+This app allows:
+- Registered Nurses (RNs) to sign up.
+- Nurses to upload a public profile photo shown in directory cards.
+- Nurses to upload a photo of their license for manual verification.
+- Admins to review pending profiles and mark them verified.
+- Clients to browse only verified nurses in `/directory`.
 
-First, run the development server:
+## Tech Stack
+- Next.js App Router
+- React + TypeScript
+- Supabase Auth + Postgres + Storage
+
+## 1) Install dependencies
+
+```bash
+npm install
+```
+
+## 2) Configure environment
+
+Copy `.env.example` to `.env.local` and fill:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+ADMIN_REVIEW_KEY=...
+RESEND_API_KEY=...
+VERIFICATION_FROM_EMAIL=...
+VERIFICATION_REPLY_TO_EMAIL=...
+```
+
+Notes:
+- `SUPABASE_SERVICE_ROLE_KEY` is only used on server routes/pages (admin review).
+- `ADMIN_REVIEW_KEY` is a simple gate for `/admin/verify`.
+- Auto email uses [Resend](https://resend.com). `VERIFICATION_FROM_EMAIL` must be a verified sender/domain in Resend.
+
+## 3) Apply database + storage schema
+
+In Supabase SQL Editor, run:
+
+- `supabase/schema.sql`
+
+Run this even if you already ran an earlier version. It now includes:
+- `profile_photo_url` on `public.nurse_profiles`
+- `license_photo_url` on `public.nurse_profiles`
+- storage bucket `nurse-profile-photos`
+- storage bucket `nurse-license-photos`
+- storage upload/read policies for both image types
+
+## 4) Run the app
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Current Flows
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Nurse signup
+- Route: `/for-nurses`
+- Nurse uploads profile image (public).
+- Nurse uploads license image.
+- App uploads profile image to bucket `nurse-profile-photos`.
+- App uploads license image to bucket `nurse-license-photos`.
+- App calls `supabase.auth.signUp(...)` with metadata including `profile_photo_url` and `license_photo_url`.
+- Trigger `handle_new_nurse_profile` writes to `public.nurse_profiles` with `verified = false`.
 
-## Learn More
+### Admin verification
+- Route: `/admin/verify?key=YOUR_ADMIN_REVIEW_KEY`
+- Shows pending nurses (`verified = false`) with profile + license photos.
+- Click `Mark as verified` to publish them in the directory and automatically send a verification email.
+- Click `Email nurse` to open a prefilled email draft.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Directory listing
+- Route: `/directory`
+- Reads only verified profiles (`verified = true`).
