@@ -286,6 +286,16 @@ a {
   box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
 }
 
+.no-spinner {
+  -moz-appearance: textfield;
+}
+
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 @media (max-width: 640px) {
   .site-shell {
     width: min(1120px, calc(100% - 1.2rem));

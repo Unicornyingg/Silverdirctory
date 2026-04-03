@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Caregiver Network",
+  title: "Silver Directory",
   description:
     "A verification-first directory where families connect with licensed nurses for geriatric care.",
 };

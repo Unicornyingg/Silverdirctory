@@ -1,41 +1,85 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   type ChangeEvent,
   type FormEvent,
   type JSX,
+  useEffect,
   useRef,
   useState,
 } from "react";
 import SiteHeader from "@/components/site-header";
+import {
+  CARE_SERVICE_CATEGORY_OPTIONS,
+  type CareServiceCategory,
+  getServicesForCategories,
+  sanitizeCareServiceCategories,
+  sanitizeCareServices,
+} from "@/lib/care-services";
+import {
+  CAREGIVER_LANGUAGE_OPTIONS,
+  sanitizeCaregiverLanguages,
+} from "@/lib/caregiver-languages";
+import {
+  SERVICE_REGION_OPTIONS,
+  formatServiceRegions,
+  sanitizeServiceRegions,
+} from "@/lib/service-regions";
+import { optimizeProfileImage } from "@/lib/profile-image";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
-type NurseSignupForm = {
+type AccountType = "caregiver" | "client";
+
+type SignupForm = {
+  accountType: AccountType;
   fullName: string;
   email: string;
   password: string;
   phone: string;
-  location: string;
-  hourlyRate: string;
+  serviceCategories: CareServiceCategory[];
+  homeNursingRate: string;
+  homePersonalCareRate: string;
+  yearsExperience: string;
+  credentialsSummary: string;
+  availabilitySummary: string;
+  minimumShiftHours: string;
+  serviceRegions: string[];
+  specialties: string[];
+  languages: string[];
   bio: string;
 };
 
-const INITIAL_FORM: NurseSignupForm = {
+type EditableSignupField = Exclude<
+  keyof SignupForm,
+  "accountType" | "serviceCategories" | "serviceRegions" | "specialties" | "languages"
+>;
+
+const INITIAL_FORM: SignupForm = {
+  accountType: "caregiver",
   fullName: "",
   email: "",
   password: "",
   phone: "",
-  location: "",
-  hourlyRate: "",
+  serviceCategories: [],
+  homeNursingRate: "",
+  homePersonalCareRate: "",
+  yearsExperience: "",
+  credentialsSummary: "",
+  availabilitySummary: "",
+  minimumShiftHours: "",
+  serviceRegions: [],
+  specialties: [],
+  languages: [],
   bio: "",
 };
 
-const MIN_BIO_LENGTH = 10;
-const MAX_LICENSE_PHOTO_MB = 5;
+const MIN_BIO_LENGTH = 20;
 const MAX_PROFILE_PHOTO_MB = 5;
-const LICENSE_BUCKET = "nurse-license-photos";
-const PROFILE_BUCKET = "nurse-profile-photos";
+const MAX_DOC_MB = 8;
+const PROFILE_BUCKET = "caregiver-profile-photos";
+const DOC_BUCKET = "verification-documents";
 
 function getReadableSignupError(error: { message: string; code?: string }) {
   if (error.code === "email_address_invalid") {
@@ -56,7 +100,7 @@ function getReadableSignupError(error: { message: string; code?: string }) {
 
   const lowered = error.message.toLowerCase();
   if (lowered.includes("email rate limit exceeded")) {
-    return "Too many signup emails were sent recently. Wait and try again later, or configure custom SMTP in Supabase Auth settings to remove this bottleneck.";
+    return "Too many signup emails were sent recently. Wait and try again later, or configure custom SMTP in Supabase Auth settings.";
   }
 
   if (lowered.includes("bucket not found")) {
@@ -67,53 +111,85 @@ function getReadableSignupError(error: { message: string; code?: string }) {
     return "Upload permissions are blocked. Re-run /supabase/schema.sql to apply Storage policies.";
   }
 
-  if (lowered.includes("database error saving new user")) {
-    return "Supabase auth user was created, but nurse profile save failed. Re-run /supabase/schema.sql in Supabase SQL editor.";
-  }
-
   return error.message;
 }
 
 function getValidationMessage(
-  form: NurseSignupForm,
+  form: SignupForm,
   profilePhoto: File | null,
-  licensePhoto: File | null
+  verificationDoc: File | null
 ): string | null {
-  const rate = Number(form.hourlyRate);
+  const homeNursingRate = Number(form.homeNursingRate);
+  const homePersonalCareRate = Number(form.homePersonalCareRate);
+  const yearsExperience = Number(form.yearsExperience);
+  const minimumShiftHours = Number(form.minimumShiftHours);
+  const isCaregiver = form.accountType === "caregiver";
 
   if (form.fullName.trim().length < 2) return "Please enter your full name.";
   if (form.email.trim().length < 4) return "Please enter a valid email.";
   if (form.password.length < 8) return "Password must be at least 8 characters.";
-  if (form.location.trim().length < 2) return "Please enter your service area.";
+
+  if (!isCaregiver) {
+    return null;
+  }
+
+  if (form.serviceRegions.length < 1) {
+    return "Please select at least one preferred service region.";
+  }
+  if (form.serviceCategories.length < 1) {
+    return "Please select at least one service type.";
+  }
   if (form.bio.trim().length < MIN_BIO_LENGTH) {
-    return `Professional bio must be at least ${MIN_BIO_LENGTH} characters.`;
+    return `Bio must be at least ${MIN_BIO_LENGTH} characters.`;
   }
-  if (!Number.isFinite(rate) || rate <= 0) {
-    return "Hourly rate must be greater than 0.";
+  if (
+    form.serviceCategories.includes("home_nursing") &&
+    (!Number.isFinite(homeNursingRate) || homeNursingRate <= 0)
+  ) {
+    return "Home Nursing rate per visit must be greater than 0.";
+  }
+  if (
+    form.serviceCategories.includes("home_personal_care") &&
+    (!Number.isFinite(homePersonalCareRate) || homePersonalCareRate <= 0)
+  ) {
+    return "Home Personal Care hourly rate must be greater than 0.";
+  }
+  if (!Number.isFinite(yearsExperience) || yearsExperience < 0) {
+    return "Please enter valid years of experience (0 or more).";
+  }
+  if (form.credentialsSummary.trim().length < 8) {
+    return "Credentials summary should be at least 8 characters.";
+  }
+  if (form.availabilitySummary.trim().length < 5) {
+    return "Please enter your availability.";
+  }
+  if (!Number.isFinite(minimumShiftHours) || minimumShiftHours <= 0) {
+    return "Minimum shift duration must be greater than 0 hours.";
+  }
+  if (form.specialties.length < 1) {
+    return "Please select at least one care service.";
+  }
+  if (form.languages.length < 1) {
+    return "Please select at least one spoken language.";
   }
 
-  if (!profilePhoto) {
-    return "Please upload a profile photo.";
-  }
-
+  if (!profilePhoto) return "Please upload a profile photo.";
   if (!profilePhoto.type.startsWith("image/")) {
-    return "Profile photo must be an image (JPG, PNG, WEBP, etc.).";
+    return "Profile photo must be an image.";
   }
-
   if (profilePhoto.size > MAX_PROFILE_PHOTO_MB * 1024 * 1024) {
     return `Profile image must be ${MAX_PROFILE_PHOTO_MB}MB or smaller.`;
   }
 
-  if (!licensePhoto) {
-    return "Please upload a photo of your nursing license.";
+  if (!verificationDoc) return "Please upload your SNB certificate or student ID.";
+  if (
+    !verificationDoc.type.startsWith("image/") &&
+    verificationDoc.type !== "application/pdf"
+  ) {
+    return "Verification file must be an image or PDF.";
   }
-
-  if (!licensePhoto.type.startsWith("image/")) {
-    return "License file must be an image (JPG, PNG, WEBP, etc.).";
-  }
-
-  if (licensePhoto.size > MAX_LICENSE_PHOTO_MB * 1024 * 1024) {
-    return `License image must be ${MAX_LICENSE_PHOTO_MB}MB or smaller.`;
+  if (verificationDoc.size > MAX_DOC_MB * 1024 * 1024) {
+    return `Verification file must be ${MAX_DOC_MB}MB or smaller.`;
   }
 
   return null;
@@ -125,18 +201,29 @@ function getFileExtension(fileName: string): string {
   return safeExtension || "jpg";
 }
 
-export default function NurseSignupPage(): JSX.Element {
-  const [form, setForm] = useState<NurseSignupForm>(INITIAL_FORM);
+export default function SignupPage(): JSX.Element {
+  const router = useRouter();
+  const [form, setForm] = useState<SignupForm>(INITIAL_FORM);
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
-  const [licensePhoto, setLicensePhoto] = useState<File | null>(null);
+  const [verificationDoc, setVerificationDoc] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [signupBanner, setSignupBanner] = useState<string | null>(null);
   const profilePhotoInputRef = useRef<HTMLInputElement | null>(null);
-  const licensePhotoInputRef = useRef<HTMLInputElement | null>(null);
+  const verificationDocInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("status") === "created") {
+      setSignupBanner(
+        params.get("message") ?? "Account created successfully."
+      );
+    }
+  }, []);
 
   const updateField =
-    (field: keyof NurseSignupForm) =>
+    (field: EditableSignupField) =>
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setForm((previous) => ({
         ...previous,
@@ -144,93 +231,198 @@ export default function NurseSignupPage(): JSX.Element {
       }));
     };
 
-  const updateProfilePhoto = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null;
-    setProfilePhoto(file);
+  const updateAccountType = (accountType: AccountType) => {
+    setForm((previous) => ({
+      ...previous,
+      accountType,
+    }));
+    setErrorMessage(null);
   };
 
-  const updateLicensePhoto = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null;
-    setLicensePhoto(file);
+  const toggleServiceCategory = (serviceCategory: CareServiceCategory) => {
+    setForm((previous) => {
+      const exists = previous.serviceCategories.includes(serviceCategory);
+      const nextCategories = sanitizeCareServiceCategories(
+        exists
+          ? previous.serviceCategories.filter((item) => item !== serviceCategory)
+          : [...previous.serviceCategories, serviceCategory]
+      );
+      return {
+        ...previous,
+        serviceCategories: nextCategories,
+        specialties: sanitizeCareServices(previous.specialties, nextCategories),
+      };
+    });
+    setErrorMessage(null);
+  };
+
+  const toggleService = (service: string) => {
+    setForm((previous) => {
+      if (previous.serviceCategories.length < 1) {
+        return previous;
+      }
+      const exists = previous.specialties.includes(service);
+      return {
+        ...previous,
+        specialties: sanitizeCareServices(
+          exists
+            ? previous.specialties.filter((item) => item !== service)
+            : [...previous.specialties, service],
+          previous.serviceCategories
+        ),
+      };
+    });
+    setErrorMessage(null);
+  };
+
+  const toggleLanguage = (language: string) => {
+    setForm((previous) => {
+      const exists = previous.languages.includes(language);
+      return {
+        ...previous,
+        languages: exists
+          ? previous.languages.filter((item) => item !== language)
+          : [...previous.languages, language],
+      };
+    });
+    setErrorMessage(null);
+  };
+
+  const toggleServiceRegion = (region: string) => {
+    setForm((previous) => {
+      const normalized = sanitizeServiceRegions(previous.serviceRegions);
+      const exists = normalized.includes(region);
+      const next = exists
+        ? normalized.filter((item) => item !== region)
+        : sanitizeServiceRegions([...normalized, region]);
+
+      return {
+        ...previous,
+        serviceRegions: next,
+      };
+    });
+    setErrorMessage(null);
   };
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setErrorMessage(null);
-    setSuccessMessage(null);
+    setSignupBanner(null);
 
-    const validationMessage = getValidationMessage(form, profilePhoto, licensePhoto);
+    const validationMessage = getValidationMessage(form, profilePhoto, verificationDoc);
     if (validationMessage) {
       setErrorMessage(validationMessage);
       return;
     }
 
-    if (!profilePhoto) {
-      setErrorMessage("Please upload a profile photo.");
-      return;
-    }
-
-    if (!licensePhoto) {
-      setErrorMessage("Please upload a photo of your nursing license.");
-      return;
-    }
-
     setIsSubmitting(true);
-
     try {
       const supabase = getSupabaseBrowserClient();
-      const profileExtension = getFileExtension(profilePhoto.name);
-      const profilePath = `${Date.now()}-${crypto.randomUUID()}.${profileExtension}`;
-      const { error: profileUploadError } = await supabase.storage
-        .from(PROFILE_BUCKET)
-        .upload(profilePath, profilePhoto, {
-          upsert: false,
-          contentType: profilePhoto.type,
-          cacheControl: "3600",
-        });
+      const isCaregiver = form.accountType === "caregiver";
 
-      if (profileUploadError) {
-        setErrorMessage(getReadableSignupError(profileUploadError));
+      let profilePhotoUrl = "";
+      let verificationDocPath = "";
+
+      if (isCaregiver && profilePhoto && verificationDoc) {
+        const optimizedProfilePhoto = await optimizeProfileImage(profilePhoto);
+        const photoExtension = getFileExtension(optimizedProfilePhoto.name);
+        const profilePath = `public/${Date.now()}-${crypto.randomUUID()}.${photoExtension}`;
+        const { error: profileUploadError } = await supabase.storage
+          .from(PROFILE_BUCKET)
+          .upload(profilePath, optimizedProfilePhoto, {
+            upsert: false,
+            contentType: optimizedProfilePhoto.type || "image/jpeg",
+          });
+
+        if (profileUploadError) {
+          setErrorMessage(getReadableSignupError(profileUploadError));
+          return;
+        }
+
+        const { data: publicData } = supabase.storage
+          .from(PROFILE_BUCKET)
+          .getPublicUrl(profilePath);
+        profilePhotoUrl = publicData.publicUrl;
+
+        const docExtension = getFileExtension(verificationDoc.name);
+        verificationDocPath = `private/pending/${Date.now()}-${crypto.randomUUID()}.${docExtension}`;
+        const { error: docUploadError } = await supabase.storage
+          .from(DOC_BUCKET)
+          .upload(verificationDocPath, verificationDoc, {
+            upsert: false,
+            contentType: verificationDoc.type || "application/octet-stream",
+          });
+
+        if (docUploadError) {
+          setErrorMessage(getReadableSignupError(docUploadError));
+          return;
+        }
+      }
+
+      const caregiverServiceCategories =
+        form.accountType === "caregiver"
+          ? sanitizeCareServiceCategories(form.serviceCategories)
+          : [];
+
+      if (isCaregiver && caregiverServiceCategories.length < 1) {
+        setErrorMessage("Please select at least one service type.");
         return;
       }
 
-      const { data: profileUrlData } = supabase.storage
-        .from(PROFILE_BUCKET)
-        .getPublicUrl(profilePath);
+      const homeNursingRate =
+        isCaregiver && caregiverServiceCategories.includes("home_nursing")
+          ? Number(form.homeNursingRate)
+          : null;
+      const homePersonalCareRate =
+        isCaregiver && caregiverServiceCategories.includes("home_personal_care")
+          ? Number(form.homePersonalCareRate)
+          : null;
+      const primaryCategory: CareServiceCategory | null =
+        caregiverServiceCategories.includes("home_personal_care")
+          ? "home_personal_care"
+          : caregiverServiceCategories.includes("home_nursing")
+            ? "home_nursing"
+            : null;
+      const primaryRate =
+        primaryCategory === "home_personal_care"
+          ? homePersonalCareRate
+          : primaryCategory === "home_nursing"
+            ? homeNursingRate
+            : null;
 
-      const licenseExtension = getFileExtension(licensePhoto.name);
-      const licensePath = `${Date.now()}-${crypto.randomUUID()}.${licenseExtension}`;
-      const { error: licenseUploadError } = await supabase.storage
-        .from(LICENSE_BUCKET)
-        .upload(licensePath, licensePhoto, {
-          upsert: false,
-          contentType: licensePhoto.type,
-          cacheControl: "3600",
-        });
-
-      if (licenseUploadError) {
-        setErrorMessage(getReadableSignupError(licenseUploadError));
-        return;
-      }
-
-      const { data: licenseUrlData } = supabase.storage
-        .from(LICENSE_BUCKET)
-        .getPublicUrl(licensePath);
+      const metadata = {
+        full_name: form.fullName.trim(),
+        account_type: form.accountType,
+        ...(form.accountType === "caregiver"
+          ? {
+              phone: form.phone.trim() || null,
+              location: formatServiceRegions(form.serviceRegions),
+              hourly_rate: primaryRate ?? 1,
+              service_category: primaryCategory,
+              service_categories: caregiverServiceCategories,
+              home_nursing_rate: homeNursingRate,
+              home_personal_care_rate: homePersonalCareRate,
+              years_experience: Number(form.yearsExperience),
+              credentials_summary: form.credentialsSummary.trim(),
+              availability_summary: form.availabilitySummary.trim(),
+              minimum_shift_hours: Number(form.minimumShiftHours),
+              profile_photo_url: profilePhotoUrl,
+              verification_doc_url: verificationDocPath,
+              care_specialties: sanitizeCareServices(
+                form.specialties,
+                caregiverServiceCategories
+              ),
+              languages_spoken: sanitizeCaregiverLanguages(form.languages),
+              bio: form.bio.trim(),
+            }
+          : {}),
+      };
 
       const { error } = await supabase.auth.signUp({
         email: form.email.trim().toLowerCase(),
         password: form.password,
         options: {
-          data: {
-            full_name: form.fullName.trim(),
-            phone: form.phone.trim() || null,
-            location: form.location.trim(),
-            hourly_rate: Number(form.hourlyRate),
-            profile_photo_url: profileUrlData.publicUrl,
-            license_photo_url: licenseUrlData.publicUrl,
-            bio: form.bio.trim(),
-            role: "Registered Nurse (RN)",
-          },
+          data: metadata,
         },
       });
 
@@ -239,212 +431,492 @@ export default function NurseSignupPage(): JSX.Element {
         return;
       }
 
-      setSuccessMessage(
-        "Account created. Your profile and license photos were submitted for review. You will be listed after verification."
-      );
       setForm(INITIAL_FORM);
       setProfilePhoto(null);
-      setLicensePhoto(null);
-      if (profilePhotoInputRef.current) {
-        profilePhotoInputRef.current.value = "";
-      }
-      if (licensePhotoInputRef.current) {
-        licensePhotoInputRef.current.value = "";
+      setVerificationDoc(null);
+      if (profilePhotoInputRef.current) profilePhotoInputRef.current.value = "";
+      if (verificationDocInputRef.current) verificationDocInputRef.current.value = "";
+
+      if (form.accountType === "client") {
+        router.push("/signup-success?role=client");
+      } else {
+        router.push("/signup-success?role=caregiver");
       }
     } catch (error) {
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "message" in error &&
-        typeof error.message === "string"
-      ) {
-        const parsed = getReadableSignupError(error as { message: string; code?: string });
-        setErrorMessage(parsed);
-      } else {
-        setErrorMessage("Unable to create account.");
-      }
+      const message =
+        error instanceof Error ? error.message : "Unable to create account.";
+      setErrorMessage(message);
     } finally {
       setIsSubmitting(false);
     }
   }
 
+  async function signUpWithGoogle() {
+    setErrorMessage(null);
+    if (form.accountType === "caregiver") {
+      setErrorMessage(
+        "Offering care accounts must use email/password signup."
+      );
+      return;
+    }
+    setIsGoogleSubmitting(true);
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const redirectTo = `${window.location.origin}/oauth-complete?role=${form.accountType}`;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo },
+      });
+
+      if (error) {
+        setErrorMessage(error.message);
+        setIsGoogleSubmitting(false);
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unable to start Google signup.";
+      setErrorMessage(message);
+      setIsGoogleSubmitting(false);
+    }
+  }
+
+  const isCaregiver = form.accountType === "caregiver";
+  const selectedServiceOptions = getServicesForCategories(form.serviceCategories);
+  const missingRequiredCaregiverFiles =
+    isCaregiver && (!profilePhoto || !verificationDoc);
+  const submitDisabled = isSubmitting || missingRequiredCaregiverFiles;
+
   return (
     <div className="site-shell">
       <SiteHeader />
 
-      <main className="grid gap-6 lg:grid-cols-[0.78fr_1.22fr]">
-        <aside className="surface-panel page-enter h-fit p-6">
-          <p className="eyebrow">Nurse Application</p>
-          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-[#10233b]">
-            Join the caregiver directory
+      <main className="page-enter">
+        <section className="surface-panel mx-auto max-w-5xl p-6 md:p-8">
+          <p className="eyebrow">Silver Directory Signup</p>
+          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-[#10233b] md:text-4xl">
+            Create your account
           </h1>
-          <p className="mt-3 text-sm leading-6 text-[#54657b]">
-            Upload your nursing license photo for manual verification. Approved
-            profiles are published publicly for families.
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#54657b]">
+            Complete this one-page signup form. Families can browse and chat with
+            caregivers directly. Caregiver profiles are hidden until manual verification.
           </p>
 
-          <div className="stagger mt-6 space-y-3">
-            {[
-              "Submit your profile details, profile photo, and license photo.",
-              "Admin reviews your identity and qualification manually.",
-              "Approved profiles become visible in the public directory.",
-            ].map((step) => (
-              <div
-                key={step}
-                className="rounded-xl border border-[#d8e3eb] bg-white/85 p-3 text-sm leading-6 text-[#455870]"
+          <div className="mt-6 rounded-xl border border-[#d8e3eb] bg-white/85 p-4">
+            <div className="grid grid-cols-2 gap-2 rounded-xl border border-[#d8e3eb] bg-white/80 p-1">
+              <button
+                type="button"
+                onClick={() => updateAccountType("caregiver")}
+                className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                  isCaregiver
+                    ? "bg-[#0f766e] text-white"
+                    : "text-[#31506f] hover:bg-[#edf3f7]"
+                }`}
               >
-                {step}
+                I am offering care
+              </button>
+              <button
+                type="button"
+                onClick={() => updateAccountType("client")}
+                className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                  !isCaregiver
+                    ? "bg-[#0f766e] text-white"
+                    : "text-[#31506f] hover:bg-[#edf3f7]"
+                }`}
+              >
+                I am looking for care
+              </button>
+            </div>
+
+            {!isCaregiver ? (
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={signUpWithGoogle}
+                  disabled={isGoogleSubmitting}
+                  className="secondary-btn w-full disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isGoogleSubmitting
+                    ? "Redirecting to Google..."
+                    : "Continue with Google"}
+                </button>
+
+                <div className="my-4 flex items-center gap-3">
+                  <div className="h-px flex-1 bg-[#d8e3eb]" />
+                  <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[#70829a]">
+                    or create with email
+                  </span>
+                  <div className="h-px flex-1 bg-[#d8e3eb]" />
+                </div>
               </div>
-            ))}
+            ) : (
+              <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                Offering care accounts: use email/password signup.
+              </div>
+            )}
           </div>
 
-          <p className="mt-6 text-xs leading-5 text-[#5d6d81]">
-            Tip: use your real email inbox because verification and status
-            updates are sent there.
-          </p>
-        </aside>
+          <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+            <section className="rounded-xl border border-[#d8e3eb] bg-white/88 p-5">
+              <h2 className="text-lg font-bold text-[#132f4d]">Account details</h2>
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-[#243d58]">Full name</span>
+                  <input
+                    value={form.fullName}
+                    onChange={updateField("fullName")}
+                    className="field-input"
+                    placeholder="Jane Smith"
+                    required
+                  />
+                </label>
 
-        <section className="surface-panel page-enter p-6 md:p-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-[#243d58]">
-                  Full name
-                </span>
-                <input
-                  value={form.fullName}
-                  onChange={updateField("fullName")}
-                  className="field-input"
-                  placeholder="Jane Smith"
-                  required
-                />
-              </label>
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-[#243d58]">Email</span>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={updateField("email")}
+                    className="field-input"
+                    placeholder="jane@domain.com"
+                    required
+                  />
+                </label>
 
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-[#243d58]">Email</span>
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={updateField("email")}
-                  className="field-input"
-                  placeholder="jane@domain.com"
-                  required
-                />
-              </label>
+                <label className="space-y-2 md:col-span-2">
+                  <span className="text-sm font-semibold text-[#243d58]">
+                    Password (min 8 chars)
+                  </span>
+                  <input
+                    type="password"
+                    value={form.password}
+                    onChange={updateField("password")}
+                    className="field-input"
+                    placeholder="********"
+                    minLength={8}
+                    required
+                  />
+                </label>
+              </div>
+            </section>
 
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-[#243d58]">
-                  Password (min 8 chars)
-                </span>
-                <input
-                  type="password"
-                  value={form.password}
-                  onChange={updateField("password")}
-                  className="field-input"
-                  placeholder="********"
-                  minLength={8}
-                  required
-                />
-              </label>
+            {isCaregiver && (
+              <>
+                <section className="rounded-xl border border-[#d8e3eb] bg-white/88 p-5">
+                  <h2 className="text-lg font-bold text-[#132f4d]">Caregiver profile</h2>
+                  <div className="mt-4 grid gap-4 md:grid-cols-2">
+                    <label className="space-y-2">
+                      <span className="text-sm font-semibold text-[#243d58]">
+                        Phone (optional)
+                      </span>
+                      <input
+                        value={form.phone}
+                        onChange={updateField("phone")}
+                        className="field-input"
+                        placeholder="+65 8123 4567"
+                      />
+                    </label>
 
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-[#243d58]">
-                  Phone (optional)
-                </span>
-                <input
-                  value={form.phone}
-                  onChange={updateField("phone")}
-                  className="field-input"
-                  placeholder="+1 555 100 2000"
-                />
-              </label>
+                    <fieldset className="space-y-2 md:col-span-2">
+                      <legend className="text-sm font-semibold text-[#243d58]">
+                        Service type
+                      </legend>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        {CARE_SERVICE_CATEGORY_OPTIONS.map((category) => {
+                          const checked = form.serviceCategories.includes(category.value);
+                          return (
+                            <label
+                              key={category.value}
+                              className={`rounded-xl border bg-white/90 p-4 transition ${
+                                checked
+                                  ? "border-[#0f766e] ring-2 ring-[#b5e5d8]"
+                                  : "border-[#d8e3eb]"
+                              }`}
+                            >
+                              <span className="flex items-start gap-2">
+                                <input
+                                  type="checkbox"
+                                  name="service_categories"
+                                  value={category.value}
+                                  checked={checked}
+                                  onChange={() => toggleServiceCategory(category.value)}
+                                  className="mt-0.5 h-4 w-4 border-[#b3c6d8] text-[#0f766e] focus:ring-[#0f766e]"
+                                />
+                                <span>
+                                  <p className="text-sm font-bold text-[#163453]">
+                                    {category.label}
+                                  </p>
+                                  <p className="mt-1 text-xs leading-5 text-[#5d6d81]">
+                                    {category.description}
+                                  </p>
+                                  <p className="mt-2 text-xs font-semibold text-[#244560]">
+                                    {category.rateLabel}
+                                  </p>
+                                  <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-[#5d6d81]">
+                                    {category.services.map((service) => (
+                                      <li key={service}>{service}</li>
+                                    ))}
+                                  </ul>
+                                </span>
+                              </span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                      <p className="text-xs text-[#5d6d81]">
+                        Select one or both service types.
+                      </p>
+                    </fieldset>
 
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-[#243d58]">
-                  Service area
-                </span>
-                <input
-                  value={form.location}
-                  onChange={updateField("location")}
-                  className="field-input"
-                  placeholder="Queens, NY"
-                  required
-                />
-              </label>
+                    <fieldset className="space-y-2 md:col-span-2">
+                      <legend className="text-sm font-semibold text-[#243d58]">
+                        Preferred service regions
+                      </legend>
+                      <div className="space-y-3 rounded-lg border border-[#d8e3eb] bg-white/90 p-3">
+                        {SERVICE_REGION_OPTIONS.map((region) => {
+                          const checked = form.serviceRegions.includes(region.value);
+                          return (
+                            <label
+                              key={region.value}
+                              className="block rounded-md border border-[#e2ebf2] bg-white px-3 py-2"
+                            >
+                              <span className="flex items-start gap-2 text-sm font-semibold text-[#243d58]">
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => toggleServiceRegion(region.value)}
+                                  className="mt-0.5 h-4 w-4 rounded border-[#b3c6d8] text-[#0f766e] focus:ring-[#0f766e]"
+                                />
+                                <span>{region.value}</span>
+                              </span>
+                              {region.areas && (
+                                <p className="ml-6 mt-1 text-xs leading-5 text-[#5d6d81]">
+                                  {region.areas}
+                                </p>
+                              )}
+                            </label>
+                          );
+                        })}
+                      </div>
+                      <p className="text-xs text-[#5d6d81]">
+                        Select at least one region.
+                      </p>
+                    </fieldset>
 
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-[#243d58]">
-                  Hourly rate (USD)
-                </span>
-                <input
-                  type="number"
-                  value={form.hourlyRate}
-                  onChange={updateField("hourlyRate")}
-                  className="field-input"
-                  placeholder="45"
-                  min={1}
-                  step={1}
-                  required
-                />
-              </label>
+                    {form.serviceCategories.includes("home_nursing") && (
+                      <label className="space-y-2">
+                        <span className="text-sm font-semibold text-[#243d58]">
+                          Home Nursing rate per visit (SGD)
+                        </span>
+                        <input
+                          type="number"
+                          value={form.homeNursingRate}
+                          onChange={updateField("homeNursingRate")}
+                          className="field-input no-spinner"
+                          placeholder="120"
+                          min={1}
+                          step={1}
+                          required={isCaregiver}
+                        />
+                      </label>
+                    )}
 
-            </div>
+                    {form.serviceCategories.includes("home_personal_care") && (
+                      <label className="space-y-2">
+                        <span className="text-sm font-semibold text-[#243d58]">
+                          Home Personal Care hourly rate (SGD)
+                        </span>
+                        <input
+                          type="number"
+                          value={form.homePersonalCareRate}
+                          onChange={updateField("homePersonalCareRate")}
+                          className="field-input no-spinner"
+                          placeholder="45"
+                          min={1}
+                          step={1}
+                          required={isCaregiver}
+                        />
+                      </label>
+                    )}
 
-            <label className="space-y-2">
-              <span className="text-sm font-semibold text-[#243d58]">
-                Upload profile photo
-              </span>
-              <input
-                ref={profilePhotoInputRef}
-                type="file"
-                accept="image/*"
-                onChange={updateProfilePhoto}
-                className="field-file file:mr-3 file:rounded-md file:border-0 file:bg-[#edf3f7] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[#28435f] hover:file:bg-[#e2edf4]"
-                required
-              />
-              <p className="text-xs text-[#5d6d81]">
-                This photo will appear on your public profile. Max {MAX_PROFILE_PHOTO_MB}MB.
-              </p>
-            </label>
+                    <label className="space-y-2">
+                      <span className="text-sm font-semibold text-[#243d58]">
+                        Years of nursing experience
+                      </span>
+                      <input
+                        type="number"
+                        value={form.yearsExperience}
+                        onChange={updateField("yearsExperience")}
+                        className="field-input no-spinner"
+                        placeholder="5"
+                        min={0}
+                        step={1}
+                        required={isCaregiver}
+                      />
+                    </label>
 
-            <label className="space-y-2">
-              <span className="text-sm font-semibold text-[#243d58]">
-                Upload nursing license photo
-              </span>
-              <input
-                ref={licensePhotoInputRef}
-                type="file"
-                accept="image/*"
-                onChange={updateLicensePhoto}
-                className="field-file file:mr-3 file:rounded-md file:border-0 file:bg-[#edf3f7] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[#28435f] hover:file:bg-[#e2edf4]"
-                required
-              />
-              <p className="text-xs text-[#5d6d81]">
-                Private verification upload, max {MAX_LICENSE_PHOTO_MB}MB.
-              </p>
-            </label>
+                    <label className="space-y-2">
+                      <span className="text-sm font-semibold text-[#243d58]">
+                        Minimum shift duration (hours)
+                      </span>
+                      <input
+                        type="number"
+                        value={form.minimumShiftHours}
+                        onChange={updateField("minimumShiftHours")}
+                        className="field-input no-spinner"
+                        placeholder="3"
+                        min={0.5}
+                        step={0.5}
+                        required={isCaregiver}
+                      />
+                    </label>
 
-            <label className="space-y-2">
-              <span className="text-sm font-semibold text-[#243d58]">
-                Professional bio
-              </span>
-              <textarea
-                value={form.bio}
-                onChange={updateField("bio")}
-                className="field-textarea"
-                placeholder="Share your geriatric care experience, specialties, and availability."
-                minLength={MIN_BIO_LENGTH}
-                required
-              />
-            </label>
+                    <label className="space-y-2">
+                      <span className="text-sm font-semibold text-[#243d58]">
+                        Credentials summary
+                      </span>
+                      <input
+                        value={form.credentialsSummary}
+                        onChange={updateField("credentialsSummary")}
+                        className="field-input"
+                        placeholder="RN (SNB), acute ward and dementia care experience"
+                        required={isCaregiver}
+                      />
+                    </label>
 
-            <div className="space-y-1 text-xs leading-5 text-[#5d6d81]">
-              <p>Professional bio minimum: {MIN_BIO_LENGTH} characters.</p>
-              <p>Your profile stays hidden until manual verification.</p>
-              <p>
-                Avoid test domains like `example.com`; they are commonly blocked.
-              </p>
-            </div>
+                    <label className="space-y-2">
+                      <span className="text-sm font-semibold text-[#243d58]">
+                        Availability
+                      </span>
+                      <input
+                        value={form.availabilitySummary}
+                        onChange={updateField("availabilitySummary")}
+                        className="field-input"
+                        placeholder="Weeknights after 7pm and weekends"
+                        required={isCaregiver}
+                      />
+                    </label>
+
+                    <label className="space-y-2 md:col-span-2">
+                      <span className="text-sm font-semibold text-[#243d58]">Short bio</span>
+                      <textarea
+                        value={form.bio}
+                        onChange={updateField("bio")}
+                        className="field-textarea"
+                        placeholder="Share your eldercare experience and availability."
+                        minLength={MIN_BIO_LENGTH}
+                        required={isCaregiver}
+                      />
+                    </label>
+
+                    <fieldset className="space-y-2 md:col-span-2">
+                      <legend className="text-sm font-semibold text-[#243d58]">
+                        Services you provide
+                      </legend>
+                      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                        {selectedServiceOptions.map((service) => {
+                          const checked = form.specialties.includes(service);
+                          return (
+                            <label
+                              key={service}
+                              className="flex items-center gap-2 rounded-lg border border-[#d8e3eb] bg-white/90 px-3 py-2 text-sm text-[#2f4a67]"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => toggleService(service)}
+                                className="h-4 w-4 rounded border-[#b3c6d8] text-[#0f766e] focus:ring-[#0f766e]"
+                              />
+                              <span>{service}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                      {selectedServiceOptions.length === 0 ? (
+                        <p className="text-xs text-[#5d6d81]">
+                          Choose at least one service type above to load service options.
+                        </p>
+                      ) : (
+                        <p className="text-xs text-[#5d6d81]">
+                          Select at least one service from your chosen type.
+                        </p>
+                      )}
+                    </fieldset>
+
+                    <fieldset className="space-y-2 md:col-span-2">
+                      <legend className="text-sm font-semibold text-[#243d58]">
+                        Languages you speak
+                      </legend>
+                      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                        {CAREGIVER_LANGUAGE_OPTIONS.map((language) => {
+                          const checked = form.languages.includes(language);
+                          return (
+                            <label
+                              key={language}
+                              className="flex items-center gap-2 rounded-lg border border-[#d8e3eb] bg-white/90 px-3 py-2 text-sm text-[#2f4a67]"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => toggleLanguage(language)}
+                                className="h-4 w-4 rounded border-[#b3c6d8] text-[#0f766e] focus:ring-[#0f766e]"
+                              />
+                              <span>{language}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                      <p className="text-xs text-[#5d6d81]">
+                        Select at least one language.
+                      </p>
+                    </fieldset>
+                  </div>
+                </section>
+
+                <section className="rounded-xl border border-[#d8e3eb] bg-white/88 p-5">
+                  <h2 className="text-lg font-bold text-[#132f4d]">Verification uploads</h2>
+                  <div className="mt-4 space-y-4">
+                    <label className="space-y-2">
+                      <span className="text-sm font-semibold text-[#243d58]">
+                        Profile photo (public, required)
+                      </span>
+                      <input
+                        ref={profilePhotoInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => setProfilePhoto(event.target.files?.[0] ?? null)}
+                        className="field-file file:mr-3 file:rounded-md file:border-0 file:bg-[#edf3f7] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[#28435f] hover:file:bg-[#e2edf4]"
+                        required={isCaregiver}
+                      />
+                    </label>
+
+                    <label className="space-y-2">
+                      <span className="text-sm font-semibold text-[#243d58]">
+                        Nursing license / SNB / Student ID (private, required)
+                      </span>
+                      <input
+                        ref={verificationDocInputRef}
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={(event) =>
+                          setVerificationDoc(event.target.files?.[0] ?? null)
+                        }
+                        className="field-file file:mr-3 file:rounded-md file:border-0 file:bg-[#edf3f7] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[#28435f] hover:file:bg-[#e2edf4]"
+                        required={isCaregiver}
+                      />
+                    </label>
+                  </div>
+                  <p className="mt-4 text-xs text-[#5d6d81]">
+                    Caregiver profiles stay hidden until admin verification is approved.
+                  </p>
+                </section>
+              </>
+            )}
+
+            {!isCaregiver && (
+              <section className="rounded-xl border border-[#d9e4ec] bg-[#f4f8fb] p-4 text-sm text-[#4f657f]">
+                Families can browse the directory and start direct chats with caregivers.
+              </section>
+            )}
 
             {errorMessage && (
               <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -452,29 +924,36 @@ export default function NurseSignupPage(): JSX.Element {
               </p>
             )}
 
-            {successMessage && (
+            {signupBanner && (
               <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-                {successMessage}
+                {signupBanner}
               </p>
             )}
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="primary-btn w-full disabled:cursor-not-allowed disabled:opacity-55"
-            >
-              {isSubmitting ? "Creating account..." : "Create nurse account"}
-            </button>
+            {missingRequiredCaregiverFiles && (
+              <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                Upload both required files before creating a caregiver account.
+              </p>
+            )}
+
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#d8e3eb] pt-4">
+              <p className="text-xs leading-5 text-[#5d6d81]">
+                Already have an account?{" "}
+                <Link href="/login" className="font-semibold text-[#1f6b93]">
+                  Sign in
+                </Link>
+              </p>
+              <button
+                type="submit"
+                disabled={submitDisabled}
+                className="primary-btn min-w-[220px] disabled:cursor-not-allowed disabled:opacity-55"
+              >
+                {isSubmitting ? "Creating account..." : "Create account"}
+              </button>
+            </div>
           </form>
         </section>
       </main>
-
-      <div className="mt-6 text-center text-sm text-[#56667b]">
-        Looking for caregivers?{" "}
-        <Link href="/directory" className="font-semibold text-[#1e6b92]">
-          View caregiver directory
-        </Link>
-      </div>
     </div>
   );
 }

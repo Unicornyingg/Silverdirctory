@@ -5,18 +5,48 @@ const valueProps = [
   {
     title: "Verified professionals",
     description:
-      "Every profile is hidden by default and only published after manual license review.",
+      "Every caregiver profile is hidden by default and only published after manual document review.",
   },
   {
-    title: "Direct family-to-caregiver contact",
+    title: "Direct family-to-caregiver chat",
     description:
-      "No agency handoff. Families connect directly with qualified caregivers for faster care matching.",
+      "Families start direct chats with caregivers and arrange rates off-platform.",
   },
   {
-    title: "Weekend and respite focused",
+    title: "Hyper-local notice board model",
     description:
-      "Designed for ad-hoc eldercare support when families need trusted help quickly.",
+      "No auto-matching and no built-in scheduling. Browse, chat, and coordinate directly.",
   },
+];
+
+const rolePaths = [
+  {
+    title: "I need a caregiver",
+    description:
+      "Browse verified RN profiles, compare rates and availability, then start chat directly.",
+    href: "/directory",
+    cta: "Find a caregiver",
+  },
+  {
+    title: "I am a caregiver / RN",
+    description:
+      "Create your profile, upload verification documents, and get listed after approval.",
+    href: "/for-nurses",
+    cta: "Create caregiver profile",
+  },
+];
+
+const firstMeetingChecklist = [
+  "Run a short video call before confirming the first visit.",
+  "Confirm caregiver identity and name against profile details.",
+  "Share care needs clearly: tasks, schedule, mobility needs, medications.",
+  "Agree payment method and timing before the first shift.",
+];
+
+const identityChecklist = [
+  "Ask to sight SNB practicing certificate on first visit.",
+  "Confirm profile photo matches the caregiver attending.",
+  "Validate chat history and agreed scope before handover.",
 ];
 
 export default function Home() {
@@ -28,22 +58,27 @@ export default function Home() {
         <section className="space-y-8 page-enter">
           <div className="space-y-5">
             <h1 className="title-display">
-              A trusted caregiver directory for families caring for older adults.
+              Silver Directory helps families find local eldercare support fast.
             </h1>
             <p className="subtitle-display">
-              Caregiver Network helps families discover verified registered
-              nurses, while giving caregivers a clean onboarding flow and direct
-              client access.
+              A zero-commission classifieds board where caregivers list services
+              and families connect directly for temporary eldercare support.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <Link href="/directory" className="primary-btn">
-              Browse Verified Caregivers
-            </Link>
-            <Link href="/for-nurses" className="secondary-btn">
-              Join as a Caregiver
-            </Link>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {rolePaths.map((path) => (
+              <article
+                key={path.title}
+                className="flex h-full flex-col rounded-xl border border-[#d8e3eb] bg-white/90 p-4 shadow-[0_8px_24px_rgba(15,36,58,0.08)]"
+              >
+                <h2 className="text-lg font-bold text-[#10263f]">{path.title}</h2>
+                <p className="mt-2 text-sm leading-6 text-[#5b6b80]">{path.description}</p>
+                <Link href={path.href} className="primary-btn mt-auto pt-4 w-full">
+                  {path.cta}
+                </Link>
+              </article>
+            ))}
           </div>
         </section>
 
@@ -70,6 +105,64 @@ export default function Home() {
           </div>
         </aside>
       </main>
+
+      <section className="surface-panel mt-6 p-6 md:p-8">
+        <div className="grid gap-4 md:grid-cols-2">
+          <article className="rounded-xl border border-rose-200 bg-rose-50 p-4">
+            <h2 className="text-base font-bold text-rose-800">Not for emergencies</h2>
+            <p className="mt-2 text-sm leading-6 text-rose-700">
+              Silver Directory is not an emergency service. For urgent medical emergencies,
+              call 995 immediately.
+            </p>
+          </article>
+
+          <article className="rounded-xl border border-[#d8e3eb] bg-white/90 p-4">
+            <h2 className="text-base font-bold text-[#1d3b59]">Scope-of-care disclaimer</h2>
+            <p className="mt-2 text-sm leading-6 text-[#55677e]">
+              Caregivers are independent professionals. Families and caregivers must align
+              responsibilities, limits, and clinical escalation plans before care starts.
+            </p>
+          </article>
+        </div>
+
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <article className="rounded-xl border border-[#d8e3eb] bg-white/90 p-4">
+            <h3 className="text-sm font-bold uppercase tracking-[0.08em] text-[#365575]">
+              First-meeting safety checklist
+            </h3>
+            <ul className="mt-3 space-y-2 text-sm leading-6 text-[#566980]">
+              {firstMeetingChecklist.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </article>
+
+          <article className="rounded-xl border border-[#d8e3eb] bg-white/90 p-4">
+            <h3 className="text-sm font-bold uppercase tracking-[0.08em] text-[#365575]">
+              Identity verification checklist
+            </h3>
+            <ul className="mt-3 space-y-2 text-sm leading-6 text-[#566980]">
+              {identityChecklist.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </article>
+        </div>
+
+        <article className="mt-4 rounded-xl border border-[#d8e3eb] bg-white/90 p-4">
+          <h3 className="text-sm font-bold uppercase tracking-[0.08em] text-[#365575]">
+            Reporting and escalation flow
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-[#566980]">
+            If there is harassment, scam behavior, or agency poaching, open your chat and
+            click <strong>Report</strong>. A Trust & Safety ticket is created, evidence is
+            reviewed by admin, and actions include dismiss, suspend, or permanent ban.
+          </p>
+          <Link href="/chats" className="secondary-btn mt-3 text-sm">
+            Open chat inbox
+          </Link>
+        </article>
+      </section>
     </div>
   );
 }
