@@ -12,7 +12,7 @@ const FAMILY_FAQ_SECTIONS: FAQSection[] = [
         question: "1. How do I request or find a caregiver?",
         answer: (
           <p>
-            Unlike traditional agencies where you wait for a coordinator to assign someone to you, Silver Directory puts you in control. Browse the directory, use filters to find a caregiver who meets your needs (for example: dementia care, location, rate), then start a direct chat with them.
+            Unlike traditional agencies where you wait for a coordinator to assign someone to you, Silver Directory puts you in control. Browse the directory, use filters to find a caregiver who meets your needs (for example: location and rate), then contact them directly off-platform.
           </p>
         ),
       },
@@ -30,7 +30,7 @@ const FAMILY_FAQ_SECTIONS: FAQSection[] = [
         question: "3. What are the qualifications of the caregivers on the platform?",
         answer: (
           <p>
-            Every single caregiver on Silver Directory is a fully licensed Registered Nurse (RN) holding a valid Singapore Nursing Board (SNB) practicing certificate. We do not accept unlicensed caregivers, domestic helpers, or Enrolled Nurses (ENs). Many of our professionals are hospital-trained RNs currently furthering their medical education (for example: upgrading to a Bachelor of Science in Nursing) and offering private home nursing on their off-days.
+            Every caregiver on Silver Directory is manually verified before listing. We do not accept unlicensed caregivers.
           </p>
         ),
       },
@@ -60,7 +60,7 @@ const FAMILY_FAQ_SECTIONS: FAQSection[] = [
       },
       {
         id: "family-6",
-        question: "6. How much are the home nursing rates?",
+        question: "6. How much are caregiver rates?",
         answer: (
           <p>
             Silver Directory does not set rates. Caregivers are independent freelancers and set their own rates based on experience and care complexity. For general pricing context, refer to our{" "}
@@ -127,7 +127,7 @@ const FAMILY_FAQ_SECTIONS: FAQSection[] = [
         question: "12. How do I give feedback or report a caregiver?",
         answer: (
           <p>
-            Use the &quot;Report User&quot; action in your chat interface if a caregiver is unresponsive, unprofessional, or appears to provide false credentials. Our trust and safety team reviews reports and can suspend or permanently ban accounts when needed.
+            Reach out to platform support if a caregiver is unresponsive, unprofessional, or appears to provide false credentials. Our trust and safety team can review and take action when needed.
           </p>
         ),
       },

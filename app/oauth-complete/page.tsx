@@ -78,20 +78,6 @@ export default function OAuthCompletePage() {
 
       const role = existingRole === "admin" ? "admin" : "client";
 
-      const { error: userUpsertError } = await supabase.from("users").upsert(
-        {
-          id: user.id,
-          email: user.email ?? "",
-          role,
-        },
-        { onConflict: "id" }
-      );
-
-      if (userUpsertError) {
-        setErrorMessage(userUpsertError.message);
-        return;
-      }
-
       await supabase.auth.updateUser({
         data: {
           account_type: role,

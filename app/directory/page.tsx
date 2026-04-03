@@ -3,7 +3,6 @@ import CaregiverDirectoryList from "@/components/caregiver-directory-list";
 import DirectoryFilters from "@/components/directory-filters";
 import SiteHeader from "@/components/site-header";
 import { isSupportedCaregiverLanguage } from "@/lib/caregiver-languages";
-import { isSupportedCareService, isSupportedCareServiceCategory } from "@/lib/care-services";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { CaregiverProfile } from "@/lib/supabase/types";
 
@@ -29,14 +28,9 @@ type DirectoryProfile = Pick<
   | "minimum_shift_hours"
   | "last_active_at"
   | "hourly_rate"
-  | "service_category"
-  | "service_categories"
-  | "home_nursing_rate"
-  | "home_personal_care_rate"
   | "is_verified"
   | "is_boosted"
   | "boost_expires_at"
-  | "care_specialties"
   | "languages_spoken"
   | "created_at"
 >;
@@ -72,29 +66,9 @@ function shuffle<T>(input: T[]): T[] {
   return arr;
 }
 
-function getComparableRate(
-  profile: DirectoryProfile,
-  categoryFilter: "" | "home_nursing" | "home_personal_care"
-): number {
-  if (categoryFilter === "home_nursing") {
-    return profile.home_nursing_rate ?? profile.home_personal_care_rate ?? profile.hourly_rate;
-  }
-
-  if (categoryFilter === "home_personal_care") {
-    return profile.home_personal_care_rate ?? profile.home_nursing_rate ?? profile.hourly_rate;
-  }
-
-  return Math.min(
-    profile.home_personal_care_rate ?? Number.POSITIVE_INFINITY,
-    profile.home_nursing_rate ?? Number.POSITIVE_INFINITY,
-    profile.hourly_rate
-  );
-}
-
 function sortProfilesForDirectory(
   profiles: DirectoryProfile[],
-  sortBy: DirectorySort,
-  categoryFilter: "" | "home_nursing" | "home_personal_care"
+  sortBy: DirectorySort
 ): DirectoryCardProfile[] {
   const now = Date.now();
   const boosted: DirectoryCardProfile[] = [];
@@ -119,9 +93,7 @@ function sortProfilesForDirectory(
 
   const compare = (left: DirectoryCardProfile, right: DirectoryCardProfile): number => {
     if (sortBy === "rate_low") {
-      return (
-        getComparableRate(left, categoryFilter) - getComparableRate(right, categoryFilter)
-      );
+      return left.hourly_rate - right.hourly_rate;
     }
 
     if (sortBy === "experience_high") {
@@ -153,16 +125,8 @@ export default async function DirectoryPage({
   const params = await searchParams;
   const locationFilter = getParam(params, "location").trim();
   const maxRateRaw = getParam(params, "maxRate").trim();
-  const requestedCategory = getParam(params, "category").trim();
-  const requestedService = getParam(params, "service").trim();
   const requestedLanguage = getParam(params, "language").trim();
   const requestedSort = getParam(params, "sort").trim();
-  const categoryFilter = isSupportedCareServiceCategory(requestedCategory)
-    ? requestedCategory
-    : "";
-  const serviceFilter = isSupportedCareService(requestedService)
-    ? requestedService
-    : "";
   const languageFilter = isSupportedCaregiverLanguage(requestedLanguage)
     ? requestedLanguage
     : "";
@@ -193,7 +157,7 @@ export default async function DirectoryPage({
   let query = supabase
     .from("profiles")
     .select(
-      "id, full_name, profile_photo_url, location, bio, years_experience, credentials_summary, availability_summary, response_time_summary, minimum_shift_hours, last_active_at, hourly_rate, service_category, service_categories, home_nursing_rate, home_personal_care_rate, is_verified, is_boosted, boost_expires_at, care_specialties, languages_spoken, created_at"
+      "id, full_name, profile_photo_url, location, bio, years_experience, credentials_summary, availability_summary, response_time_summary, minimum_shift_hours, last_active_at, hourly_rate, is_verified, is_boosted, boost_expires_at, languages_spoken, created_at"
     )
     .eq("is_verified", true)
     .order("created_at", { ascending: false });
@@ -202,24 +166,8 @@ export default async function DirectoryPage({
     query = query.filter("location", "ilike", `%${locationFilter}%`);
   }
 
-  if (categoryFilter) {
-    query = query.contains("service_categories", [categoryFilter]);
-  }
-
   if (hasValidMaxRate) {
-    if (categoryFilter === "home_nursing") {
-      query = query.lte("home_nursing_rate", maxRate);
-    } else if (categoryFilter === "home_personal_care") {
-      query = query.lte("home_personal_care_rate", maxRate);
-    } else {
-      query = query.or(
-        `home_nursing_rate.lte.${maxRate},home_personal_care_rate.lte.${maxRate}`
-      );
-    }
-  }
-
-  if (serviceFilter) {
-    query = query.contains("care_specialties", [serviceFilter]);
+    query = query.lte("hourly_rate", maxRate);
   }
 
   if (languageFilter) {
@@ -227,12 +175,10 @@ export default async function DirectoryPage({
   }
 
   const { data, error } = await query.returns<DirectoryProfile[]>();
-  const orderedProfiles = sortProfilesForDirectory(data ?? [], sortBy, categoryFilter);
+  const orderedProfiles = sortProfilesForDirectory(data ?? [], sortBy);
   const hasActiveFilters =
     !!locationFilter ||
     hasValidMaxRate ||
-    !!categoryFilter ||
-    !!serviceFilter ||
     !!languageFilter ||
     sortBy !== "recommended";
 
@@ -248,8 +194,7 @@ export default async function DirectoryPage({
               Silver Directory Caregivers
             </h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-[#55667b]">
-              Browse verified caregivers and start a direct chat. No platform
-              commission on wages.
+              Browse verified caregivers and contact them directly off-platform.
             </p>
           </div>
           <div className="rounded-xl border border-[#d8e3eb] bg-white/90 px-4 py-3 text-sm text-[#42556f]">
@@ -260,8 +205,6 @@ export default async function DirectoryPage({
         <DirectoryFilters
           initialLocation={locationFilter}
           initialMaxRate={hasValidMaxRate ? maxRateRaw : ""}
-          initialCategory={categoryFilter}
-          initialService={serviceFilter}
           initialLanguage={languageFilter}
           initialSort={sortBy}
         />
@@ -292,7 +235,7 @@ export default async function DirectoryPage({
             No verified caregiver profiles match your current filters.
           </p>
           <p className="mt-2 text-sm">
-            Try increasing max rate, removing one filter, or switching service type.
+            Try increasing max rate or removing one filter.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             {hasActiveFilters && (

@@ -10,6 +10,16 @@ export type MarketplaceUser = {
   updated_at: string;
 };
 
+export type UserModeration = {
+  user_id: string;
+  is_suspended: boolean;
+  is_banned: boolean;
+  moderation_note: string | null;
+  moderated_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type ClientProfile = {
   id: string;
   user_id: string;
@@ -110,6 +120,26 @@ export type Database = {
         Update: Partial<{
           email: string;
           role: "client" | "caregiver" | "admin";
+          is_suspended: boolean;
+          is_banned: boolean;
+          moderation_note: string | null;
+          moderated_at: string | null;
+          updated_at: string;
+        }>;
+        Relationships: [];
+      };
+      user_moderation: {
+        Row: UserModeration;
+        Insert: {
+          user_id: string;
+          is_suspended?: boolean;
+          is_banned?: boolean;
+          moderation_note?: string | null;
+          moderated_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<{
           is_suspended: boolean;
           is_banned: boolean;
           moderation_note: string | null;

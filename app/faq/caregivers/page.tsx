@@ -11,7 +11,7 @@ const CAREGIVER_FAQ_SECTIONS: FAQSection[] = [
         question: "1. Who can register as a caregiver on the platform?",
         answer: (
           <p>
-            We strictly accept fully licensed Registered Nurses (RNs). You must hold a valid Singapore Nursing Board (SNB) practicing certificate to create a profile. This includes diploma-holding RNs who are currently pursuing their Bachelor of Science in Nursing (BSN). We do not currently accept Enrolled Nurses (ENs) or unlicensed nursing students.
+            We accept verified caregivers who can provide valid supporting documentation during signup and verification review.
           </p>
         ),
       },
@@ -106,7 +106,7 @@ const CAREGIVER_FAQ_SECTIONS: FAQSection[] = [
         question: "10. How do families contact me?",
         answer: (
           <p>
-            Families contact you directly through the platform chat from your public profile. You can review their needs and continue discussion directly from your chat inbox.
+            Families contact you directly off-platform after viewing your public profile.
           </p>
         ),
       },
@@ -148,7 +148,7 @@ const CAREGIVER_FAQ_SECTIONS: FAQSection[] = [
         question: "14. What if an agency or recruiter contacts me pretending to be a family?",
         answer: (
           <p>
-            Report them immediately using &quot;Report User&quot; in chat. The platform is strictly for direct family-to-caregiver connections, and violators can be permanently banned.
+            Report them immediately to platform support. The platform is strictly for direct family-to-caregiver connections, and violators can be permanently banned.
           </p>
         ),
       },

@@ -164,23 +164,8 @@ export default function ClientProfilePage() {
 
     setIsSaving(true);
     try {
-      const normalizedEmail = authUser.email ?? "";
       const normalizedPhone = form.phone.trim() || null;
       const normalizedLocation = form.location.trim() || null;
-
-      const { error: userUpsertError } = await supabase.from("users").upsert(
-        {
-          id: authUser.id,
-          email: normalizedEmail,
-          role: "client",
-        },
-        { onConflict: "id" }
-      );
-
-      if (userUpsertError) {
-        setErrorMessage(userUpsertError.message);
-        return;
-      }
 
       const { error: profileError } = await supabase.from("client_profiles").upsert(
         {
@@ -266,7 +251,7 @@ export default function ClientProfilePage() {
               Update your details
             </h1>
             <p className="mt-2 text-sm leading-6 text-[#56677c]">
-              Keep this profile updated so caregivers can identify you in chats.
+              Keep this profile updated so caregivers can identify you.
             </p>
           </div>
           <button

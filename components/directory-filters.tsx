@@ -2,13 +2,6 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import {
-  CARE_SERVICE_CATEGORY_OPTIONS,
-  CARE_SERVICE_OPTIONS,
-  type CareServiceCategory,
-  getServicesForCategory,
-  isSupportedCareServiceCategory,
-} from "@/lib/care-services";
 import { CAREGIVER_LANGUAGE_OPTIONS } from "@/lib/caregiver-languages";
 
 type DirectorySort =
@@ -20,8 +13,6 @@ type DirectorySort =
 type DirectoryFiltersProps = {
   initialLocation: string;
   initialMaxRate: string;
-  initialCategory: string;
-  initialService: string;
   initialLanguage: string;
   initialSort: DirectorySort;
 };
@@ -36,28 +27,18 @@ function getSortLabel(sort: DirectorySort): string {
 export default function DirectoryFilters({
   initialLocation,
   initialMaxRate,
-  initialCategory,
-  initialService,
   initialLanguage,
   initialSort,
 }: DirectoryFiltersProps) {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [location, setLocation] = useState(initialLocation);
   const [maxRate, setMaxRate] = useState(initialMaxRate);
-  const [category, setCategory] = useState<CareServiceCategory | "">(
-    isSupportedCareServiceCategory(initialCategory) ? initialCategory : ""
-  );
-  const [service, setService] = useState(initialService);
   const [language, setLanguage] = useState(initialLanguage);
   const [sort, setSort] = useState<DirectorySort>(initialSort);
 
-  const serviceOptions = useMemo(
-    () => (category ? getServicesForCategory(category) : CARE_SERVICE_OPTIONS),
-    [category]
-  );
-
   const activeTags = useMemo(() => {
     const tags: Array<{ key: string; label: string; remove: () => void }> = [];
+
     if (location.trim()) {
       tags.push({
         key: "location",
@@ -65,6 +46,7 @@ export default function DirectoryFilters({
         remove: () => setLocation(""),
       });
     }
+
     if (maxRate.trim()) {
       tags.push({
         key: "maxRate",
@@ -72,26 +54,7 @@ export default function DirectoryFilters({
         remove: () => setMaxRate(""),
       });
     }
-    if (category) {
-      tags.push({
-        key: "category",
-        label: `Type: ${
-          CARE_SERVICE_CATEGORY_OPTIONS.find((item) => item.value === category)?.label ??
-          category
-        }`,
-        remove: () => {
-          setCategory("");
-          setService("");
-        },
-      });
-    }
-    if (service) {
-      tags.push({
-        key: "service",
-        label: `Service: ${service}`,
-        remove: () => setService(""),
-      });
-    }
+
     if (language) {
       tags.push({
         key: "language",
@@ -99,6 +62,7 @@ export default function DirectoryFilters({
         remove: () => setLanguage(""),
       });
     }
+
     if (sort !== "recommended") {
       tags.push({
         key: "sort",
@@ -106,8 +70,9 @@ export default function DirectoryFilters({
         remove: () => setSort("recommended"),
       });
     }
+
     return tags;
-  }, [category, language, location, maxRate, service, sort]);
+  }, [language, location, maxRate, sort]);
 
   return (
     <form method="get" className="mt-5 space-y-4">
@@ -155,53 +120,9 @@ export default function DirectoryFilters({
 
         <details open className="rounded-xl border border-[#d8e3eb] bg-white/75 p-3">
           <summary className="cursor-pointer text-sm font-semibold text-[#243d58]">
-            Service preferences
+            Language and sorting
           </summary>
-          <div className="mt-3 grid gap-3 md:grid-cols-3">
-            <label className="min-w-0 space-y-2">
-              <span className="text-sm font-semibold text-[#243d58]">Service type</span>
-              <select
-                name="category"
-                value={category}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  const nextCategory = isSupportedCareServiceCategory(value) ? value : "";
-                  setCategory(nextCategory);
-                  const nextServiceOptions = nextCategory
-                    ? getServicesForCategory(nextCategory)
-                    : CARE_SERVICE_OPTIONS;
-                  if (service && !nextServiceOptions.includes(service)) {
-                    setService("");
-                  }
-                }}
-                className="field-input"
-              >
-                <option value="">All types</option>
-                {CARE_SERVICE_CATEGORY_OPTIONS.map((categoryOption) => (
-                  <option key={categoryOption.value} value={categoryOption.value}>
-                    {categoryOption.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="min-w-0 space-y-2">
-              <span className="text-sm font-semibold text-[#243d58]">Service</span>
-              <select
-                name="service"
-                value={service}
-                onChange={(event) => setService(event.target.value)}
-                className="field-input"
-              >
-                <option value="">All services</option>
-                {serviceOptions.map((serviceOption) => (
-                  <option key={serviceOption} value={serviceOption}>
-                    {serviceOption}
-                  </option>
-                ))}
-              </select>
-            </label>
-
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
             <label className="min-w-0 space-y-2">
               <span className="text-sm font-semibold text-[#243d58]">Language</span>
               <select
@@ -218,14 +139,7 @@ export default function DirectoryFilters({
                 ))}
               </select>
             </label>
-          </div>
-        </details>
 
-        <details open className="rounded-xl border border-[#d8e3eb] bg-white/75 p-3">
-          <summary className="cursor-pointer text-sm font-semibold text-[#243d58]">
-            Sorting
-          </summary>
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
             <label className="min-w-0 space-y-2">
               <span className="text-sm font-semibold text-[#243d58]">Sort by</span>
               <select
@@ -269,8 +183,6 @@ export default function DirectoryFilters({
           onClick={() => {
             setLocation("");
             setMaxRate("");
-            setCategory("");
-            setService("");
             setLanguage("");
             setSort("recommended");
           }}

@@ -5,10 +5,10 @@
 -- PRD MVP TABLES (Notice-board model)
 -- ============================================================
 
-create table if not exists public.users (
-  id uuid primary key references auth.users(id) on delete cascade,
-  email text not null,
-  role text not null default 'client' check (role in ('client', 'caregiver', 'admin')),
+drop table if exists public.users cascade;
+
+create table if not exists public.user_moderation (
+  user_id uuid primary key references auth.users(id) on delete cascade,
   is_suspended boolean not null default false,
   is_banned boolean not null default false,
   moderation_note text,
@@ -17,9 +17,31 @@ create table if not exists public.users (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
+create or replace view public.users as
+select
+  au.id,
+  coalesce(au.email, '') as email,
+  case
+    when lower(
+      coalesce(au.raw_app_meta_data ->> 'account_type', au.raw_user_meta_data ->> 'account_type', '')
+    ) = 'admin' then 'admin'
+    when lower(
+      coalesce(au.raw_app_meta_data ->> 'account_type', au.raw_user_meta_data ->> 'account_type', '')
+    ) in ('caregiver', 'offering care', 'offering_care') then 'caregiver'
+    else 'client'
+  end as role,
+  coalesce(um.is_suspended, false) as is_suspended,
+  coalesce(um.is_banned, false) as is_banned,
+  um.moderation_note,
+  um.moderated_at,
+  au.created_at,
+  coalesce(au.updated_at, au.created_at) as updated_at
+from auth.users au
+left join public.user_moderation um on um.user_id = au.id;
+
 create table if not exists public.profiles (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid unique not null references public.users(id) on delete cascade,
+  user_id uuid unique not null references auth.users(id) on delete cascade,
   full_name text not null,
   service_category text not null default 'home_personal_care' check (service_category in ('home_nursing', 'home_personal_care')),
   service_categories text[] not null default array['home_personal_care']::text[],
@@ -46,7 +68,7 @@ create table if not exists public.profiles (
 
 create table if not exists public.client_profiles (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid unique not null references public.users(id) on delete cascade,
+  user_id uuid unique not null references auth.users(id) on delete cascade,
   full_name text not null,
   phone text,
   location text,
@@ -71,21 +93,21 @@ alter table public.profiles add column if not exists is_boosted boolean not null
 alter table public.profiles add column if not exists boost_expires_at timestamptz;
 alter table public.client_profiles add column if not exists phone text;
 alter table public.client_profiles add column if not exists location text;
-alter table public.users add column if not exists is_suspended boolean not null default false;
-alter table public.users add column if not exists is_banned boolean not null default false;
-alter table public.users add column if not exists moderation_note text;
-alter table public.users add column if not exists moderated_at timestamptz;
+alter table public.user_moderation add column if not exists is_suspended boolean not null default false;
+alter table public.user_moderation add column if not exists is_banned boolean not null default false;
+alter table public.user_moderation add column if not exists moderation_note text;
+alter table public.user_moderation add column if not exists moderated_at timestamptz;
 
 create table if not exists public.verification_docs (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references public.users(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
   document_url text not null,
   status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
   review_notes text,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now()),
   reviewed_at timestamptz,
-  reviewed_by uuid references public.users(id)
+  reviewed_by uuid references auth.users(id)
 );
 
 alter table public.verification_docs add column if not exists review_notes text;
@@ -95,7 +117,7 @@ drop table if exists public.inquiries cascade;
 
 create table if not exists public.chat_threads (
   id uuid primary key default gen_random_uuid(),
-  client_user_id uuid not null references public.users(id) on delete cascade,
+  client_user_id uuid not null references auth.users(id) on delete cascade,
   caregiver_profile_id uuid not null references public.profiles(id) on delete cascade,
   last_message_at timestamptz,
   last_message_preview text,
@@ -107,7 +129,7 @@ create table if not exists public.chat_threads (
 create table if not exists public.chat_messages (
   id uuid primary key default gen_random_uuid(),
   thread_id uuid not null references public.chat_threads(id) on delete cascade,
-  sender_user_id uuid not null references public.users(id) on delete cascade,
+  sender_user_id uuid not null references auth.users(id) on delete cascade,
   body text not null check (length(trim(body)) > 0),
   created_at timestamptz not null default timezone('utc', now())
 );
@@ -115,15 +137,15 @@ create table if not exists public.chat_messages (
 create table if not exists public.chat_reports (
   id uuid primary key default gen_random_uuid(),
   thread_id uuid not null references public.chat_threads(id) on delete cascade,
-  reporter_user_id uuid not null references public.users(id) on delete cascade,
-  reported_user_id uuid not null references public.users(id) on delete cascade,
+  reporter_user_id uuid not null references auth.users(id) on delete cascade,
+  reported_user_id uuid not null references auth.users(id) on delete cascade,
   reason text not null check (reason in ('harassment', 'scam', 'agency_poaching', 'other')),
   details text,
   status text not null default 'open' check (status in ('open', 'dismissed', 'suspended', 'banned')),
   resolution_notes text,
   created_at timestamptz not null default timezone('utc', now()),
   resolved_at timestamptz,
-  resolved_by uuid references public.users(id)
+  resolved_by uuid references auth.users(id)
 );
 
 do $$
@@ -321,8 +343,8 @@ on public.verification_docs (user_id, status, created_at desc);
 create unique index if not exists verification_docs_user_document_unique
 on public.verification_docs (user_id, document_url);
 
-create index if not exists users_role_status_idx
-on public.users (role, is_banned, is_suspended, created_at desc);
+create index if not exists user_moderation_status_idx
+on public.user_moderation (is_banned, is_suspended, created_at desc);
 
 create index if not exists chat_reports_status_created_idx
 on public.chat_reports (status, created_at desc);
@@ -340,9 +362,9 @@ begin
 end;
 $$;
 
-drop trigger if exists users_set_updated_at on public.users;
-create trigger users_set_updated_at
-before update on public.users
+drop trigger if exists user_moderation_set_updated_at on public.user_moderation;
+create trigger user_moderation_set_updated_at
+before update on public.user_moderation
 for each row execute function public.set_table_updated_at();
 
 drop trigger if exists profiles_set_updated_at on public.profiles;
@@ -394,8 +416,7 @@ create trigger chat_messages_after_insert
 after insert on public.chat_messages
 for each row execute function public.handle_chat_message_insert();
 
--- Keep public.users in sync with auth.users and bootstrap caregiver profile rows
--- from signup metadata.
+-- Bootstrap caregiver/client profile rows from signup metadata.
 create or replace function public.handle_new_marketplace_user()
 returns trigger
 language plpgsql
@@ -431,17 +452,6 @@ begin
     when account_type = 'admin' then 'admin'
     else 'client'
   end;
-
-  insert into public.users (id, email, role)
-  values (new.id, coalesce(new.email, ''), mapped_role)
-  on conflict (id) do update
-  set
-    email = excluded.email,
-    role = case
-      when public.users.role = 'admin' then public.users.role
-      else excluded.role
-    end,
-    updated_at = timezone('utc', now());
 
   if mapped_role = 'caregiver' then
     profile_photo_value := nullif(new.raw_user_meta_data ->> 'profile_photo_url', '');
@@ -691,48 +701,19 @@ create trigger on_auth_user_created_marketplace
 after insert on auth.users
 for each row execute procedure public.handle_new_marketplace_user();
 
--- Backfill new public.users table from existing auth users.
-insert into public.users (id, email, role)
-select
-  au.id,
-  coalesce(au.email, ''),
-  case
-    when lower(coalesce(au.raw_user_meta_data ->> 'account_type', '')) in ('caregiver', 'offering care', 'offering_care')
-      then 'caregiver'
-    else 'client'
-  end as role
-from auth.users au
-on conflict (id) do update
-set
-  email = excluded.email,
-  updated_at = timezone('utc', now());
-
--- Existing caregivers should be marked with caregiver role.
-update public.users u
-set
-  role = 'caregiver',
-  updated_at = timezone('utc', now())
-where u.role <> 'admin'
-  and exists (
-    select 1
-    from public.profiles p
-    where p.user_id = u.id
-  );
-
 -- Backfill client profiles for existing client users.
 insert into public.client_profiles (user_id, full_name, phone, location)
 select
-  u.id,
+  au.id,
   coalesce(
     nullif(au.raw_user_meta_data ->> 'full_name', ''),
-    nullif(split_part(coalesce(u.email, ''), '@', 1), ''),
+    nullif(split_part(coalesce(au.email, ''), '@', 1), ''),
     'Client'
   ),
   nullif(au.raw_user_meta_data ->> 'phone', ''),
   nullif(au.raw_user_meta_data ->> 'location', '')
-from public.users u
-left join auth.users au on au.id = u.id
-where u.role = 'client'
+from auth.users au
+where lower(coalesce(au.raw_app_meta_data ->> 'account_type', au.raw_user_meta_data ->> 'account_type', 'client')) <> 'caregiver'
 on conflict (user_id) do update
 set
   full_name = excluded.full_name,
@@ -740,7 +721,10 @@ set
   location = excluded.location,
   updated_at = timezone('utc', now());
 
-alter table public.users enable row level security;
+grant select on public.users to authenticated;
+grant select on public.users to service_role;
+
+alter table public.user_moderation enable row level security;
 alter table public.profiles enable row level security;
 alter table public.client_profiles enable row level security;
 alter table public.verification_docs enable row level security;
@@ -748,41 +732,13 @@ alter table public.chat_threads enable row level security;
 alter table public.chat_messages enable row level security;
 alter table public.chat_reports enable row level security;
 
-drop policy if exists "Users can insert own user record" on public.users;
-create policy "Users can insert own user record"
-on public.users
-for insert
-to authenticated
-with check (auth.uid() = id);
-
-drop policy if exists "Users can read own user record" on public.users;
-create policy "Users can read own user record"
-on public.users
-for select
-to authenticated
-using (auth.uid() = id);
-
-drop policy if exists "Users can update own user record" on public.users;
-create policy "Users can update own user record"
-on public.users
-for update
-to authenticated
-using (auth.uid() = id)
-with check (
-  auth.uid() = id
-  and exists (
-    select 1
-    from public.users current_row
-    where current_row.id = auth.uid()
-      and current_row.role = role
-      and current_row.email = email
-      and current_row.created_at = created_at
-      and current_row.is_suspended = is_suspended
-      and current_row.is_banned = is_banned
-      and coalesce(current_row.moderation_note, '') = coalesce(moderation_note, '')
-      and current_row.moderated_at is not distinct from moderated_at
-  )
-);
+drop policy if exists "Service role can manage moderation rows" on public.user_moderation;
+create policy "Service role can manage moderation rows"
+on public.user_moderation
+for all
+to service_role
+using (true)
+with check (true);
 
 drop policy if exists "Clients can read own profile" on public.client_profiles;
 create policy "Clients can read own profile"

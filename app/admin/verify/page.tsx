@@ -510,9 +510,17 @@ async function handleReportResolution(formData: FormData) {
           };
 
     const { error: userModerationError } = await supabase
-      .from("users")
-      .update(userPatch)
-      .eq("id", report.reported_user_id);
+      .from("user_moderation")
+      .upsert(
+        {
+          user_id: report.reported_user_id,
+          is_suspended: userPatch.is_suspended ?? false,
+          is_banned: userPatch.is_banned ?? false,
+          moderation_note: userPatch.moderation_note ?? null,
+          moderated_at: userPatch.moderated_at ?? null,
+        },
+        { onConflict: "user_id" }
+      );
 
     if (userModerationError) {
       redirect(
@@ -616,14 +624,17 @@ async function handleUserOverride(formData: FormData) {
   const isBanned = accountStatus === "banned";
 
   const { error: userUpdateError } = await supabase
-    .from("users")
-    .update({
-      is_suspended: isSuspended,
-      is_banned: isBanned,
-      moderation_note: adminNote || null,
-      moderated_at: adminNote ? new Date().toISOString() : null,
-    })
-    .eq("id", userId);
+    .from("user_moderation")
+    .upsert(
+      {
+        user_id: userId,
+        is_suspended: isSuspended,
+        is_banned: isBanned,
+        moderation_note: adminNote || null,
+        moderated_at: adminNote ? new Date().toISOString() : null,
+      },
+      { onConflict: "user_id" }
+    );
 
   if (userUpdateError) {
     redirect(createStatusRedirect(activeKey, "error", userUpdateError.message, { user: userId }, "users"));

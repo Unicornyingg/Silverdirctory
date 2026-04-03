@@ -6,14 +6,6 @@ import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "r
 import type { User } from "@supabase/supabase-js";
 import SiteHeader from "@/components/site-header";
 import {
-  CARE_SERVICE_CATEGORY_OPTIONS,
-  type CareServiceCategory,
-  getServicesForCategories,
-  sanitizeCareServiceCategories,
-  isSupportedCareServiceCategory,
-  sanitizeCareServices,
-} from "@/lib/care-services";
-import {
   CAREGIVER_LANGUAGE_OPTIONS,
   sanitizeCaregiverLanguages,
 } from "@/lib/caregiver-languages";
@@ -38,37 +30,31 @@ const MAX_DOC_MB = 8;
 
 type DashboardForm = {
   fullName: string;
-  serviceCategories: CareServiceCategory[];
-  homeNursingRate: string;
-  homePersonalCareRate: string;
+  hourlyRate: string;
   yearsExperience: string;
   credentialsSummary: string;
   availabilitySummary: string;
   responseTimeSummary: string;
   minimumShiftHours: string;
   serviceRegions: string[];
-  specialties: string[];
   languages: string[];
   bio: string;
 };
 
 type EditableDashboardField = Exclude<
   keyof DashboardForm,
-  "serviceCategories" | "serviceRegions" | "specialties" | "languages"
+  "serviceRegions" | "languages"
 >;
 
 const INITIAL_FORM: DashboardForm = {
   fullName: "",
-  serviceCategories: [],
-  homeNursingRate: "",
-  homePersonalCareRate: "",
+  hourlyRate: "",
   yearsExperience: "",
   credentialsSummary: "",
   availabilitySummary: "",
   responseTimeSummary: "",
   minimumShiftHours: "",
   serviceRegions: [],
-  specialties: [],
   languages: [],
   bio: "",
 };
@@ -129,18 +115,11 @@ export default function CaregiverDashboardPage() {
 
     if (profileRow) {
       setProfile(profileRow);
-      const normalizedCategories = sanitizeCareServiceCategories(
-        profileRow.service_categories ?? [profileRow.service_category]
-      );
       setForm({
         fullName: profileRow.full_name,
-        serviceCategories: normalizedCategories,
-        homeNursingRate: profileRow.home_nursing_rate
-          ? String(profileRow.home_nursing_rate)
-          : "",
-        homePersonalCareRate: profileRow.home_personal_care_rate
-          ? String(profileRow.home_personal_care_rate)
-          : "",
+        hourlyRate: String(
+          profileRow.home_personal_care_rate ?? profileRow.hourly_rate ?? ""
+        ),
         yearsExperience: String(Math.max(0, profileRow.years_experience ?? 0)),
         credentialsSummary: profileRow.credentials_summary ?? "",
         availabilitySummary: profileRow.availability_summary ?? "",
@@ -149,26 +128,10 @@ export default function CaregiverDashboardPage() {
           ? String(profileRow.minimum_shift_hours)
           : "",
         serviceRegions: parseServiceRegionsFromLocation(profileRow.location),
-        specialties: sanitizeCareServices(
-          profileRow.care_specialties ?? [],
-          normalizedCategories
-        ),
         languages: sanitizeCaregiverLanguages(profileRow.languages_spoken ?? []),
         bio: profileRow.bio,
       });
     } else {
-      const metadataCategories =
-        Array.isArray(user.user_metadata.service_categories)
-          ? sanitizeCareServiceCategories(
-              user.user_metadata.service_categories
-                .map((item: unknown) => String(item))
-                .filter(Boolean)
-            )
-          : typeof user.user_metadata.service_category === "string" &&
-              isSupportedCareServiceCategory(user.user_metadata.service_category)
-            ? [user.user_metadata.service_category]
-            : [];
-
       setProfile(null);
       setForm((previous) => ({
         ...previous,
@@ -176,8 +139,10 @@ export default function CaregiverDashboardPage() {
           (typeof user.user_metadata.full_name === "string"
             ? user.user_metadata.full_name
             : "") || previous.fullName,
-        serviceCategories:
-          metadataCategories.length > 0 ? metadataCategories : previous.serviceCategories,
+        hourlyRate:
+          typeof user.user_metadata.hourly_rate === "number"
+            ? String(user.user_metadata.hourly_rate)
+            : previous.hourlyRate,
         yearsExperience:
           typeof user.user_metadata.years_experience === "number"
             ? String(Math.max(0, user.user_metadata.years_experience))
@@ -363,42 +328,6 @@ export default function CaregiverDashboardPage() {
       }));
     };
 
-  const toggleServiceCategory = (serviceCategory: CareServiceCategory) => {
-    setForm((previous) => {
-      const exists = previous.serviceCategories.includes(serviceCategory);
-      const nextCategories = sanitizeCareServiceCategories(
-        exists
-          ? previous.serviceCategories.filter((item) => item !== serviceCategory)
-          : [...previous.serviceCategories, serviceCategory]
-      );
-      return {
-        ...previous,
-        serviceCategories: nextCategories,
-        specialties: sanitizeCareServices(previous.specialties, nextCategories),
-      };
-    });
-    setErrorMessage(null);
-  };
-
-  const toggleService = (service: string) => {
-    setForm((previous) => {
-      if (previous.serviceCategories.length < 1) {
-        return previous;
-      }
-      const exists = previous.specialties.includes(service);
-      return {
-        ...previous,
-        specialties: sanitizeCareServices(
-          exists
-            ? previous.specialties.filter((item) => item !== service)
-            : [...previous.specialties, service],
-          previous.serviceCategories
-        ),
-      };
-    });
-    setErrorMessage(null);
-  };
-
   const toggleLanguage = (language: string) => {
     setForm((previous) => {
       const exists = previous.languages.includes(language);
@@ -456,33 +385,16 @@ export default function CaregiverDashboardPage() {
       return;
     }
 
-    if (form.serviceCategories.length < 1) {
-      setErrorMessage("Please select at least one service type.");
-      return;
-    }
-
     if (form.bio.trim().length < 20) {
       setErrorMessage("Bio must be at least 20 characters.");
       return;
     }
 
-    const homeNursingRate = Number(form.homeNursingRate);
-    const homePersonalCareRate = Number(form.homePersonalCareRate);
+    const hourlyRate = Number(form.hourlyRate);
     const yearsExperience = Number(form.yearsExperience);
     const minimumShiftHours = Number(form.minimumShiftHours);
-    if (
-      form.serviceCategories.includes("home_nursing") &&
-      (!Number.isFinite(homeNursingRate) || homeNursingRate <= 0)
-    ) {
-      setErrorMessage("Home Nursing rate per visit must be greater than 0.");
-      return;
-    }
-
-    if (
-      form.serviceCategories.includes("home_personal_care") &&
-      (!Number.isFinite(homePersonalCareRate) || homePersonalCareRate <= 0)
-    ) {
-      setErrorMessage("Home Personal Care hourly rate must be greater than 0.");
+    if (!Number.isFinite(hourlyRate) || hourlyRate <= 0) {
+      setErrorMessage("Hourly rate must be greater than 0.");
       return;
     }
     if (!Number.isFinite(yearsExperience) || yearsExperience < 0) {
@@ -506,10 +418,6 @@ export default function CaregiverDashboardPage() {
       return;
     }
 
-    if (form.specialties.length < 1) {
-      setErrorMessage("Please select at least one service.");
-      return;
-    }
     if (form.languages.length < 1) {
       setErrorMessage("Please select at least one spoken language.");
       return;
@@ -522,7 +430,7 @@ export default function CaregiverDashboardPage() {
 
     if (!latestDoc && !verificationDoc) {
       setErrorMessage(
-        "Please upload your nursing license / SNB certificate / student ID document."
+        "Please upload your license / supporting ID document."
       );
       return;
     }
@@ -586,50 +494,18 @@ export default function CaregiverDashboardPage() {
         }
       }
 
-      const { error: userUpsertError } = await supabase.from("users").upsert(
-        {
-          id: authUser.id,
-          email: authUser.email ?? "",
-          role: "caregiver",
-        },
-        { onConflict: "id" }
-      );
-
-      if (userUpsertError) {
-        setErrorMessage(userUpsertError.message);
-        return;
-      }
-
-      const caregiverServiceCategories = sanitizeCareServiceCategories(
-        form.serviceCategories
-      );
-      if (caregiverServiceCategories.length < 1) {
-        setErrorMessage("Please select at least one service type.");
-        return;
-      }
-
-      const homeNursingRate = caregiverServiceCategories.includes("home_nursing")
-        ? Number(form.homeNursingRate)
-        : null;
-      const homePersonalCareRate = caregiverServiceCategories.includes("home_personal_care")
-        ? Number(form.homePersonalCareRate)
-        : null;
-      const primaryCategory: CareServiceCategory = caregiverServiceCategories.includes(
-        "home_personal_care"
-      )
-        ? "home_personal_care"
-        : "home_nursing";
-      const primaryRate =
-        primaryCategory === "home_personal_care"
-          ? homePersonalCareRate
-          : homeNursingRate;
+      const caregiverServiceCategories = ["home_personal_care"] as const;
+      const homeNursingRate = null;
+      const homePersonalCareRate = Number(form.hourlyRate);
+      const primaryCategory = "home_personal_care" as const;
+      const primaryRate = homePersonalCareRate;
 
       const profilePayload = {
         ...(profile ? { id: profile.id } : {}),
         user_id: authUser.id,
         full_name: form.fullName.trim(),
         service_category: primaryCategory,
-        service_categories: caregiverServiceCategories,
+        service_categories: [...caregiverServiceCategories],
         bio: form.bio.trim(),
         years_experience: Math.max(0, Math.floor(Number(form.yearsExperience))),
         credentials_summary: form.credentialsSummary.trim(),
@@ -641,10 +517,7 @@ export default function CaregiverDashboardPage() {
         home_nursing_rate: homeNursingRate,
         home_personal_care_rate: homePersonalCareRate,
         location: formatServiceRegions(form.serviceRegions),
-        care_specialties: sanitizeCareServices(
-          form.specialties,
-          caregiverServiceCategories
-        ),
+        care_specialties: [],
         languages_spoken: sanitizeCaregiverLanguages(form.languages),
         profile_photo_url: profilePhotoUrl,
         is_verified: uploadedDocPath ? false : profile?.is_verified ?? false,
@@ -685,7 +558,7 @@ export default function CaregiverDashboardPage() {
           full_name: form.fullName.trim(),
           account_type: "caregiver",
           service_category: primaryCategory,
-          service_categories: caregiverServiceCategories,
+          service_categories: [...caregiverServiceCategories],
           home_nursing_rate: homeNursingRate,
           home_personal_care_rate: homePersonalCareRate,
           years_experience: Math.max(0, Math.floor(Number(form.yearsExperience))),
@@ -693,10 +566,7 @@ export default function CaregiverDashboardPage() {
           availability_summary: form.availabilitySummary.trim(),
           response_time_summary: form.responseTimeSummary.trim(),
           minimum_shift_hours: Number(form.minimumShiftHours),
-          care_specialties: sanitizeCareServices(
-            form.specialties,
-            caregiverServiceCategories
-          ),
+          care_specialties: [],
           languages_spoken: sanitizeCaregiverLanguages(form.languages),
         },
       });
@@ -813,7 +683,6 @@ export default function CaregiverDashboardPage() {
     !!profile?.is_boosted &&
     !!profile.boost_expires_at &&
     new Date(profile.boost_expires_at).getTime() > Date.now();
-  const selectedServiceOptions = getServicesForCategories(form.serviceCategories);
   const requiresProfilePhoto = !profile?.profile_photo_url;
   const requiresLicenseDoc = !latestDoc;
 
@@ -870,96 +739,25 @@ export default function CaregiverDashboardPage() {
                 />
               </label>
 
-              <fieldset className="space-y-2 md:col-span-2">
-                <legend className="text-sm font-semibold text-[#243d58]">
-                  Service type
-                </legend>
-                <div className="grid gap-3 md:grid-cols-2">
-                  {CARE_SERVICE_CATEGORY_OPTIONS.map((category) => {
-                    const checked = form.serviceCategories.includes(category.value);
-                    return (
-                      <label
-                        key={category.value}
-                        className={`rounded-xl border bg-white/90 p-4 transition ${
-                          checked
-                            ? "border-[#0f766e] ring-2 ring-[#b5e5d8]"
-                            : "border-[#d8e3eb]"
-                        }`}
-                      >
-                        <span className="flex items-start gap-2">
-                          <input
-                            type="checkbox"
-                            name="service_categories"
-                            value={category.value}
-                            checked={checked}
-                            onChange={() => toggleServiceCategory(category.value)}
-                            className="mt-0.5 h-4 w-4 border-[#b3c6d8] text-[#0f766e] focus:ring-[#0f766e]"
-                          />
-                          <span>
-                            <p className="text-sm font-bold text-[#163453]">
-                              {category.label}
-                            </p>
-                            <p className="mt-1 text-xs leading-5 text-[#5d6d81]">
-                              {category.description}
-                            </p>
-                            <p className="mt-2 text-xs font-semibold text-[#244560]">
-                              {category.rateLabel}
-                            </p>
-                            <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-[#5d6d81]">
-                              {category.services.map((service) => (
-                                <li key={service}>{service}</li>
-                              ))}
-                            </ul>
-                          </span>
-                        </span>
-                      </label>
-                    );
-                  })}
-                </div>
-                <p className="text-xs text-[#5d6d81]">
-                  Select one or both service types.
-                </p>
-              </fieldset>
-
-              {form.serviceCategories.includes("home_nursing") && (
-                <label className="space-y-2">
-                  <span className="text-sm font-semibold text-[#243d58]">
-                    Home Nursing rate per visit (SGD)
-                  </span>
-                  <input
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={form.homeNursingRate}
-                    onChange={updateField("homeNursingRate")}
-                    className="field-input no-spinner"
-                    placeholder="120"
-                    required
-                  />
-                </label>
-              )}
-
-              {form.serviceCategories.includes("home_personal_care") && (
-                <label className="space-y-2">
-                  <span className="text-sm font-semibold text-[#243d58]">
-                    Home Personal Care hourly rate (SGD)
-                  </span>
-                  <input
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={form.homePersonalCareRate}
-                    onChange={updateField("homePersonalCareRate")}
-                    className="field-input no-spinner"
-                    placeholder="45"
-                    required
-                  />
-                </label>
-              )}
+              <label className="space-y-2">
+                <span className="text-sm font-semibold text-[#243d58]">
+                  Hourly rate (SGD)
+                </span>
+                <input
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={form.hourlyRate}
+                  onChange={updateField("hourlyRate")}
+                  className="field-input no-spinner"
+                  placeholder="45"
+                  required
+                />
+              </label>
 
               <label className="space-y-2">
                 <span className="text-sm font-semibold text-[#243d58]">
-                  Years of nursing experience
+                  Years of caregiving experience
                 </span>
                 <input
                   type="number"
@@ -1065,40 +863,6 @@ export default function CaregiverDashboardPage() {
 
               <fieldset className="space-y-2 md:col-span-2">
                 <legend className="text-sm font-semibold text-[#243d58]">
-                  Services you provide
-                </legend>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {selectedServiceOptions.map((service) => {
-                    const checked = form.specialties.includes(service);
-                    return (
-                      <label
-                        key={service}
-                        className="flex items-center gap-2 rounded-lg border border-[#d8e3eb] bg-white/90 px-3 py-2 text-sm text-[#2f4a67]"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => toggleService(service)}
-                          className="h-4 w-4 rounded border-[#b3c6d8] text-[#0f766e] focus:ring-[#0f766e]"
-                        />
-                        <span>{service}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-                {selectedServiceOptions.length === 0 ? (
-                  <p className="text-xs text-[#5d6d81]">
-                    Choose at least one service type above to load service options.
-                  </p>
-                ) : (
-                  <p className="text-xs text-[#5d6d81]">
-                    Select at least one service from your chosen type.
-                  </p>
-                )}
-              </fieldset>
-
-              <fieldset className="space-y-2 md:col-span-2">
-                <legend className="text-sm font-semibold text-[#243d58]">
                   Languages you speak
                 </legend>
                 <div className="grid gap-2 sm:grid-cols-2">
@@ -1158,7 +922,7 @@ export default function CaregiverDashboardPage() {
 
             <label className="space-y-2">
               <span className="text-sm font-semibold text-[#243d58]">
-                Nursing license / SNB / Student ID (private)
+                License / supporting ID (private)
               </span>
               <input
                 ref={verificationInputRef}
@@ -1250,12 +1014,6 @@ export default function CaregiverDashboardPage() {
             </p>
             <Link href="/directory" className="secondary-btn mt-4 w-full text-sm">
               View directory
-            </Link>
-            <Link
-              href="/chats"
-              className="secondary-btn mt-2 w-full text-sm"
-            >
-              Open chat inbox
             </Link>
           </section>
         </aside>

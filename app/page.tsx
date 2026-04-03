@@ -8,14 +8,14 @@ const valueProps = [
       "Every caregiver profile is hidden by default and only published after manual document review.",
   },
   {
-    title: "Direct family-to-caregiver chat",
+    title: "Direct family-to-caregiver contact",
     description:
-      "Families start direct chats with caregivers and arrange rates off-platform.",
+      "Families contact caregivers directly and arrange rates off-platform.",
   },
   {
     title: "Hyper-local notice board model",
     description:
-      "No auto-matching and no built-in scheduling. Browse, chat, and coordinate directly.",
+      "No auto-matching and no built-in scheduling. Browse and coordinate directly.",
   },
 ];
 
@@ -23,7 +23,7 @@ const rolePaths = [
   {
     title: "I need a caregiver",
     description:
-      "Browse verified RN profiles, compare rates and availability, then start chat directly.",
+      "Browse verified caregiver profiles and compare rates and availability.",
     href: "/directory",
     cta: "Find a caregiver",
   },
@@ -46,7 +46,7 @@ const firstMeetingChecklist = [
 const identityChecklist = [
   "Ask to sight SNB practicing certificate on first visit.",
   "Confirm profile photo matches the caregiver attending.",
-  "Validate chat history and agreed scope before handover.",
+  "Confirm agreed scope and responsibilities before handover.",
 ];
 
 export default function Home() {
@@ -154,13 +154,9 @@ export default function Home() {
             Reporting and escalation flow
           </h3>
           <p className="mt-2 text-sm leading-6 text-[#566980]">
-            If there is harassment, scam behavior, or agency poaching, open your chat and
-            click <strong>Report</strong>. A Trust & Safety ticket is created, evidence is
-            reviewed by admin, and actions include dismiss, suspend, or permanent ban.
+            If there is harassment, scam behavior, or agency poaching, report the user to
+            platform support. Trust & Safety can review evidence and take action.
           </p>
-          <Link href="/chats" className="secondary-btn mt-3 text-sm">
-            Open chat inbox
-          </Link>
         </article>
       </section>
     </div>

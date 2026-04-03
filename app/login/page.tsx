@@ -258,7 +258,7 @@ export default function LoginPage() {
           </h1>
           <p className="mt-3 text-sm leading-6 text-[#56677d]">
             {isRoleLocked && accountType === "client"
-              ? "Sign in as a family account to start chat with caregivers."
+              ? "Sign in as a family account to browse caregiver profiles."
               : "Choose account type before sign in. Offering care accounts use email/password only."}
           </p>
 

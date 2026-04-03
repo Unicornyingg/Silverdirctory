@@ -88,11 +88,6 @@ export default function SiteHeader() {
             Caregiver Dashboard
           </Link>
         )}
-        {isAuthenticated && (
-          <Link href="/chats" className="nav-link">
-            My Chats
-          </Link>
-        )}
         {accountRole === "client" && (
           <Link
             href="/client/profile"

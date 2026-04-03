@@ -29,27 +29,6 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data: appUser, error: appUserError } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", user.id)
-    .limit(1)
-    .single();
-
-  if (appUserError || !appUser) {
-    return NextResponse.json(
-      { error: "Account role could not be loaded." },
-      { status: 403 }
-    );
-  }
-
-  if (appUser.role !== "caregiver") {
-    return NextResponse.json(
-      { error: "Only caregivers can use profile boost." },
-      { status: 403 }
-    );
-  }
-
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("id, full_name")
