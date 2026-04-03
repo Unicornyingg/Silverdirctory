@@ -16,7 +16,6 @@ type DirectoryListProfile = {
   minimum_shift_hours: number | null;
   last_active_at: string;
   hourly_rate: number;
-  is_verified: boolean;
   hasActiveBoost: boolean;
   languages_spoken: string[];
 };
@@ -109,11 +108,6 @@ export default function CaregiverDirectoryList({
                     <h2 className="text-2xl font-bold tracking-tight text-[#10233b]">
                       {profile.full_name}
                     </h2>
-                    {profile.is_verified && (
-                      <span className="rounded-full border border-[#9ad1b4] bg-[#ecfbf2] px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.08em] text-[#146943]">
-                        Verified
-                      </span>
-                    )}
                     {profile.hasActiveBoost && (
                       <span className="rounded-full border border-[#f2cb8f] bg-[#fff4e3] px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.08em] text-[#8a4c08]">
                         Boosted
@@ -237,11 +231,6 @@ export default function CaregiverDirectoryList({
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="text-3xl font-bold tracking-tight text-[#10233b]">{expandedProfile.full_name}</h2>
-                  {expandedProfile.is_verified && (
-                    <span className="rounded-full border border-[#9ad1b4] bg-[#ecfbf2] px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.08em] text-[#146943]">
-                      Verified
-                    </span>
-                  )}
                 </div>
 
                 <p className="mt-2 text-sm font-semibold text-[#58708c]">{expandedProfile.location}</p>

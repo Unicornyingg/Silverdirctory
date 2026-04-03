@@ -30,7 +30,7 @@ export default async function SignupSuccessPage({
         </h1>
         <p className="mt-3 text-sm leading-6 text-[#56677d]">
           {isCaregiver
-            ? "Your caregiver account has been created successfully. Your profile will be listed after admin verification."
+            ? "Your caregiver account has been created successfully. Your profile can now be listed in the directory."
             : "Your family account has been created successfully. We are bringing you to the caregiver directory now."}
         </p>
 

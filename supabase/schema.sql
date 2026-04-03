@@ -464,10 +464,6 @@ begin
       raise exception 'Caregiver signup requires profile photo upload.';
     end if;
 
-    if doc_url_value is null then
-      raise exception 'Caregiver signup requires verification document upload.';
-    end if;
-
     service_category_value := lower(coalesce(new.raw_user_meta_data ->> 'service_category', 'home_personal_care'));
     if service_category_value not in ('home_nursing', 'home_personal_care') then
       service_category_value := 'home_personal_care';
@@ -771,11 +767,12 @@ using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
 
 drop policy if exists "Public can read verified caregiver profiles" on public.profiles;
-create policy "Public can read verified caregiver profiles"
+drop policy if exists "Public can read caregiver profiles" on public.profiles;
+create policy "Public can read caregiver profiles"
 on public.profiles
 for select
 to anon, authenticated
-using (is_verified = true);
+using (true);
 
 drop policy if exists "Caregivers can read own profile" on public.profiles;
 create policy "Caregivers can read own profile"

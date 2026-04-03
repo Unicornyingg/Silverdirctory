@@ -30,16 +30,16 @@ const FAMILY_FAQ_SECTIONS: FAQSection[] = [
         question: "3. What are the qualifications of the caregivers on the platform?",
         answer: (
           <p>
-            Every caregiver on Silver Directory is manually verified before listing. We do not accept unlicensed caregivers.
+            Caregivers on Silver Directory are independent professionals who provide their own profile details, experience, and service scope for families to review directly.
           </p>
         ),
       },
       {
         id: "family-4",
-        question: "4. How does Silver Directory verify caregivers' qualifications?",
+        question: "4. Does Silver Directory manually verify caregiver qualifications?",
         answer: (
           <p>
-            Before a caregiver profile goes live, our team manually verifies identity by checking a valid SNB practicing certificate or official nursing school student ID. Profiles that pass verification receive a green &quot;Verified&quot; badge. For added safety, families should still physically check credentials on the first day of care.
+            We currently do not run manual qualification verification before listing. Families should perform their own checks before confirming care arrangements, including identity checks and reviewing relevant credentials directly with the caregiver.
           </p>
         ),
       },

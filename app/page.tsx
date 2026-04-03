@@ -3,9 +3,9 @@ import SiteHeader from "@/components/site-header";
 
 const valueProps = [
   {
-    title: "Verified professionals",
+    title: "Direct listings",
     description:
-      "Every caregiver profile is hidden by default and only published after manual document review.",
+      "Caregiver profiles are listed directly so families can browse and contact quickly.",
   },
   {
     title: "Direct family-to-caregiver contact",
@@ -23,14 +23,14 @@ const rolePaths = [
   {
     title: "I need a caregiver",
     description:
-      "Browse verified caregiver profiles and compare rates and availability.",
+      "Browse caregiver profiles and compare rates and availability.",
     href: "/directory",
     cta: "Find a caregiver",
   },
   {
     title: "I am a caregiver / RN",
     description:
-      "Create your profile, upload verification documents, and get listed after approval.",
+      "Create your profile and get listed for families looking for eldercare support.",
     href: "/for-nurses",
     cta: "Create caregiver profile",
   },
@@ -44,7 +44,7 @@ const firstMeetingChecklist = [
 ];
 
 const identityChecklist = [
-  "Ask to sight SNB practicing certificate on first visit.",
+  "Request a quick video call and photo confirmation before first visit.",
   "Confirm profile photo matches the caregiver attending.",
   "Confirm agreed scope and responsibilities before handover.",
 ];

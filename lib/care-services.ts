@@ -9,16 +9,6 @@ type CareServiceCategoryOption = {
   services: readonly string[];
 };
 
-const HOME_NURSING_SERVICES = [
-  "Vital Signs Monitoring (Blood Pressure/Blood Sugar)",
-  "Medication Management & Assistance",
-  "Injections",
-  "Wound Dressing Changes",
-  "Feeding Tube Care",
-  "Care Coordination",
-  "Caregiver Training",
-] as const;
-
 const HOME_PERSONAL_CARE_SERVICES = [
   "Mental Stimulation Activities",
   "Therapist-Prescribed Maintenance Exercises",
@@ -34,14 +24,6 @@ const HOME_PERSONAL_CARE_SERVICES = [
 ] as const;
 
 export const CARE_SERVICE_CATEGORY_OPTIONS: readonly CareServiceCategoryOption[] = [
-  {
-    value: "home_nursing",
-    label: "Home Nursing",
-    description: "Clinical nursing care delivered per visit.",
-    rateLabel: "Rate per visit (SGD)",
-    rateSuffix: "/visit",
-    services: HOME_NURSING_SERVICES,
-  },
   {
     value: "home_personal_care",
     label: "Home Personal Care",
@@ -74,7 +56,7 @@ export const CARE_SERVICE_OPTIONS = [...SERVICE_LOOKUP].sort((a, b) =>
 export function isSupportedCareServiceCategory(
   value: string
 ): value is CareServiceCategory {
-  return value === "home_nursing" || value === "home_personal_care";
+  return value === "home_personal_care";
 }
 
 export function getServicesForCategory(category: CareServiceCategory): readonly string[] {

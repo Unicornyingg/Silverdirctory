@@ -428,13 +428,6 @@ export default function CaregiverDashboardPage() {
       return;
     }
 
-    if (!latestDoc && !verificationDoc) {
-      setErrorMessage(
-        "Please upload your license / supporting ID document."
-      );
-      return;
-    }
-
     if (profilePhoto) {
       if (!profilePhoto.type.startsWith("image/")) {
         setErrorMessage("Profile photo must be an image.");
@@ -520,7 +513,7 @@ export default function CaregiverDashboardPage() {
         care_specialties: [],
         languages_spoken: sanitizeCaregiverLanguages(form.languages),
         profile_photo_url: profilePhotoUrl,
-        is_verified: uploadedDocPath ? false : profile?.is_verified ?? false,
+        is_verified: profile?.is_verified ?? false,
       };
 
       const { data: savedProfile, error: profileSaveError } = await supabase
@@ -573,11 +566,7 @@ export default function CaregiverDashboardPage() {
 
       setProfile(savedProfile);
       setAccountRole("caregiver");
-      setSuccessMessage(
-        uploadedDocPath
-          ? "Profile saved. Verification status reset to pending after document upload."
-          : "Profile saved successfully."
-      );
+      setSuccessMessage("Profile saved successfully.");
       setProfilePhoto(null);
       setVerificationDoc(null);
       if (profileInputRef.current) profileInputRef.current.value = "";
@@ -658,7 +647,7 @@ export default function CaregiverDashboardPage() {
             Caregiver dashboard is only available to caregiver accounts.
           </p>
           <p className="mt-2">
-            Sign in with your caregiver account to access profile and verification tools.
+            Sign in with your caregiver account to access profile tools.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             <button
@@ -684,8 +673,6 @@ export default function CaregiverDashboardPage() {
     !!profile.boost_expires_at &&
     new Date(profile.boost_expires_at).getTime() > Date.now();
   const requiresProfilePhoto = !profile?.profile_photo_url;
-  const requiresLicenseDoc = !latestDoc;
-
   return (
     <div className="site-shell">
       <SiteHeader />
@@ -698,8 +685,7 @@ export default function CaregiverDashboardPage() {
               Manage your profile
             </h1>
             <p className="mt-2 text-sm leading-6 text-[#56677c]">
-              Update your public card, upload verification documents, and boost
-              your visibility.
+              Update your public card and boost your visibility.
             </p>
           </div>
           <button
@@ -791,14 +777,14 @@ export default function CaregiverDashboardPage() {
                 <span className="text-sm font-semibold text-[#243d58]">
                   Credentials summary
                 </span>
-                <input
-                  value={form.credentialsSummary}
-                  onChange={updateField("credentialsSummary")}
-                  className="field-input"
-                  placeholder="RN (SNB), acute ward and dementia care experience"
-                  required
-                />
-              </label>
+                  <input
+                    value={form.credentialsSummary}
+                    onChange={updateField("credentialsSummary")}
+                    className="field-input"
+                    placeholder="Home caregiver with eldercare experience"
+                    required
+                  />
+                </label>
 
               <label className="space-y-2">
                 <span className="text-sm font-semibold text-[#243d58]">
@@ -922,7 +908,7 @@ export default function CaregiverDashboardPage() {
 
             <label className="space-y-2">
               <span className="text-sm font-semibold text-[#243d58]">
-                License / supporting ID (private)
+                License / supporting ID (private, optional)
               </span>
               <input
                 ref={verificationInputRef}
@@ -930,12 +916,9 @@ export default function CaregiverDashboardPage() {
                 accept="image/*,.pdf"
                 onChange={onVerificationDocChange}
                 className="field-file file:mr-3 file:rounded-md file:border-0 file:bg-[#edf3f7] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[#28435f] hover:file:bg-[#e2edf4]"
-                required={requiresLicenseDoc}
               />
               <p className="text-xs text-[#5d6d81]">
-                Private upload for admin only. Uploading a new file resets
-                verification to pending.{" "}
-                {requiresLicenseDoc ? "Required for verification." : ""}
+                Optional private upload for your records.
               </p>
             </label>
 
@@ -951,22 +934,10 @@ export default function CaregiverDashboardPage() {
 
         <aside className="space-y-5">
           <section className="surface-panel p-5">
-            <h2 className="text-base font-bold text-[#10243b]">Verification status</h2>
+            <h2 className="text-base font-bold text-[#10243b]">Supporting documents</h2>
             <div className="mt-3 space-y-2 text-sm text-[#52657e]">
               <p>
-                Profile review:
-                <span
-                  className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                    profile?.is_verified
-                      ? "border border-[#98d0bb] bg-[#ecfbf2] text-[#146943]"
-                      : "border border-[#f1d6aa] bg-[#fff4e3] text-[#8a4c08]"
-                  }`}
-                >
-                  {profile?.is_verified ? "Verified" : "Pending"}
-                </span>
-              </p>
-              <p>
-                Latest document:
+                Latest upload:
                 <span className="ml-2 font-semibold text-[#1f3654]">
                   {latestDoc ? latestDoc.status : "No upload yet"}
                 </span>
@@ -1010,7 +981,7 @@ export default function CaregiverDashboardPage() {
           <section className="surface-panel p-5">
             <h2 className="text-base font-bold text-[#10243b]">Your public page</h2>
             <p className="mt-2 text-sm text-[#56677d]">
-              Families browse verified caregiver profiles in the directory.
+              Families browse caregiver profiles in the directory.
             </p>
             <Link href="/directory" className="secondary-btn mt-4 w-full text-sm">
               View directory

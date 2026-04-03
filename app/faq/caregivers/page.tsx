@@ -4,23 +4,23 @@ import SiteHeader from "@/components/site-header";
 const CAREGIVER_FAQ_SECTIONS: FAQSection[] = [
   {
     id: "registration-verification",
-    title: "Registration & Verification",
+    title: "Registration",
     items: [
       {
         id: "caregiver-1",
         question: "1. Who can register as a caregiver on the platform?",
         answer: (
           <p>
-            We accept verified caregivers who can provide valid supporting documentation during signup and verification review.
+            Caregivers can register with an email/password account and complete their public profile details.
           </p>
         ),
       },
       {
         id: "caregiver-2",
-        question: "2. How do I get the \"Verified\" badge on my profile?",
+        question: "2. Is there a verified badge process right now?",
         answer: (
           <p>
-            After account creation, upload your SNB practicing certificate or current student ID. Our admin team manually reviews documents (target within 24 hours). Once approved, your profile goes live with a green &quot;Verified&quot; badge.
+            No. Silver Directory currently does not use a manual verification badge workflow.
           </p>
         ),
       },
@@ -29,7 +29,7 @@ const CAREGIVER_FAQ_SECTIONS: FAQSection[] = [
         question: "3. Is my SNB certificate or student ID shown to the public?",
         answer: (
           <p>
-            No. Verification documents are for internal admin verification only. They are securely stored and never published on your public profile.
+            No. If you upload supporting documents, they remain private and are not shown on your public profile.
           </p>
         ),
       },
@@ -178,7 +178,7 @@ export default function CaregiversFAQPage() {
               Frequently Asked Questions (For Caregivers)
             </h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-[#56677c]">
-              Guidance on verification, payments, platform rules, and safety.
+              Guidance on registration, payments, platform rules, and safety.
             </p>
           </div>
         </div>

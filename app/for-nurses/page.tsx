@@ -152,15 +152,16 @@ function getValidationMessage(
     return `Profile image must be ${MAX_PROFILE_PHOTO_MB}MB or smaller.`;
   }
 
-  if (!verificationDoc) return "Please upload your license document.";
-  if (
-    !verificationDoc.type.startsWith("image/") &&
-    verificationDoc.type !== "application/pdf"
-  ) {
-    return "Verification file must be an image or PDF.";
-  }
-  if (verificationDoc.size > MAX_DOC_MB * 1024 * 1024) {
-    return `Verification file must be ${MAX_DOC_MB}MB or smaller.`;
+  if (verificationDoc) {
+    if (
+      !verificationDoc.type.startsWith("image/") &&
+      verificationDoc.type !== "application/pdf"
+    ) {
+      return "Supporting document must be an image or PDF.";
+    }
+    if (verificationDoc.size > MAX_DOC_MB * 1024 * 1024) {
+      return `Supporting document must be ${MAX_DOC_MB}MB or smaller.`;
+    }
   }
 
   return null;
@@ -256,7 +257,7 @@ export default function SignupPage(): JSX.Element {
       let profilePhotoUrl = "";
       let verificationDocPath = "";
 
-      if (isCaregiver && profilePhoto && verificationDoc) {
+      if (isCaregiver && profilePhoto) {
         const optimizedProfilePhoto = await optimizeProfileImage(profilePhoto);
         const photoExtension = getFileExtension(optimizedProfilePhoto.name);
         const profilePath = `public/${Date.now()}-${crypto.randomUUID()}.${photoExtension}`;
@@ -277,18 +278,20 @@ export default function SignupPage(): JSX.Element {
           .getPublicUrl(profilePath);
         profilePhotoUrl = publicData.publicUrl;
 
-        const docExtension = getFileExtension(verificationDoc.name);
-        verificationDocPath = `private/pending/${Date.now()}-${crypto.randomUUID()}.${docExtension}`;
-        const { error: docUploadError } = await supabase.storage
-          .from(DOC_BUCKET)
-          .upload(verificationDocPath, verificationDoc, {
-            upsert: false,
-            contentType: verificationDoc.type || "application/octet-stream",
-          });
+        if (verificationDoc) {
+          const docExtension = getFileExtension(verificationDoc.name);
+          verificationDocPath = `private/pending/${Date.now()}-${crypto.randomUUID()}.${docExtension}`;
+          const { error: docUploadError } = await supabase.storage
+            .from(DOC_BUCKET)
+            .upload(verificationDocPath, verificationDoc, {
+              upsert: false,
+              contentType: verificationDoc.type || "application/octet-stream",
+            });
 
-        if (docUploadError) {
-          setErrorMessage(getReadableSignupError(docUploadError));
-          return;
+          if (docUploadError) {
+            setErrorMessage(getReadableSignupError(docUploadError));
+            return;
+          }
         }
       }
 
@@ -309,7 +312,7 @@ export default function SignupPage(): JSX.Element {
               availability_summary: form.availabilitySummary.trim(),
               minimum_shift_hours: Number(form.minimumShiftHours),
               profile_photo_url: profilePhotoUrl,
-              verification_doc_url: verificationDocPath,
+              ...(verificationDocPath ? { verification_doc_url: verificationDocPath } : {}),
               care_specialties: [],
               languages_spoken: sanitizeCaregiverLanguages(form.languages),
               bio: form.bio.trim(),
@@ -378,7 +381,7 @@ export default function SignupPage(): JSX.Element {
   }
 
   const isCaregiver = form.accountType === "caregiver";
-  const missingRequiredCaregiverFiles = isCaregiver && (!profilePhoto || !verificationDoc);
+  const missingRequiredCaregiverFiles = isCaregiver && !profilePhoto;
   const submitDisabled = isSubmitting || missingRequiredCaregiverFiles;
 
   return (
@@ -392,8 +395,8 @@ export default function SignupPage(): JSX.Element {
             Create your account
           </h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-[#54657b]">
-            Complete this one-page signup form. Caregiver profiles are hidden until
-            manual verification.
+            Complete this one-page signup form. Caregiver profiles are listed immediately after
+            account creation.
           </p>
 
           <div className="mt-6 rounded-xl border border-[#d8e3eb] bg-white/85 p-4">
@@ -643,7 +646,7 @@ export default function SignupPage(): JSX.Element {
                 </section>
 
                 <section className="rounded-xl border border-[#d8e3eb] bg-white/88 p-5">
-                  <h2 className="text-lg font-bold text-[#132f4d]">Verification uploads</h2>
+                  <h2 className="text-lg font-bold text-[#132f4d]">Profile uploads</h2>
                   <div className="mt-4 space-y-4">
                     <label className="space-y-2">
                       <span className="text-sm font-semibold text-[#243d58]">Profile photo (public, required)</span>
@@ -658,19 +661,18 @@ export default function SignupPage(): JSX.Element {
                     </label>
 
                     <label className="space-y-2">
-                      <span className="text-sm font-semibold text-[#243d58]">License / supporting ID (private, required)</span>
+                      <span className="text-sm font-semibold text-[#243d58]">License / supporting ID (private, optional)</span>
                       <input
                         ref={verificationDocInputRef}
                         type="file"
                         accept="image/*,.pdf"
                         onChange={(event) => setVerificationDoc(event.target.files?.[0] ?? null)}
                         className="field-file file:mr-3 file:rounded-md file:border-0 file:bg-[#edf3f7] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[#28435f] hover:file:bg-[#e2edf4]"
-                        required={isCaregiver}
                       />
                     </label>
                   </div>
                   <p className="mt-4 text-xs text-[#5d6d81]">
-                    Caregiver profiles stay hidden until admin verification is approved.
+                    Supporting ID is optional and kept private.
                   </p>
                 </section>
               </>
@@ -696,7 +698,7 @@ export default function SignupPage(): JSX.Element {
 
             {missingRequiredCaregiverFiles && (
               <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                Upload both required files before creating a caregiver account.
+                Upload a profile photo before creating a caregiver account.
               </p>
             )}
 

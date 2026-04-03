@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Silver Directory",
   description:
-    "A verification-first directory where families connect with licensed nurses for geriatric care.",
+    "A local eldercare directory where families connect directly with caregivers.",
 };
 
 export default function RootLayout({
