@@ -771,7 +771,7 @@ export default function SignupPage(): JSX.Element {
 
             {!isCaregiver && (
               <section className="rounded-xl border border-[#d9e4ec] bg-[#f4f8fb] p-4 text-sm text-[#4f657f]">
-                Families can browse the directory and contact caregivers directly.
+                Families can browse the directory and start in-app chat with caregivers.
               </section>
             )}
 

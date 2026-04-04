@@ -31,6 +31,7 @@ type DirectoryProfile = Pick<
   | "is_boosted"
   | "boost_expires_at"
   | "languages_spoken"
+  | "is_verified"
   | "created_at"
 >;
 
@@ -156,8 +157,9 @@ export default async function DirectoryPage({
   let query = supabase
     .from("profiles")
     .select(
-      "id, full_name, profile_photo_url, location, bio, years_experience, credentials_summary, availability_summary, response_time_summary, minimum_shift_hours, last_active_at, hourly_rate, is_boosted, boost_expires_at, languages_spoken, created_at"
+      "id, full_name, profile_photo_url, location, bio, years_experience, credentials_summary, availability_summary, response_time_summary, minimum_shift_hours, last_active_at, hourly_rate, is_boosted, boost_expires_at, languages_spoken, is_verified, created_at"
     )
+    .eq("is_verified", true)
     .order("created_at", { ascending: false });
 
   if (locationFilter) {
@@ -192,7 +194,7 @@ export default async function DirectoryPage({
               Silver Directory Caregivers
             </h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-[#55667b]">
-              Browse caregiver profiles and contact them directly off-platform.
+              Browse verified caregiver profiles and start a secure in-app chat.
             </p>
           </div>
           <div className="rounded-xl border border-[#d8e3eb] bg-white/90 px-4 py-3 text-sm text-[#42556f]">

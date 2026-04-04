@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import ProfileAvatar from "@/components/profile-avatar";
 
@@ -184,6 +185,12 @@ export default function CaregiverDirectoryList({
                       <span className="ml-1 text-sm font-semibold text-[#4f627a]">/hr</span>
                     </p>
                   </div>
+                  <Link
+                    href={`/chats?caregiver=${profile.id}`}
+                    className="primary-btn w-full text-sm md:w-auto"
+                  >
+                    Start chat
+                  </Link>
                   <button
                     type="button"
                     onClick={() => setExpandedProfileId(profile.id)}
@@ -298,6 +305,14 @@ export default function CaregiverDirectoryList({
                     {currencyFormatter.format(expandedProfile.hourly_rate)}
                     <span className="ml-1 text-sm font-semibold text-[#4f627a]">/hr</span>
                   </p>
+                  <div className="mt-4">
+                    <Link
+                      href={`/chats?caregiver=${expandedProfile.id}`}
+                      className="primary-btn text-sm"
+                    >
+                      Start chat
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>

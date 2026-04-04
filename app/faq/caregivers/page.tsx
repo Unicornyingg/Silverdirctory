@@ -106,7 +106,7 @@ const CAREGIVER_FAQ_SECTIONS: FAQSection[] = [
         question: "10. How do families contact me?",
         answer: (
           <p>
-            Families contact you directly off-platform after viewing your public profile.
+            Families start by messaging you in Silver Directory inbox after viewing your public profile.
           </p>
         ),
       },

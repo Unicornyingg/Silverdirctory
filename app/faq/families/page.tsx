@@ -12,7 +12,7 @@ const FAMILY_FAQ_SECTIONS: FAQSection[] = [
         question: "1. How do I request or find a caregiver?",
         answer: (
           <p>
-            Unlike traditional agencies where you wait for a coordinator to assign someone to you, Silver Directory puts you in control. Browse the directory, use filters to find a caregiver who meets your needs (for example: location and rate), then contact them directly off-platform.
+            Unlike traditional agencies where you wait for a coordinator to assign someone to you, Silver Directory puts you in control. Browse the directory, use filters to find a caregiver who meets your needs (for example: location and rate), then start an in-app chat.
           </p>
         ),
       },
@@ -21,7 +21,7 @@ const FAMILY_FAQ_SECTIONS: FAQSection[] = [
         question: "2. How does Silver Directory match patients with caregivers?",
         answer: (
           <p>
-            We do not auto-match. Silver Directory is a direct-contact digital notice board. You can read caregiver bios, compare rates, and decide who is the best fit for your loved one.
+            We do not auto-match. Silver Directory is a direct listing platform. You can read caregiver bios, compare rates, and decide who is the best fit for your loved one before continuing conversation in-app.
           </p>
         ),
       },

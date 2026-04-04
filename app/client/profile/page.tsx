@@ -254,13 +254,18 @@ export default function ClientProfilePage() {
               Keep this profile updated so caregivers can identify you.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => void handleSignOut()}
-            className="secondary-btn text-sm"
-          >
-            Sign out
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/chats" className="secondary-btn text-sm">
+              Open inbox
+            </Link>
+            <button
+              type="button"
+              onClick={() => void handleSignOut()}
+              className="secondary-btn text-sm"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
       </section>
 

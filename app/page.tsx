@@ -8,9 +8,9 @@ const valueProps = [
       "Caregiver profiles are listed directly so families can browse and contact quickly.",
   },
   {
-    title: "Direct family-to-caregiver contact",
+    title: "In-app family-to-caregiver chat",
     description:
-      "Families contact caregivers directly and arrange rates off-platform.",
+      "Families start conversations in-app first, then share details only when ready.",
   },
   {
     title: "Hyper-local notice board model",
@@ -23,7 +23,7 @@ const rolePaths = [
   {
     title: "I need a caregiver",
     description:
-      "Browse caregiver profiles and compare rates and availability.",
+      "Browse caregiver profiles, compare rates, and start in-app chat safely.",
     href: "/directory",
     cta: "Find a caregiver",
   },

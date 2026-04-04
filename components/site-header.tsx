@@ -98,6 +98,15 @@ export default function SiteHeader() {
           </Link>
         ))}
 
+        {isAuthenticated && (
+          <Link
+            href="/chats"
+            className={`nav-link ${isActivePath(pathname, "/chats") ? "nav-link-active" : ""}`}
+          >
+            Inbox
+          </Link>
+        )}
+
         {!isAuthenticated && (
           <>
             <Link
@@ -161,6 +170,16 @@ export default function SiteHeader() {
               {item.label}
             </Link>
           ))}
+
+          {isAuthenticated && (
+            <Link
+              href="/chats"
+              className={`mobile-nav-link ${isActivePath(pathname, "/chats") ? "mobile-nav-link-active" : ""}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Inbox
+            </Link>
+          )}
 
           {!isAuthenticated && (
             <>

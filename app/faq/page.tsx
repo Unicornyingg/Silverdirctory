@@ -24,7 +24,7 @@ export default function FAQHubPage() {
               Finding, hiring, fees, and trust
             </p>
             <p className="mt-2 text-sm leading-6 text-[#5e7086]">
-              Learn how to browse caregivers, contact them, and manage care arrangements.
+              Learn how to browse caregivers, chat safely in-app, and manage care arrangements.
             </p>
           </Link>
 

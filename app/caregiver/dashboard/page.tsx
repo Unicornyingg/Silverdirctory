@@ -688,13 +688,18 @@ export default function CaregiverDashboardPage() {
               Update your public card and boost your visibility.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => void handleSignOut()}
-            className="secondary-btn text-sm"
-          >
-            Sign out
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/chats" className="secondary-btn text-sm">
+              Open inbox
+            </Link>
+            <button
+              type="button"
+              onClick={() => void handleSignOut()}
+              className="secondary-btn text-sm"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
       </section>
 
