@@ -174,8 +174,8 @@ export default function DirectoryFilters({
         </div>
       )}
 
-      <div className="flex flex-wrap items-end gap-3">
-        <button type="submit" className="primary-btn h-[2.9rem] min-w-[152px]">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end">
+        <button type="submit" className="primary-btn h-[2.9rem] w-full sm:min-w-[152px] sm:w-auto">
           Apply filters
         </button>
         <button
@@ -186,11 +186,11 @@ export default function DirectoryFilters({
             setLanguage("");
             setSort("recommended");
           }}
-          className="secondary-btn h-[2.9rem] min-w-[120px]"
+          className="secondary-btn h-[2.9rem] w-full sm:min-w-[120px] sm:w-auto"
         >
           Reset form
         </button>
-        <Link href="/directory" className="secondary-btn h-[2.9rem] min-w-[120px]">
+        <Link href="/directory" className="secondary-btn h-[2.9rem] w-full sm:min-w-[120px] sm:w-auto">
           Clear URL
         </Link>
       </div>

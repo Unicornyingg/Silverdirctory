@@ -7,6 +7,7 @@ import {
   type FormEvent,
   type JSX,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -383,6 +384,63 @@ export default function SignupPage(): JSX.Element {
   const isCaregiver = form.accountType === "caregiver";
   const missingRequiredCaregiverFiles = isCaregiver && !profilePhoto;
   const submitDisabled = isSubmitting || missingRequiredCaregiverFiles;
+  const caregiverChecklist = useMemo(() => {
+    if (!isCaregiver) return [];
+
+    const hourlyRate = Number(form.hourlyRate);
+    const yearsExperience = Number(form.yearsExperience);
+    const minimumShiftHours = Number(form.minimumShiftHours);
+    const hasValidProfilePhoto =
+      !!profilePhoto &&
+      profilePhoto.type.startsWith("image/") &&
+      profilePhoto.size <= MAX_PROFILE_PHOTO_MB * 1024 * 1024;
+
+    return [
+      { id: "full-name", label: "Full name", done: form.fullName.trim().length >= 2 },
+      { id: "email", label: "Email address", done: form.email.trim().length >= 4 },
+      { id: "password", label: "Password (8+ chars)", done: form.password.length >= 8 },
+      { id: "rate", label: "Hourly rate", done: Number.isFinite(hourlyRate) && hourlyRate > 0 },
+      {
+        id: "experience",
+        label: "Years of experience",
+        done: Number.isFinite(yearsExperience) && yearsExperience >= 0,
+      },
+      {
+        id: "min-shift",
+        label: "Minimum shift duration",
+        done: Number.isFinite(minimumShiftHours) && minimumShiftHours > 0,
+      },
+      {
+        id: "credentials",
+        label: "Credentials summary",
+        done: form.credentialsSummary.trim().length >= 8,
+      },
+      {
+        id: "availability",
+        label: "Availability summary",
+        done: form.availabilitySummary.trim().length >= 5,
+      },
+      {
+        id: "regions",
+        label: "Preferred service regions",
+        done: form.serviceRegions.length > 0,
+      },
+      {
+        id: "languages",
+        label: "Languages spoken",
+        done: form.languages.length > 0,
+      },
+      {
+        id: "bio",
+        label: `Short bio (${MIN_BIO_LENGTH}+ chars)`,
+        done: form.bio.trim().length >= MIN_BIO_LENGTH,
+      },
+      { id: "photo", label: "Profile photo uploaded", done: hasValidProfilePhoto },
+    ];
+  }, [form, isCaregiver, profilePhoto]);
+  const caregiverChecklistCompleteCount = caregiverChecklist.filter(
+    (item) => item.done
+  ).length;
 
   return (
     <div className="site-shell">
@@ -452,6 +510,39 @@ export default function SignupPage(): JSX.Element {
               </div>
             )}
           </div>
+
+          {isCaregiver && (
+            <section className="mt-6 rounded-xl border border-[#d8e3eb] bg-white/88 p-5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-bold text-[#132f4d]">Caregiver completion checklist</h2>
+                <p className="rounded-full border border-[#cde0ec] bg-[#edf4f9] px-3 py-1 text-xs font-semibold text-[#2d516f]">
+                  {caregiverChecklistCompleteCount}/{caregiverChecklist.length} complete
+                </p>
+              </div>
+
+              <p className="mt-2 text-sm text-[#55677e]">
+                Complete these items before submitting to avoid validation errors.
+              </p>
+
+              <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                {caregiverChecklist.map((item) => (
+                  <p
+                    key={item.id}
+                    className={`rounded-lg border px-3 py-2 text-sm ${
+                      item.done
+                        ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                        : "border-[#d8e3eb] bg-white text-[#3c5673]"
+                    }`}
+                  >
+                    <span className="mr-2 font-semibold" aria-hidden="true">
+                      {item.done ? "✓" : "○"}
+                    </span>
+                    {item.label}
+                  </p>
+                ))}
+              </div>
+            </section>
+          )}
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-6">
             <section className="rounded-xl border border-[#d8e3eb] bg-white/88 p-5">
@@ -698,7 +789,7 @@ export default function SignupPage(): JSX.Element {
 
             {missingRequiredCaregiverFiles && (
               <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                Upload a profile photo before creating a caregiver account.
+                Upload a valid profile photo to complete the checklist.
               </p>
             )}
 
