@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Suspense,
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import type { User } from "@supabase/supabase-js";
 import SiteHeader from "@/components/site-header";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -252,7 +259,7 @@ async function ensureClientThread(params: {
   throw new Error(insertError?.message ?? "Unable to open a chat thread.");
 }
 
-export default function ChatsPage() {
+function ChatsPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -458,6 +465,7 @@ export default function ChatsPage() {
 
   useEffect(() => {
     if (!selectedThreadId) return;
+    const currentThreadId = selectedThreadId;
 
     let active = true;
 
@@ -466,7 +474,7 @@ export default function ChatsPage() {
       const { data: messageRows, error: messageError } = await supabase
         .from("chat_messages")
         .select("id, thread_id, sender_user_id, body, created_at")
-        .eq("thread_id", selectedThreadId)
+        .eq("thread_id", currentThreadId)
         .order("created_at", { ascending: true })
         .returns<ChatMessage[]>();
 
@@ -491,16 +499,17 @@ export default function ChatsPage() {
 
   useEffect(() => {
     if (!selectedThreadId) return;
+    const currentThreadId = selectedThreadId;
 
     const channel = supabase
-      .channel(`chat-messages-${selectedThreadId}`)
+      .channel(`chat-messages-${currentThreadId}`)
       .on(
         "postgres_changes",
         {
           event: "INSERT",
           schema: "public",
           table: "chat_messages",
-          filter: `thread_id=eq.${selectedThreadId}`,
+          filter: `thread_id=eq.${currentThreadId}`,
         },
         (payload) => {
           const incoming = payload.new as ChatMessage;
@@ -785,5 +794,24 @@ export default function ChatsPage() {
         </Link>
       </section>
     </div>
+  );
+}
+
+function ChatsPageFallback() {
+  return (
+    <div className="site-shell">
+      <SiteHeader />
+      <section className="surface-panel page-enter p-6 text-sm text-[#54677f]">
+        Loading your chat inbox...
+      </section>
+    </div>
+  );
+}
+
+export default function ChatsPage() {
+  return (
+    <Suspense fallback={<ChatsPageFallback />}>
+      <ChatsPageContent />
+    </Suspense>
   );
 }
