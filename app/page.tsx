@@ -105,18 +105,54 @@ export default function Home() {
         </aside>
       </main>
 
-      <section className="mt-6 rounded-panel border border-warm-border bg-warm-surface p-6 shadow-soft md:p-8">
+      <section className="mt-6 rounded-panel border border-sand-200 bg-sand-100 p-6 shadow-soft md:p-8">
+        <p className="text-sm leading-6 text-warm-muted">
+          Helpful safety notes for a calm and confident first visit.
+        </p>
+
         <div className="grid gap-4 md:grid-cols-2">
-          <article className="rounded-card border border-[#edcfbe] bg-terracotta-100 p-4">
-            <h2 className="text-base font-bold text-terracotta-700">Not for emergencies</h2>
-            <p className="mt-2 text-sm leading-6 text-[#8e634b]">
+          <article className="rounded-card border border-[#e7ccb8] bg-peach-100 p-5">
+            <div className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#e3bea6] bg-[#f7e1d2] text-peach-600">
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 8v5" />
+                <path d="M12 16h.01" />
+                <path d="M10.3 3.6 2.9 16.1A2 2 0 0 0 4.6 19h14.8a2 2 0 0 0 1.7-2.9L13.7 3.6a2 2 0 0 0-3.4 0Z" />
+              </svg>
+            </div>
+            <h2 className="mt-3 text-base font-bold text-peach-600">Not for emergencies</h2>
+            <p className="mt-2 text-sm leading-6 text-[#8d6652]">
               Silver Directory is not an emergency service. For urgent medical emergencies,
               call 995 immediately.
             </p>
           </article>
 
-          <article className="rounded-card border border-warm-border bg-warm-surface-soft p-4">
-            <h2 className="text-base font-bold text-warm-ink">Scope-of-care disclaimer</h2>
+          <article className="rounded-card border border-[#d4dfcd] bg-sage-50 p-5">
+            <div className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#bfd1b8] bg-sage-100 text-sage-600">
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 11.5 12 4l9 7.5" />
+                <path d="M5.5 10.5V20h13V10.5" />
+                <path d="M9 20v-5h6v5" />
+              </svg>
+            </div>
+            <h2 className="mt-3 text-base font-bold text-warm-ink">Plan care details together</h2>
             <p className="mt-2 text-sm leading-6 text-warm-muted">
               Caregivers are independent professionals. Families and caregivers must align
               responsibilities, limits, and clinical escalation plans before care starts.
@@ -125,31 +161,85 @@ export default function Home() {
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <article className="rounded-card border border-warm-border bg-warm-surface-soft p-4">
-            <h3 className="text-sm font-bold uppercase tracking-[0.08em] text-sage-600">
+          <article className="rounded-card border border-[#d4dfcd] bg-sage-50 p-5">
+            <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#bfd1b8] bg-sage-100 text-sage-600">
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                className="h-4.5 w-4.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m20 7-11 11-5-5" />
+              </svg>
+            </div>
+            <h3 className="mt-3 text-sm font-bold uppercase tracking-[0.08em] text-sage-600">
               First-meeting safety checklist
             </h3>
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-warm-muted">
+            <ul className="mt-3 space-y-2 text-sm leading-6 text-warm-muted">
               {firstMeetingChecklist.map((item) => (
-                <li key={item}>{item}</li>
+                <li key={item} className="flex items-start gap-2">
+                  <span className="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sage-100 text-[0.7rem] font-bold text-sage-600">
+                    ✓
+                  </span>
+                  <span>{item}</span>
+                </li>
               ))}
             </ul>
           </article>
 
-          <article className="rounded-card border border-warm-border bg-warm-surface-soft p-4">
-            <h3 className="text-sm font-bold uppercase tracking-[0.08em] text-sage-600">
+          <article className="rounded-card border border-[#d6dece] bg-[#f4f7f1] p-5 md:mt-1">
+            <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#bfd1b8] bg-sage-100 text-sage-600">
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                className="h-4.5 w-4.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 3 6 5.5v6.3c0 4 2.6 7.7 6 9.2 3.4-1.5 6-5.2 6-9.2V5.5L12 3Z" />
+                <path d="m9.3 12.4 1.8 1.8 3.7-3.7" />
+              </svg>
+            </div>
+            <h3 className="mt-3 text-sm font-bold uppercase tracking-[0.08em] text-sage-600">
               Identity verification checklist
             </h3>
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-warm-muted">
+            <ul className="mt-3 space-y-2 text-sm leading-6 text-warm-muted">
               {identityChecklist.map((item) => (
-                <li key={item}>{item}</li>
+                <li key={item} className="flex items-start gap-2">
+                  <span className="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sage-100 text-[0.7rem] font-bold text-sage-600">
+                    ✓
+                  </span>
+                  <span>{item}</span>
+                </li>
               ))}
             </ul>
           </article>
         </div>
 
-        <article className="mt-4 rounded-card border border-warm-border bg-warm-surface-soft p-4">
-          <h3 className="text-sm font-bold uppercase tracking-[0.08em] text-sage-600">
+        <article className="mt-4 rounded-card border border-warm-border bg-warm-surface-soft p-5">
+          <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#d5ddcc] bg-sage-50 text-sage-600">
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              className="h-4.5 w-4.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z" />
+              <path d="M8 9h8M8 13h5" />
+            </svg>
+          </div>
+          <h3 className="mt-3 text-sm font-bold uppercase tracking-[0.08em] text-sage-600">
             Reporting and escalation flow
           </h3>
           <p className="mt-2 text-sm leading-6 text-warm-muted">
