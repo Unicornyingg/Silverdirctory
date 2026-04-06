@@ -119,6 +119,7 @@ function getValidationMessage(
 ): string | null {
   const hourlyRate = Number(form.hourlyRate);
   const yearsExperience = Number(form.yearsExperience);
+  const hasYearsExperience = form.yearsExperience.trim().length > 0;
   const minimumShiftHours = Number(form.minimumShiftHours);
   const isCaregiver = form.accountType === "caregiver";
 
@@ -145,7 +146,7 @@ function getValidationMessage(
   if (form.bio.trim().length < MIN_BIO_LENGTH) {
     return `Bio must be at least ${MIN_BIO_LENGTH} characters.`;
   }
-  if (!Number.isFinite(yearsExperience) || yearsExperience < 0) {
+  if (!hasYearsExperience || !Number.isFinite(yearsExperience) || yearsExperience < 0) {
     return "Please enter valid years of experience (0 or more).";
   }
   if (form.credentialsSummary.trim().length < 8) {
@@ -499,6 +500,7 @@ export default function SignupPage(): JSX.Element {
 
     const hourlyRate = Number(form.hourlyRate);
     const yearsExperience = Number(form.yearsExperience);
+    const hasYearsExperience = form.yearsExperience.trim().length > 0;
     const minimumShiftHours = Number(form.minimumShiftHours);
     const hasValidProfilePhoto =
       !!profilePhoto &&
@@ -513,7 +515,7 @@ export default function SignupPage(): JSX.Element {
       {
         id: "experience",
         label: "Years of experience",
-        done: Number.isFinite(yearsExperience) && yearsExperience >= 0,
+        done: hasYearsExperience && Number.isFinite(yearsExperience) && yearsExperience >= 0,
       },
       {
         id: "min-shift",

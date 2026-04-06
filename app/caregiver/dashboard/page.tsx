@@ -416,12 +416,13 @@ export default function CaregiverDashboardPage() {
 
     const hourlyRate = Number(form.hourlyRate);
     const yearsExperience = Number(form.yearsExperience);
+    const hasYearsExperience = form.yearsExperience.trim().length > 0;
     const minimumShiftHours = Number(form.minimumShiftHours);
     if (!Number.isFinite(hourlyRate) || hourlyRate <= 0) {
       setErrorMessage("Hourly rate must be greater than 0.");
       return;
     }
-    if (!Number.isFinite(yearsExperience) || yearsExperience < 0) {
+    if (!hasYearsExperience || !Number.isFinite(yearsExperience) || yearsExperience < 0) {
       setErrorMessage("Please enter valid years of experience (0 or more).");
       return;
     }
