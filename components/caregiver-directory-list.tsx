@@ -18,6 +18,7 @@ type DirectoryListProfile = {
   last_active_at: string;
   hourly_rate: number;
   hasActiveBoost: boolean;
+  care_specialties: string[];
   languages_spoken: string[];
 };
 
@@ -81,6 +82,8 @@ export default function CaregiverDirectoryList({
         {profiles.map((profile) => {
           const shortLanguages = profile.languages_spoken.slice(0, 3);
           const hiddenLanguageCount = Math.max(0, profile.languages_spoken.length - 3);
+          const shortServices = profile.care_specialties.slice(0, 3);
+          const hiddenServiceCount = Math.max(0, profile.care_specialties.length - 3);
 
           return (
             <article key={profile.id} className="surface-panel overflow-hidden p-4 md:p-5">
@@ -151,6 +154,30 @@ export default function CaregiverDirectoryList({
                   </p>
 
                   <div className="mt-3 flex flex-wrap gap-2">
+                    {shortServices.length > 0 ? (
+                      <>
+                        {shortServices.map((service) => (
+                          <span
+                            key={service}
+                            className="rounded-full border border-[#f0dcc2] bg-[#fff5e8] px-2.5 py-1 text-xs font-semibold text-[#845224]"
+                          >
+                            {service}
+                          </span>
+                        ))}
+                        {hiddenServiceCount > 0 && (
+                          <span className="rounded-full border border-[#f0dcc2] bg-[#fff5e8] px-2.5 py-1 text-xs font-semibold text-[#845224]">
+                            +{hiddenServiceCount} more services
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="rounded-full border border-[#f0dcc2] bg-[#fff5e8] px-2.5 py-1 text-xs font-semibold text-[#845224]">
+                        Service details not listed
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="mt-2 flex flex-wrap gap-2">
                     {shortLanguages.length > 0 ? (
                       <>
                         {shortLanguages.map((language) => (
@@ -273,6 +300,28 @@ export default function CaregiverDirectoryList({
                       Last active: {formatLastActive(expandedProfile.last_active_at)}
                     </span>
                   </p>
+                </div>
+
+                <div className="mt-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#60758d]">
+                    Services
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {expandedProfile.care_specialties.length > 0 ? (
+                      expandedProfile.care_specialties.map((service) => (
+                        <span
+                          key={service}
+                          className="rounded-full border border-[#f0dcc2] bg-[#fff5e8] px-2.5 py-1 text-xs font-semibold text-[#845224]"
+                        >
+                          {service}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="rounded-full border border-[#f0dcc2] bg-[#fff5e8] px-2.5 py-1 text-xs font-semibold text-[#845224]">
+                        Service details not listed
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="mt-5">

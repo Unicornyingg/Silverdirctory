@@ -51,12 +51,16 @@ export default function LoginPage() {
   );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phoneOtp, setPhoneOtp] = useState("");
+  const [phoneOtpCode, setPhoneOtpCode] = useState("");
+  const [isPhoneOtpSent, setIsPhoneOtpSent] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [forgotMessage, setForgotMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
+  const [isPhoneOtpSubmitting, setIsPhoneOtpSubmitting] = useState(false);
   const [isForgotSubmitting, setIsForgotSubmitting] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const isRoleLocked = forcedAccountType !== null;
@@ -208,6 +212,87 @@ export default function LoginPage() {
     }
   }
 
+  async function sendPhoneOtp() {
+    setErrorMessage(null);
+    setStatusMessage(null);
+
+    const normalizedPhone = phoneOtp.trim();
+    if (normalizedPhone.length < 6) {
+      setErrorMessage("Please enter your phone number.");
+      return;
+    }
+
+    setIsPhoneOtpSubmitting(true);
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: normalizedPhone,
+        options: {
+          shouldCreateUser: false,
+        },
+      });
+
+      if (error) {
+        setErrorMessage(error.message);
+        return;
+      }
+
+      setIsPhoneOtpSent(true);
+      setStatusMessage(`SMS code sent to ${normalizedPhone}.`);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unable to send SMS code.";
+      setErrorMessage(message);
+    } finally {
+      setIsPhoneOtpSubmitting(false);
+    }
+  }
+
+  async function verifyPhoneOtp() {
+    setErrorMessage(null);
+    setStatusMessage(null);
+
+    const normalizedPhone = phoneOtp.trim();
+    const token = phoneOtpCode.trim();
+    if (normalizedPhone.length < 6) {
+      setErrorMessage("Please enter your phone number.");
+      return;
+    }
+    if (token.length < 4) {
+      setErrorMessage("Please enter the SMS verification code.");
+      return;
+    }
+
+    setIsPhoneOtpSubmitting(true);
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone: normalizedPhone,
+        token,
+        type: "sms",
+      });
+
+      if (error) {
+        setErrorMessage(error.message);
+        return;
+      }
+
+      if (!data.user) {
+        setErrorMessage("Unable to verify SMS code.");
+        return;
+      }
+
+      const nextPath = readNextPathFromLocation();
+      await redirectByRole(data.user.id, nextPath);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unable to verify SMS code.";
+      setErrorMessage(message);
+    } finally {
+      setIsPhoneOtpSubmitting(false);
+    }
+  }
+
   async function handleForgotPassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setErrorMessage(null);
@@ -259,7 +344,7 @@ export default function LoginPage() {
           <p className="mt-3 text-sm leading-6 text-[#56677d]">
             {isRoleLocked && accountType === "client"
               ? "Sign in as a family account to browse caregiver profiles."
-              : "Choose account type before sign in. Offering care accounts use email/password only."}
+              : "Choose account type before sign in. Caregiver and family accounts support email/password or SMS OTP."}
           </p>
 
           <div className="mt-5 rounded-xl border border-[#dbe5ed] bg-white/85 p-4 text-sm text-[#51647b]">
@@ -285,6 +370,9 @@ export default function LoginPage() {
                   setAccountType("caregiver");
                   setErrorMessage(null);
                   setStatusMessage(null);
+                  setPhoneOtp("");
+                  setPhoneOtpCode("");
+                  setIsPhoneOtpSent(false);
                 }}
                 className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
                   accountType === "caregiver"
@@ -300,6 +388,9 @@ export default function LoginPage() {
                   setAccountType("client");
                   setErrorMessage(null);
                   setStatusMessage(null);
+                  setPhoneOtp("");
+                  setPhoneOtpCode("");
+                  setIsPhoneOtpSent(false);
                 }}
                 className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
                   accountType === "client"
@@ -332,10 +423,121 @@ export default function LoginPage() {
                 </span>
                 <div className="h-px flex-1 bg-[#d8e3eb]" />
               </div>
+
+              <div className="mb-4 space-y-3 rounded-xl border border-[#d8e3eb] bg-white/85 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#61758d]">
+                  Family SMS Login
+                </p>
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-[#243d58]">Phone number</span>
+                  <input
+                    value={phoneOtp}
+                    onChange={(event) => setPhoneOtp(event.target.value)}
+                    className="field-input"
+                    placeholder="+65 8123 4567"
+                  />
+                </label>
+                {isPhoneOtpSent && (
+                  <label className="space-y-2">
+                    <span className="text-sm font-semibold text-[#243d58]">SMS code</span>
+                    <input
+                      value={phoneOtpCode}
+                      onChange={(event) => setPhoneOtpCode(event.target.value)}
+                      className="field-input"
+                      placeholder="123456"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                    />
+                  </label>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void sendPhoneOtp()}
+                    disabled={isPhoneOtpSubmitting}
+                    className="secondary-btn text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isPhoneOtpSubmitting && !isPhoneOtpSent
+                      ? "Sending code..."
+                      : isPhoneOtpSent
+                        ? "Resend code"
+                        : "Send SMS code"}
+                  </button>
+                  {isPhoneOtpSent && (
+                    <button
+                      type="button"
+                      onClick={() => void verifyPhoneOtp()}
+                      disabled={isPhoneOtpSubmitting}
+                      className="primary-btn text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isPhoneOtpSubmitting ? "Verifying..." : "Verify and sign in"}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="my-4 flex items-center gap-3">
+                <div className="h-px flex-1 bg-[#d8e3eb]" />
+                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[#70829a]">
+                  or email/password
+                </span>
+                <div className="h-px flex-1 bg-[#d8e3eb]" />
+              </div>
             </>
           ) : (
-            <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-              Offering care accounts: sign in with email/password.
+            <div className="mb-4 space-y-3 rounded-xl border border-[#d8e3eb] bg-white/85 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#61758d]">
+                Caregiver SMS Login
+              </p>
+              <label className="space-y-2">
+                <span className="text-sm font-semibold text-[#243d58]">Phone number</span>
+                <input
+                  value={phoneOtp}
+                  onChange={(event) => setPhoneOtp(event.target.value)}
+                  className="field-input"
+                  placeholder="+65 8123 4567"
+                />
+              </label>
+              {isPhoneOtpSent && (
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-[#243d58]">SMS code</span>
+                  <input
+                    value={phoneOtpCode}
+                    onChange={(event) => setPhoneOtpCode(event.target.value)}
+                    className="field-input"
+                    placeholder="123456"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                  />
+                </label>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => void sendPhoneOtp()}
+                  disabled={isPhoneOtpSubmitting}
+                  className="secondary-btn text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isPhoneOtpSubmitting && !isPhoneOtpSent
+                    ? "Sending code..."
+                    : isPhoneOtpSent
+                      ? "Resend code"
+                      : "Send SMS code"}
+                </button>
+                {isPhoneOtpSent && (
+                  <button
+                    type="button"
+                    onClick={() => void verifyPhoneOtp()}
+                    disabled={isPhoneOtpSubmitting}
+                    className="primary-btn text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isPhoneOtpSubmitting ? "Verifying..." : "Verify and sign in"}
+                  </button>
+                )}
+              </div>
+              <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                Caregiver accounts can also sign in with email/password below.
+              </p>
             </div>
           )}
 

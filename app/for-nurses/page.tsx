@@ -12,6 +12,7 @@ import {
   useState,
 } from "react";
 import SiteHeader from "@/components/site-header";
+import { CARE_SERVICE_OPTIONS, sanitizeCareServices } from "@/lib/care-services";
 import {
   CAREGIVER_LANGUAGE_OPTIONS,
   sanitizeCaregiverLanguages,
@@ -39,12 +40,20 @@ type SignupForm = {
   minimumShiftHours: string;
   serviceRegions: string[];
   languages: string[];
+  services: string[];
   bio: string;
+};
+
+type PendingOtpSignup = {
+  accountType: AccountType;
+  phone: string;
+  email: string;
+  metadata: Record<string, unknown>;
 };
 
 type EditableSignupField = Exclude<
   keyof SignupForm,
-  "accountType" | "serviceRegions" | "languages"
+  "accountType" | "serviceRegions" | "languages" | "services"
 >;
 
 const INITIAL_FORM: SignupForm = {
@@ -60,6 +69,7 @@ const INITIAL_FORM: SignupForm = {
   minimumShiftHours: "",
   serviceRegions: [],
   languages: [],
+  services: [],
   bio: "",
 };
 
@@ -117,7 +127,13 @@ function getValidationMessage(
   if (form.password.length < 8) return "Password must be at least 8 characters.";
 
   if (!isCaregiver) {
+    if (form.phone.trim().length < 6) {
+      return "Please enter your phone number.";
+    }
     return null;
+  }
+  if (form.phone.trim().length < 6) {
+    return "Please enter your phone number.";
   }
 
   if (!Number.isFinite(hourlyRate) || hourlyRate <= 0) {
@@ -143,6 +159,9 @@ function getValidationMessage(
   }
   if (form.languages.length < 1) {
     return "Please select at least one spoken language.";
+  }
+  if (form.services.length < 1) {
+    return "Please select at least one service you provide.";
   }
 
   if (!profilePhoto) return "Please upload a profile photo.";
@@ -180,9 +199,12 @@ export default function SignupPage(): JSX.Element {
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
   const [verificationDoc, setVerificationDoc] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [signupBanner, setSignupBanner] = useState<string | null>(null);
+  const [pendingOtpSignup, setPendingOtpSignup] = useState<PendingOtpSignup | null>(
+    null
+  );
+  const [otpCode, setOtpCode] = useState("");
   const profilePhotoInputRef = useRef<HTMLInputElement | null>(null);
   const verificationDocInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -207,7 +229,10 @@ export default function SignupPage(): JSX.Element {
       ...previous,
       accountType,
     }));
+    setPendingOtpSignup(null);
+    setOtpCode("");
     setErrorMessage(null);
+    setSignupBanner(null);
   };
 
   const toggleLanguage = (language: string) => {
@@ -218,6 +243,19 @@ export default function SignupPage(): JSX.Element {
         languages: exists
           ? previous.languages.filter((item) => item !== language)
           : [...previous.languages, language],
+      };
+    });
+    setErrorMessage(null);
+  };
+
+  const toggleService = (service: string) => {
+    setForm((previous) => {
+      const exists = previous.services.includes(service);
+      return {
+        ...previous,
+        services: exists
+          ? previous.services.filter((item) => item !== service)
+          : [...previous.services, service],
       };
     });
     setErrorMessage(null);
@@ -244,6 +282,67 @@ export default function SignupPage(): JSX.Element {
     setErrorMessage(null);
     setSignupBanner(null);
 
+    const supabase = getSupabaseBrowserClient();
+    const isCaregiver = form.accountType === "caregiver";
+
+    if (pendingOtpSignup && pendingOtpSignup.accountType === form.accountType) {
+      const submittedOtpCode = otpCode.trim();
+      if (submittedOtpCode.length < 4) {
+        setErrorMessage("Enter the SMS verification code sent to your phone.");
+        return;
+      }
+
+      setIsSubmitting(true);
+      try {
+        const { data: otpData, error: otpError } = await supabase.auth.verifyOtp({
+          phone: pendingOtpSignup.phone,
+          token: submittedOtpCode,
+          type: "sms",
+        });
+
+        if (otpError) {
+          setErrorMessage(getReadableSignupError(otpError));
+          return;
+        }
+
+        if (!otpData.user) {
+          setErrorMessage("Unable to verify SMS code. Please try again.");
+          return;
+        }
+
+        const { error: updateError } = await supabase.auth.updateUser({
+          email: pendingOtpSignup.email,
+          data: pendingOtpSignup.metadata,
+        });
+
+        if (updateError) {
+          setErrorMessage(getReadableSignupError(updateError));
+          return;
+        }
+
+        const completedAccountType = pendingOtpSignup.accountType;
+        setPendingOtpSignup(null);
+        setOtpCode("");
+        setForm(INITIAL_FORM);
+        setProfilePhoto(null);
+        setVerificationDoc(null);
+        if (profilePhotoInputRef.current) profilePhotoInputRef.current.value = "";
+        if (verificationDocInputRef.current) verificationDocInputRef.current.value = "";
+        router.push(
+          completedAccountType === "caregiver"
+            ? "/signup-success?role=caregiver&instant=1"
+            : "/signup-success?role=client"
+        );
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Unable to verify signup code.";
+        setErrorMessage(message);
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
     const validationMessage = getValidationMessage(form, profilePhoto, verificationDoc);
     if (validationMessage) {
       setErrorMessage(validationMessage);
@@ -252,13 +351,48 @@ export default function SignupPage(): JSX.Element {
 
     setIsSubmitting(true);
     try {
-      const supabase = getSupabaseBrowserClient();
-      const isCaregiver = form.accountType === "caregiver";
+      if (!isCaregiver) {
+        const normalizedPhone = form.phone.trim();
+        const normalizedEmail = form.email.trim().toLowerCase();
+        const clientMetadata = {
+          full_name: form.fullName.trim(),
+          account_type: "client" as const,
+          phone: normalizedPhone,
+          location: null,
+          contact_email: normalizedEmail,
+        };
+
+        const { error } = await supabase.auth.signUp({
+          phone: normalizedPhone,
+          password: form.password,
+          options: {
+            channel: "sms",
+            data: clientMetadata,
+          },
+        });
+
+        if (error) {
+          setErrorMessage(getReadableSignupError(error));
+          return;
+        }
+
+        setPendingOtpSignup({
+          accountType: "client",
+          phone: normalizedPhone,
+          email: normalizedEmail,
+          metadata: clientMetadata,
+        });
+        setOtpCode("");
+        setSignupBanner(
+          `We sent a verification code to ${normalizedPhone}. Enter it below to finish account creation.`
+        );
+        return;
+      }
 
       let profilePhotoUrl = "";
       let verificationDocPath = "";
 
-      if (isCaregiver && profilePhoto) {
+      if (profilePhoto) {
         const optimizedProfilePhoto = await optimizeProfileImage(profilePhoto);
         const photoExtension = getFileExtension(optimizedProfilePhoto.name);
         const profilePath = `public/${Date.now()}-${crypto.randomUUID()}.${photoExtension}`;
@@ -296,36 +430,36 @@ export default function SignupPage(): JSX.Element {
         }
       }
 
-      const metadata = {
+      const normalizedPhone = form.phone.trim();
+      const normalizedEmail = form.email.trim().toLowerCase();
+      const caregiverMetadata = {
         full_name: form.fullName.trim(),
-        account_type: form.accountType,
-        ...(isCaregiver
-          ? {
-              phone: form.phone.trim() || null,
-              location: formatServiceRegions(form.serviceRegions),
-              hourly_rate: Number(form.hourlyRate),
-              service_category: "home_personal_care",
-              service_categories: ["home_personal_care"],
-              home_nursing_rate: null,
-              home_personal_care_rate: Number(form.hourlyRate),
-              years_experience: Number(form.yearsExperience),
-              credentials_summary: form.credentialsSummary.trim(),
-              availability_summary: form.availabilitySummary.trim(),
-              minimum_shift_hours: Number(form.minimumShiftHours),
-              profile_photo_url: profilePhotoUrl,
-              ...(verificationDocPath ? { verification_doc_url: verificationDocPath } : {}),
-              care_specialties: [],
-              languages_spoken: sanitizeCaregiverLanguages(form.languages),
-              bio: form.bio.trim(),
-            }
-          : {}),
+        account_type: "caregiver" as const,
+        contact_email: normalizedEmail,
+        phone: normalizedPhone,
+        location: formatServiceRegions(form.serviceRegions),
+        hourly_rate: Number(form.hourlyRate),
+        service_category: "home_personal_care",
+        service_categories: ["home_personal_care"],
+        home_nursing_rate: null,
+        home_personal_care_rate: Number(form.hourlyRate),
+        years_experience: Number(form.yearsExperience),
+        credentials_summary: form.credentialsSummary.trim(),
+        availability_summary: form.availabilitySummary.trim(),
+        minimum_shift_hours: Number(form.minimumShiftHours),
+        profile_photo_url: profilePhotoUrl,
+        ...(verificationDocPath ? { verification_doc_url: verificationDocPath } : {}),
+        care_specialties: sanitizeCareServices(form.services),
+        languages_spoken: sanitizeCaregiverLanguages(form.languages),
+        bio: form.bio.trim(),
       };
 
       const { error } = await supabase.auth.signUp({
-        email: form.email.trim().toLowerCase(),
+        phone: normalizedPhone,
         password: form.password,
         options: {
-          data: metadata,
+          channel: "sms",
+          data: caregiverMetadata,
         },
       });
 
@@ -334,17 +468,16 @@ export default function SignupPage(): JSX.Element {
         return;
       }
 
-      setForm(INITIAL_FORM);
-      setProfilePhoto(null);
-      setVerificationDoc(null);
-      if (profilePhotoInputRef.current) profilePhotoInputRef.current.value = "";
-      if (verificationDocInputRef.current) verificationDocInputRef.current.value = "";
-
-      if (form.accountType === "client") {
-        router.push("/signup-success?role=client");
-      } else {
-        router.push("/signup-success?role=caregiver&instant=1");
-      }
+      setPendingOtpSignup({
+        accountType: "caregiver",
+        phone: normalizedPhone,
+        email: normalizedEmail,
+        metadata: caregiverMetadata,
+      });
+      setOtpCode("");
+      setSignupBanner(
+        `We sent a verification code to ${normalizedPhone}. Enter it below to finish account creation.`
+      );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unable to create account.";
@@ -354,37 +487,14 @@ export default function SignupPage(): JSX.Element {
     }
   }
 
-  async function signUpWithGoogle() {
-    setErrorMessage(null);
-    if (form.accountType === "caregiver") {
-      setErrorMessage("Caregiver accounts must use email/password signup.");
-      return;
-    }
-    setIsGoogleSubmitting(true);
-    try {
-      const supabase = getSupabaseBrowserClient();
-      const redirectTo = `${window.location.origin}/oauth-complete?role=${form.accountType}`;
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo },
-      });
-
-      if (error) {
-        setErrorMessage(error.message);
-        setIsGoogleSubmitting(false);
-      }
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unable to start Google signup.";
-      setErrorMessage(message);
-      setIsGoogleSubmitting(false);
-    }
-  }
-
   const isCaregiver = form.accountType === "caregiver";
+  const isOtpStep = pendingOtpSignup?.accountType === form.accountType;
   const missingRequiredCaregiverFiles = isCaregiver && !profilePhoto;
-  const submitDisabled = isSubmitting || missingRequiredCaregiverFiles;
-  const caregiverChecklist = useMemo(() => {
+  const submitDisabled =
+    isSubmitting ||
+    missingRequiredCaregiverFiles ||
+    (isOtpStep && otpCode.trim().length < 4);
+  const caregiverProgressChecks = useMemo(() => {
     if (!isCaregiver) return [];
 
     const hourlyRate = Number(form.hourlyRate);
@@ -431,6 +541,11 @@ export default function SignupPage(): JSX.Element {
         done: form.languages.length > 0,
       },
       {
+        id: "services",
+        label: "Services provided",
+        done: form.services.length > 0,
+      },
+      {
         id: "bio",
         label: `Short bio (${MIN_BIO_LENGTH}+ chars)`,
         done: form.bio.trim().length >= MIN_BIO_LENGTH,
@@ -438,9 +553,13 @@ export default function SignupPage(): JSX.Element {
       { id: "photo", label: "Profile photo uploaded", done: hasValidProfilePhoto },
     ];
   }, [form, isCaregiver, profilePhoto]);
-  const caregiverChecklistCompleteCount = caregiverChecklist.filter(
+  const caregiverChecklistCompleteCount = caregiverProgressChecks.filter(
     (item) => item.done
   ).length;
+  const caregiverProgressPercent = caregiverProgressChecks.length
+    ? Math.round((caregiverChecklistCompleteCount / caregiverProgressChecks.length) * 100)
+    : 0;
+  const caregiverProgressRemaining = caregiverProgressChecks.length - caregiverChecklistCompleteCount;
 
   return (
     <div className="site-shell">
@@ -483,63 +602,35 @@ export default function SignupPage(): JSX.Element {
               </button>
             </div>
 
-            {!isCaregiver ? (
-              <div className="mt-4">
-                <button
-                  type="button"
-                  onClick={signUpWithGoogle}
-                  disabled={isGoogleSubmitting}
-                  className="secondary-btn w-full disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isGoogleSubmitting
-                    ? "Redirecting to Google..."
-                    : "Continue with Google"}
-                </button>
-
-                <div className="my-4 flex items-center gap-3">
-                  <div className="h-px flex-1 bg-[#d8e3eb]" />
-                  <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[#70829a]">
-                    or create with email
-                  </span>
-                  <div className="h-px flex-1 bg-[#d8e3eb]" />
-                </div>
-              </div>
-            ) : (
-              <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                Caregiver accounts: use email/password signup.
-              </div>
-            )}
+            <div className="mt-4 rounded-lg border border-[#d8e3eb] bg-[#f4f8fb] px-3 py-2 text-sm text-[#4f657f]">
+              {isCaregiver
+                ? "Caregiver account creation requires phone number, email, password, and SMS verification."
+                : "Family account creation requires phone number, email, password, and SMS verification."}
+            </div>
           </div>
 
           {isCaregiver && (
             <section className="mt-6 rounded-xl border border-[#d8e3eb] bg-white/88 p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-lg font-bold text-[#132f4d]">Caregiver completion checklist</h2>
+                <h2 className="text-lg font-bold text-[#132f4d]">Caregiver profile progress</h2>
                 <p className="rounded-full border border-[#cde0ec] bg-[#edf4f9] px-3 py-1 text-xs font-semibold text-[#2d516f]">
-                  {caregiverChecklistCompleteCount}/{caregiverChecklist.length} complete
+                  {caregiverProgressPercent}% complete
                 </p>
               </div>
 
               <p className="mt-2 text-sm text-[#55677e]">
-                Complete these items before submitting to avoid validation errors.
+                {caregiverProgressRemaining > 0
+                  ? `${caregiverProgressRemaining} required item${
+                      caregiverProgressRemaining === 1 ? "" : "s"
+                    } remaining before you can submit.`
+                  : "All required items are completed."}
               </p>
 
-              <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                {caregiverChecklist.map((item) => (
-                  <p
-                    key={item.id}
-                    className={`rounded-lg border px-3 py-2 text-sm ${
-                      item.done
-                        ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                        : "border-[#d8e3eb] bg-white text-[#3c5673]"
-                    }`}
-                  >
-                    <span className="mr-2 font-semibold" aria-hidden="true">
-                      {item.done ? "✓" : "○"}
-                    </span>
-                    {item.label}
-                  </p>
-                ))}
+              <div className="mt-4 h-3 overflow-hidden rounded-full border border-[#cfe0ec] bg-[#eaf1f6]">
+                <div
+                  className="h-full bg-gradient-to-r from-[#0f766e] to-[#159287] transition-all"
+                  style={{ width: `${caregiverProgressPercent}%` }}
+                />
               </div>
             </section>
           )}
@@ -553,6 +644,7 @@ export default function SignupPage(): JSX.Element {
                   <input
                     value={form.fullName}
                     onChange={updateField("fullName")}
+                    disabled={isOtpStep}
                     className="field-input"
                     placeholder="Jane Smith"
                     required
@@ -565,6 +657,7 @@ export default function SignupPage(): JSX.Element {
                     type="email"
                     value={form.email}
                     onChange={updateField("email")}
+                    disabled={isOtpStep}
                     className="field-input"
                     placeholder="jane@domain.com"
                     required
@@ -579,9 +672,21 @@ export default function SignupPage(): JSX.Element {
                     type="password"
                     value={form.password}
                     onChange={updateField("password")}
+                    disabled={isOtpStep}
                     className="field-input"
                     placeholder="********"
                     minLength={8}
+                    required
+                  />
+                </label>
+                <label className="space-y-2 md:col-span-2">
+                  <span className="text-sm font-semibold text-[#243d58]">Phone number</span>
+                  <input
+                    value={form.phone}
+                    onChange={updateField("phone")}
+                    disabled={isOtpStep}
+                    className="field-input"
+                    placeholder="+65 8123 4567"
                     required
                   />
                 </label>
@@ -593,16 +698,6 @@ export default function SignupPage(): JSX.Element {
                 <section className="rounded-xl border border-[#d8e3eb] bg-white/88 p-5">
                   <h2 className="text-lg font-bold text-[#132f4d]">Caregiver profile</h2>
                   <div className="mt-4 grid gap-4 md:grid-cols-2">
-                    <label className="space-y-2">
-                      <span className="text-sm font-semibold text-[#243d58]">Phone (optional)</span>
-                      <input
-                        value={form.phone}
-                        onChange={updateField("phone")}
-                        className="field-input"
-                        placeholder="+65 8123 4567"
-                      />
-                    </label>
-
                     <label className="space-y-2">
                       <span className="text-sm font-semibold text-[#243d58]">Hourly rate (SGD)</span>
                       <input
@@ -733,6 +828,31 @@ export default function SignupPage(): JSX.Element {
                         })}
                       </div>
                     </fieldset>
+
+                    <fieldset className="space-y-2 md:col-span-2">
+                      <legend className="text-sm font-semibold text-[#243d58]">
+                        Services you want to provide
+                      </legend>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {CARE_SERVICE_OPTIONS.map((service) => {
+                          const checked = form.services.includes(service);
+                          return (
+                            <label
+                              key={service}
+                              className="flex items-start gap-2 rounded-lg border border-[#d8e3eb] bg-white/90 px-3 py-2 text-sm text-[#2f4a67]"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => toggleService(service)}
+                                className="mt-0.5 h-4 w-4 rounded border-[#b3c6d8] text-[#0f766e] focus:ring-[#0f766e]"
+                              />
+                              <span>{service}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </fieldset>
                   </div>
                 </section>
 
@@ -770,8 +890,44 @@ export default function SignupPage(): JSX.Element {
             )}
 
             {!isCaregiver && (
-              <section className="rounded-xl border border-[#d9e4ec] bg-[#f4f8fb] p-4 text-sm text-[#4f657f]">
-                Families can browse the directory and start in-app chat with caregivers.
+              <section className="space-y-4 rounded-xl border border-[#d9e4ec] bg-[#f4f8fb] p-4 text-sm text-[#4f657f]">
+                <p>Families can browse the directory and start in-app chat with caregivers.</p>
+              </section>
+            )}
+
+            {isOtpStep && (
+              <section className="space-y-3 rounded-xl border border-[#d8e3eb] bg-white/92 p-4 text-sm text-[#4f657f]">
+                <p className="text-xs text-[#5e7187]">
+                  Enter the SMS verification code sent to{" "}
+                  <span className="font-semibold text-[#2a4763]">
+                    {pendingOtpSignup?.phone}
+                  </span>
+                  .
+                </p>
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-[#243d58]">Verification code</span>
+                  <input
+                    value={otpCode}
+                    onChange={(event) => setOtpCode(event.target.value)}
+                    className="field-input"
+                    placeholder="123456"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    required={isOtpStep}
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPendingOtpSignup(null);
+                    setOtpCode("");
+                    setSignupBanner(null);
+                    setErrorMessage(null);
+                  }}
+                  className="text-xs font-semibold text-[#1f6b93] underline-offset-2 hover:underline"
+                >
+                  Change account details
+                </button>
               </section>
             )}
 
@@ -789,7 +945,7 @@ export default function SignupPage(): JSX.Element {
 
             {missingRequiredCaregiverFiles && (
               <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                Upload a valid profile photo to complete the checklist.
+                Upload a valid profile photo to complete your profile progress.
               </p>
             )}
 
@@ -805,7 +961,13 @@ export default function SignupPage(): JSX.Element {
                 disabled={submitDisabled}
                 className="primary-btn min-w-[220px] disabled:cursor-not-allowed disabled:opacity-55"
               >
-                {isSubmitting ? "Creating account..." : "Create account"}
+                {isSubmitting
+                  ? isOtpStep
+                    ? "Verifying code..."
+                    : "Sending SMS code..."
+                  : isOtpStep
+                    ? "Verify code and create account"
+                    : "Send SMS code"}
               </button>
             </div>
           </form>

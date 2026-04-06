@@ -16,15 +16,6 @@ const CAREGIVER_FAQ_SECTIONS: FAQSection[] = [
         ),
       },
       {
-        id: "caregiver-2",
-        question: "2. Is there a verified badge process right now?",
-        answer: (
-          <p>
-            No. Silver Directory currently does not use a manual verification badge workflow.
-          </p>
-        ),
-      },
-      {
         id: "caregiver-3",
         question: "3. Is my SNB certificate or student ID shown to the public?",
         answer: (
@@ -91,7 +82,8 @@ const CAREGIVER_FAQ_SECTIONS: FAQSection[] = [
         question: "9. Do I have to pay anything to use the platform?",
         answer: (
           <p>
-            Creating a profile and receiving family inquiries is free. An optional &quot;Profile Boost&quot; feature is available at S$5 to raise visibility for 7 days.
+            Yes. A sign up fee of S$9.99 is required for caregiver accounts. An optional
+            &quot;Profile Boost&quot; feature is available at S$5 to raise visibility for 7 days.
           </p>
         ),
       },
@@ -103,10 +95,10 @@ const CAREGIVER_FAQ_SECTIONS: FAQSection[] = [
     items: [
       {
         id: "caregiver-10",
-        question: "10. How do families contact me?",
+        question: "10. Do I need to pay a sign up fee?",
         answer: (
           <p>
-            Families start by messaging you in Silver Directory inbox after viewing your public profile.
+            Yes. A sign up fee of S$9.99 is required.
           </p>
         ),
       },
@@ -140,15 +132,6 @@ const CAREGIVER_FAQ_SECTIONS: FAQSection[] = [
         answer: (
           <p>
             For safety, conduct a short video call before accepting the assignment. This helps verify identity, environment, and patient condition before travel.
-          </p>
-        ),
-      },
-      {
-        id: "caregiver-14",
-        question: "14. What if an agency or recruiter contacts me pretending to be a family?",
-        answer: (
-          <p>
-            Report them immediately to platform support. The platform is strictly for direct family-to-caregiver connections, and violators can be permanently banned.
           </p>
         ),
       },

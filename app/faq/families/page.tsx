@@ -34,15 +34,6 @@ const FAMILY_FAQ_SECTIONS: FAQSection[] = [
           </p>
         ),
       },
-      {
-        id: "family-4",
-        question: "4. Does Silver Directory manually verify caregiver qualifications?",
-        answer: (
-          <p>
-            We currently do not run manual qualification verification before listing. Families should perform their own checks before confirming care arrangements, including identity checks and reviewing relevant credentials directly with the caregiver.
-          </p>
-        ),
-      },
     ],
   },
   {
@@ -51,10 +42,10 @@ const FAMILY_FAQ_SECTIONS: FAQSection[] = [
     items: [
       {
         id: "family-5",
-        question: "5. Do I have to pay any agency or matching fees?",
+        question: "5. How are caregiver quotes and rates handled?",
         answer: (
           <p>
-            No. Silver Directory is 100% free for families. We do not charge matching fees and we do not take commission on caregiver wages. You pay caregivers directly.
+            Caregiver quotes and rates can be discussed directly between families and caregivers.
           </p>
         ),
       },

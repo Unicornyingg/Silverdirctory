@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { CARE_SERVICE_OPTIONS } from "@/lib/care-services";
 import { CAREGIVER_LANGUAGE_OPTIONS } from "@/lib/caregiver-languages";
 
 type DirectorySort =
@@ -13,6 +14,7 @@ type DirectorySort =
 type DirectoryFiltersProps = {
   initialLocation: string;
   initialMaxRate: string;
+  initialService: string;
   initialLanguage: string;
   initialSort: DirectorySort;
 };
@@ -27,12 +29,14 @@ function getSortLabel(sort: DirectorySort): string {
 export default function DirectoryFilters({
   initialLocation,
   initialMaxRate,
+  initialService,
   initialLanguage,
   initialSort,
 }: DirectoryFiltersProps) {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [location, setLocation] = useState(initialLocation);
   const [maxRate, setMaxRate] = useState(initialMaxRate);
+  const [service, setService] = useState(initialService);
   const [language, setLanguage] = useState(initialLanguage);
   const [sort, setSort] = useState<DirectorySort>(initialSort);
 
@@ -55,6 +59,14 @@ export default function DirectoryFilters({
       });
     }
 
+    if (service) {
+      tags.push({
+        key: "service",
+        label: `Service: ${service}`,
+        remove: () => setService(""),
+      });
+    }
+
     if (language) {
       tags.push({
         key: "language",
@@ -72,7 +84,7 @@ export default function DirectoryFilters({
     }
 
     return tags;
-  }, [language, location, maxRate, sort]);
+  }, [language, location, maxRate, service, sort]);
 
   return (
     <form method="get" className="mt-5 space-y-4">
@@ -122,7 +134,24 @@ export default function DirectoryFilters({
           <summary className="cursor-pointer text-sm font-semibold text-[#243d58]">
             Language and sorting
           </summary>
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
+          <div className="mt-3 grid gap-3 md:grid-cols-3">
+            <label className="min-w-0 space-y-2">
+              <span className="text-sm font-semibold text-[#243d58]">Service</span>
+              <select
+                name="service"
+                value={service}
+                onChange={(event) => setService(event.target.value)}
+                className="field-input"
+              >
+                <option value="">All services</option>
+                {CARE_SERVICE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+
             <label className="min-w-0 space-y-2">
               <span className="text-sm font-semibold text-[#243d58]">Language</span>
               <select
@@ -183,6 +212,7 @@ export default function DirectoryFilters({
           onClick={() => {
             setLocation("");
             setMaxRate("");
+            setService("");
             setLanguage("");
             setSort("recommended");
           }}

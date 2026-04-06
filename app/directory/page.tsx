@@ -2,6 +2,7 @@ import Link from "next/link";
 import CaregiverDirectoryList from "@/components/caregiver-directory-list";
 import DirectoryFilters from "@/components/directory-filters";
 import SiteHeader from "@/components/site-header";
+import { isSupportedCareService } from "@/lib/care-services";
 import { isSupportedCaregiverLanguage } from "@/lib/caregiver-languages";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { CaregiverProfile } from "@/lib/supabase/types";
@@ -30,6 +31,7 @@ type DirectoryProfile = Pick<
   | "hourly_rate"
   | "is_boosted"
   | "boost_expires_at"
+  | "care_specialties"
   | "languages_spoken"
   | "is_verified"
   | "created_at"
@@ -126,10 +128,12 @@ export default async function DirectoryPage({
   const locationFilter = getParam(params, "location").trim();
   const maxRateRaw = getParam(params, "maxRate").trim();
   const requestedLanguage = getParam(params, "language").trim();
+  const requestedService = getParam(params, "service").trim();
   const requestedSort = getParam(params, "sort").trim();
   const languageFilter = isSupportedCaregiverLanguage(requestedLanguage)
     ? requestedLanguage
     : "";
+  const serviceFilter = isSupportedCareService(requestedService) ? requestedService : "";
   const sortBy: DirectorySort = isSupportedDirectorySort(requestedSort)
     ? requestedSort
     : "recommended";
@@ -157,7 +161,7 @@ export default async function DirectoryPage({
   let query = supabase
     .from("profiles")
     .select(
-      "id, full_name, profile_photo_url, location, bio, years_experience, credentials_summary, availability_summary, response_time_summary, minimum_shift_hours, last_active_at, hourly_rate, is_boosted, boost_expires_at, languages_spoken, is_verified, created_at"
+      "id, full_name, profile_photo_url, location, bio, years_experience, credentials_summary, availability_summary, response_time_summary, minimum_shift_hours, last_active_at, hourly_rate, is_boosted, boost_expires_at, care_specialties, languages_spoken, is_verified, created_at"
     )
     .eq("is_verified", true)
     .order("created_at", { ascending: false });
@@ -173,12 +177,16 @@ export default async function DirectoryPage({
   if (languageFilter) {
     query = query.contains("languages_spoken", [languageFilter]);
   }
+  if (serviceFilter) {
+    query = query.contains("care_specialties", [serviceFilter]);
+  }
 
   const { data, error } = await query.returns<DirectoryProfile[]>();
   const orderedProfiles = sortProfilesForDirectory(data ?? [], sortBy);
   const hasActiveFilters =
     !!locationFilter ||
     hasValidMaxRate ||
+    !!serviceFilter ||
     !!languageFilter ||
     sortBy !== "recommended";
 
@@ -205,6 +213,7 @@ export default async function DirectoryPage({
         <DirectoryFilters
           initialLocation={locationFilter}
           initialMaxRate={hasValidMaxRate ? maxRateRaw : ""}
+          initialService={serviceFilter}
           initialLanguage={languageFilter}
           initialSort={sortBy}
         />

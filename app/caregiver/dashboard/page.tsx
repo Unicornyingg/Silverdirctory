@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import SiteHeader from "@/components/site-header";
+import { CARE_SERVICE_OPTIONS, sanitizeCareServices } from "@/lib/care-services";
 import {
   CAREGIVER_LANGUAGE_OPTIONS,
   sanitizeCaregiverLanguages,
@@ -38,12 +39,13 @@ type DashboardForm = {
   minimumShiftHours: string;
   serviceRegions: string[];
   languages: string[];
+  services: string[];
   bio: string;
 };
 
 type EditableDashboardField = Exclude<
   keyof DashboardForm,
-  "serviceRegions" | "languages"
+  "serviceRegions" | "languages" | "services"
 >;
 
 const INITIAL_FORM: DashboardForm = {
@@ -56,6 +58,7 @@ const INITIAL_FORM: DashboardForm = {
   minimumShiftHours: "",
   serviceRegions: [],
   languages: [],
+  services: [],
   bio: "",
 };
 
@@ -129,6 +132,7 @@ export default function CaregiverDashboardPage() {
           : "",
         serviceRegions: parseServiceRegionsFromLocation(profileRow.location),
         languages: sanitizeCaregiverLanguages(profileRow.languages_spoken ?? []),
+        services: sanitizeCareServices(profileRow.care_specialties ?? []),
         bio: profileRow.bio,
       });
     } else {
@@ -163,6 +167,13 @@ export default function CaregiverDashboardPage() {
           typeof user.user_metadata.minimum_shift_hours === "number"
             ? String(user.user_metadata.minimum_shift_hours)
             : previous.minimumShiftHours,
+        services: Array.isArray(user.user_metadata.care_specialties)
+          ? sanitizeCareServices(
+              user.user_metadata.care_specialties.filter(
+                (value): value is string => typeof value === "string"
+              )
+            )
+          : previous.services,
       }));
     }
 
@@ -341,6 +352,19 @@ export default function CaregiverDashboardPage() {
     setErrorMessage(null);
   };
 
+  const toggleService = (service: string) => {
+    setForm((previous) => {
+      const exists = previous.services.includes(service);
+      return {
+        ...previous,
+        services: exists
+          ? previous.services.filter((item) => item !== service)
+          : [...previous.services, service],
+      };
+    });
+    setErrorMessage(null);
+  };
+
   const toggleServiceRegion = (region: string) => {
     setForm((previous) => {
       const normalized = sanitizeServiceRegions(previous.serviceRegions);
@@ -420,6 +444,11 @@ export default function CaregiverDashboardPage() {
 
     if (form.languages.length < 1) {
       setErrorMessage("Please select at least one spoken language.");
+      return;
+    }
+
+    if (form.services.length < 1) {
+      setErrorMessage("Please select at least one service you provide.");
       return;
     }
 
@@ -510,7 +539,7 @@ export default function CaregiverDashboardPage() {
         home_nursing_rate: homeNursingRate,
         home_personal_care_rate: homePersonalCareRate,
         location: formatServiceRegions(form.serviceRegions),
-        care_specialties: [],
+        care_specialties: sanitizeCareServices(form.services),
         languages_spoken: sanitizeCaregiverLanguages(form.languages),
         profile_photo_url: profilePhotoUrl,
         is_verified: profile?.is_verified ?? false,
@@ -559,7 +588,7 @@ export default function CaregiverDashboardPage() {
           availability_summary: form.availabilitySummary.trim(),
           response_time_summary: form.responseTimeSummary.trim(),
           minimum_shift_hours: Number(form.minimumShiftHours),
-          care_specialties: [],
+          care_specialties: sanitizeCareServices(form.services),
           languages_spoken: sanitizeCaregiverLanguages(form.languages),
         },
       });
@@ -877,6 +906,34 @@ export default function CaregiverDashboardPage() {
                 </div>
                 <p className="text-xs text-[#5d6d81]">
                   Select at least one language.
+                </p>
+              </fieldset>
+
+              <fieldset className="space-y-2 md:col-span-2">
+                <legend className="text-sm font-semibold text-[#243d58]">
+                  Services you want to provide
+                </legend>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {CARE_SERVICE_OPTIONS.map((service) => {
+                    const checked = form.services.includes(service);
+                    return (
+                      <label
+                        key={service}
+                        className="flex items-start gap-2 rounded-lg border border-[#d8e3eb] bg-white/90 px-3 py-2 text-sm text-[#2f4a67]"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleService(service)}
+                          className="mt-0.5 h-4 w-4 rounded border-[#b3c6d8] text-[#0f766e] focus:ring-[#0f766e]"
+                        />
+                        <span>{service}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-[#5d6d81]">
+                  Select at least one service.
                 </p>
               </fieldset>
             </div>

@@ -28,7 +28,7 @@ const rolePaths = [
     cta: "Find a caregiver",
   },
   {
-    title: "I am a caregiver / RN",
+    title: "I wan to list my services",
     description:
       "Create your profile and get listed for families looking for eldercare support.",
     href: "/for-nurses",
@@ -70,11 +70,11 @@ export default function Home() {
             {rolePaths.map((path) => (
               <article
                 key={path.title}
-                className="flex h-full flex-col rounded-xl border border-[#d8e3eb] bg-white/90 p-4 shadow-[0_8px_24px_rgba(15,36,58,0.08)]"
+                className="flex h-full flex-col rounded-xl border border-[#d8e3eb] bg-white/90 p-5 shadow-[0_8px_24px_rgba(15,36,58,0.08)]"
               >
                 <h2 className="text-lg font-bold text-[#10263f]">{path.title}</h2>
-                <p className="mt-2 text-sm leading-6 text-[#5b6b80]">{path.description}</p>
-                <Link href={path.href} className="primary-btn mt-auto pt-4 w-full">
+                <p className="mt-3 flex-1 text-sm leading-6 text-[#5b6b80]">{path.description}</p>
+                <Link href={path.href} className="primary-btn mt-4 w-full">
                   {path.cta}
                 </Link>
               </article>
