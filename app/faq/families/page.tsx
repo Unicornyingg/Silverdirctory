@@ -1,4 +1,3 @@
-import Link from "next/link";
 import FAQAccordion, { type FAQSection } from "@/components/faq-accordion";
 import SiteHeader from "@/components/site-header";
 
@@ -55,10 +54,7 @@ const FAMILY_FAQ_SECTIONS: FAQSection[] = [
         answer: (
           <p>
             Silver Directory does not set rates. Caregivers are independent freelancers and set their own rates based on experience and care complexity. For general pricing context, refer to our{" "}
-            <Link href="#estimated-market-rate-guide" className="font-semibold text-[#1f6b93]">
-              Estimated Market Rate Guide (Coming soon)
-            </Link>
-            .
+            posted profile rates and discuss final quotes directly in chat.
           </p>
         ),
       },
@@ -146,19 +142,6 @@ export default function FamiliesFAQPage() {
 
         <div className="mt-6">
           <FAQAccordion sections={FAMILY_FAQ_SECTIONS} />
-        </div>
-
-        <div
-          id="estimated-market-rate-guide"
-          className="mt-8 rounded-xl border border-[#d8e3eb] bg-white/88 p-4 text-sm text-[#52657d]"
-        >
-          <div className="flex items-center gap-2">
-            <p className="font-semibold text-[#1b3753]">Estimated Market Rate Guide</p>
-            <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
-              Coming soon
-            </span>
-          </div>
-          <p className="mt-2">This guide is not published yet.</p>
         </div>
       </section>
     </div>
