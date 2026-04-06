@@ -1,22 +1,37 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f8f7;
-  --foreground: #122033;
-  --muted: #55667d;
-  --panel: rgba(255, 255, 255, 0.86);
-  --panel-strong: rgba(255, 255, 255, 0.95);
-  --line: #d2dee9;
-  --line-strong: #bfd0de;
-  --brand: #0f766e;
-  --brand-strong: #0b5e58;
-  --accent: #bc6a1f;
-  --accent-soft: #fff3e6;
+  --background: #f8f3ea;
+  --foreground: #3f352e;
+  --muted: #6c6157;
+  --panel: rgba(255, 250, 243, 0.9);
+  --panel-strong: rgba(255, 253, 248, 0.97);
+  --line: #e7dccb;
+  --line-strong: #dbcdb8;
+  --brand: #7a9479;
+  --brand-strong: #637f63;
+  --accent: #b98364;
+  --accent-soft: #f8ece4;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-warm-bg: #f8f3ea;
+  --color-warm-surface: #fffaf2;
+  --color-warm-surface-soft: #fffdf9;
+  --color-warm-border: #e7dccb;
+  --color-warm-ink: #3f352e;
+  --color-warm-muted: #6c6157;
+  --color-sage-100: #e9f0e4;
+  --color-sage-500: #7a9479;
+  --color-sage-600: #637f63;
+  --color-terracotta-100: #f8e9df;
+  --color-terracotta-700: #7f523a;
+  --radius-card: 1.25rem;
+  --radius-panel: 1.5rem;
+  --shadow-soft: 0 10px 28px rgba(88, 70, 52, 0.09);
+  --shadow-soft-lg: 0 18px 40px rgba(88, 70, 52, 0.11);
   --font-sans: var(--font-plus-jakarta), "Avenir Next", "Segoe UI", "Helvetica Neue",
     sans-serif;
   --font-display: var(--font-space-grotesk), "Avenir Next Condensed", "Trebuchet MS",
@@ -53,10 +68,10 @@ body::before {
   inset: 0;
   z-index: -2;
   background:
-    radial-gradient(circle at 9% 14%, rgba(15, 118, 110, 0.15), transparent 36%),
-    radial-gradient(circle at 92% 10%, rgba(188, 106, 31, 0.13), transparent 34%),
-    radial-gradient(circle at 80% 92%, rgba(15, 118, 110, 0.12), transparent 34%),
-    linear-gradient(145deg, #eef4f7 0%, #f5f8f7 45%, #fbf7f1 100%);
+    radial-gradient(circle at 10% 14%, rgba(122, 148, 121, 0.1), transparent 40%),
+    radial-gradient(circle at 92% 12%, rgba(185, 131, 100, 0.08), transparent 36%),
+    radial-gradient(circle at 82% 90%, rgba(122, 148, 121, 0.07), transparent 38%),
+    linear-gradient(145deg, #f6f1e8 0%, #f8f3ea 42%, #fdf8f1 100%);
 }
 
 body::after {
@@ -66,10 +81,10 @@ body::after {
   z-index: -1;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(14, 35, 58, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(14, 35, 58, 0.03) 1px, transparent 1px);
-  background-size: 42px 42px;
-  mask-image: radial-gradient(circle at center, black 46%, transparent 95%);
+    linear-gradient(rgba(83, 64, 46, 0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(83, 64, 46, 0.012) 1px, transparent 1px);
+  background-size: 74px 74px;
+  mask-image: radial-gradient(circle at center, black 38%, transparent 92%);
 }
 
 a {
@@ -83,13 +98,13 @@ a:hover {
 }
 
 :where(a, button, input, select, textarea, summary):focus-visible {
-  outline: 2px solid rgba(15, 118, 110, 0.52);
+  outline: 2px solid rgba(122, 148, 121, 0.55);
   outline-offset: 2px;
 }
 
 ::selection {
-  background: rgba(15, 118, 110, 0.22);
-  color: #072b29;
+  background: rgba(122, 148, 121, 0.22);
+  color: #2f3f2f;
 }
 
 @keyframes rise-in {
@@ -262,13 +277,11 @@ a:hover {
 }
 
 .surface-panel {
-  border-radius: 1.2rem;
+  border-radius: 1.45rem;
   border: 1px solid var(--line);
   background: var(--panel);
   backdrop-filter: blur(8px);
-  box-shadow:
-    0 16px 32px rgba(15, 36, 58, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.68);
+  box-shadow: var(--shadow-soft);
 }
 
 .eyebrow {
