@@ -68,11 +68,12 @@ export async function sendNurseVerifiedEmail({
   toEmail,
 }: VerificationEmailParams) {
   const safeName = escapeHtml(nurseName);
-  const subject = "Your caregiver profile has been verified";
+  const subject = "Licensed Nurse tag approved";
   const text = [
     `Hi ${nurseName},`,
     "",
-    "Your caregiver profile has been verified and is now listed on Silver Directory.",
+    "Your nursing licence was approved by admin.",
+    "Your public profile now shows the Licensed Nurse tag.",
     "",
     "Thank you,",
     "Silver Directory",
@@ -81,7 +82,8 @@ export async function sendNurseVerifiedEmail({
   const html = `
     <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#12243a">
       <p>Hi ${safeName},</p>
-      <p>Your caregiver profile has been verified and is now listed on Silver Directory.</p>
+      <p>Your nursing licence was approved by admin.</p>
+      <p>Your public profile now shows the <strong>Licensed Nurse</strong> tag.</p>
       <p>Thank you,<br/>Silver Directory</p>
     </div>
   `;
@@ -99,17 +101,18 @@ export async function sendNurseRejectedEmail({
   toEmail,
   reason,
 }: RejectionEmailParams) {
-  const sanitizedReason = reason.trim() || "Your uploaded document could not be verified.";
+  const sanitizedReason = reason.trim() || "Your uploaded nursing licence could not be approved.";
   const safeName = escapeHtml(nurseName);
   const safeReason = escapeHtml(sanitizedReason);
-  const subject = "Action required: update your caregiver verification";
+  const subject = "Nursing licence review update";
   const text = [
     `Hi ${nurseName},`,
     "",
-    "We reviewed your verification submission but could not approve it yet.",
+    "We reviewed your nursing licence submission but could not approve it.",
     `Reason: ${sanitizedReason}`,
     "",
-    "Please upload a clearer/corrected document and submit again from your dashboard.",
+    "Your profile remains a normal caregiver profile.",
+    "You can upload a corrected licence document anytime from your dashboard.",
     "",
     "Thank you,",
     "Silver Directory",
@@ -118,9 +121,10 @@ export async function sendNurseRejectedEmail({
   const html = `
     <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#12243a">
       <p>Hi ${safeName},</p>
-      <p>We reviewed your verification submission but could not approve it yet.</p>
+      <p>We reviewed your nursing licence submission but could not approve it.</p>
       <p><strong>Reason:</strong> ${safeReason}</p>
-      <p>Please upload a clearer/corrected document and submit again from your dashboard.</p>
+      <p>Your profile remains a normal caregiver profile.</p>
+      <p>You can upload a corrected licence document anytime from your dashboard.</p>
       <p>Thank you,<br/>Silver Directory</p>
     </div>
   `;

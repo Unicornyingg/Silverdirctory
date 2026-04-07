@@ -14,7 +14,7 @@ export function SiteFooter() {
               <span>Silver Directory</span>
             </Link>
 
-            <div className="mt-4 max-w-md text-gray-500">
+            <div className="mt-4 max-w-md text-gray-700">
               Hyper-local eldercare directory where families and independent caregivers connect
               directly, discuss requirements, and coordinate care safely.
             </div>
@@ -24,17 +24,17 @@ export function SiteFooter() {
             <div className="-ml-3 -mt-2 flex w-full flex-wrap lg:ml-0">
               <Link
                 href="/directory"
-                className="w-full rounded-md px-4 py-2 text-gray-500 hover:text-indigo-500"
+                className="w-full rounded-md px-4 py-2 text-gray-700 hover:text-indigo-500"
               >
                 Directory
               </Link>
               <Link
                 href="/for-nurses"
-                className="w-full rounded-md px-4 py-2 text-gray-500 hover:text-indigo-500"
+                className="w-full rounded-md px-4 py-2 text-gray-700 hover:text-indigo-500"
               >
                 Caregiver Signup
               </Link>
-              <Link href="/chats" className="w-full rounded-md px-4 py-2 text-gray-500 hover:text-indigo-500">
+              <Link href="/chats" className="w-full rounded-md px-4 py-2 text-gray-700 hover:text-indigo-500">
                 Inbox
               </Link>
             </div>
@@ -44,17 +44,17 @@ export function SiteFooter() {
             <div className="-ml-3 -mt-2 flex w-full flex-wrap lg:ml-0">
               <Link
                 href="/faq/families"
-                className="w-full rounded-md px-4 py-2 text-gray-500 hover:text-indigo-500"
+                className="w-full rounded-md px-4 py-2 text-gray-700 hover:text-indigo-500"
               >
                 FAQ for Families
               </Link>
               <Link
                 href="/faq/caregivers"
-                className="w-full rounded-md px-4 py-2 text-gray-500 hover:text-indigo-500"
+                className="w-full rounded-md px-4 py-2 text-gray-700 hover:text-indigo-500"
               >
                 FAQ for Caregivers
               </Link>
-              <Link href="/login" className="w-full rounded-md px-4 py-2 text-gray-500 hover:text-indigo-500">
+              <Link href="/login" className="w-full rounded-md px-4 py-2 text-gray-700 hover:text-indigo-500">
                 Login
               </Link>
             </div>
@@ -62,7 +62,7 @@ export function SiteFooter() {
 
           <div>
             <div className="text-gray-900">Platform Rules</div>
-            <div className="mt-5 space-y-2 text-sm text-gray-500">
+            <div className="mt-5 space-y-2 text-sm text-gray-700">
               <p>No auto-matching</p>
               <p>No built-in scheduling</p>
               <p>No wage payment gateway</p>
@@ -70,7 +70,7 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="my-10 text-center text-sm text-gray-600">
+        <div className="my-10 text-center text-sm text-gray-700">
           Copyright © {new Date().getFullYear()} Silver Directory. Families and caregivers
           coordinate directly.
         </div>

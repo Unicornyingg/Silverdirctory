@@ -23,7 +23,7 @@ export function Testimonials({ items }: Readonly<TestimonialsProps>) {
             className={index === 0 ? "lg:col-span-2 xl:col-auto" : ""}
           >
             <div className="flex h-full w-full flex-col justify-between rounded-2xl bg-gray-100 px-14 py-14">
-              <p className="text-2xl leading-normal">{item.quote}</p>
+              <p className="text-2xl leading-normal text-gray-900">{item.quote}</p>
               <Avatar image={item.image} name={item.name} title={item.title} />
             </div>
           </div>
@@ -46,8 +46,8 @@ function Avatar({ image, name, title }: Readonly<AvatarProps>) {
         <Image src={image} width={56} height={56} alt={`${name} avatar`} placeholder="blur" />
       </div>
       <div>
-        <div className="text-lg font-medium">{name}</div>
-        <div className="text-gray-600">{title}</div>
+        <div className="text-lg font-semibold text-gray-900">{name}</div>
+        <div className="text-gray-700">{title}</div>
       </div>
     </div>
   );

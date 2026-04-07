@@ -25,13 +25,13 @@ export function SectionTitle({
       ) : null}
 
       {title ? (
-        <h2 className="mt-3 max-w-2xl text-3xl font-bold leading-snug tracking-tight text-gray-800 lg:text-4xl lg:leading-tight">
+        <h2 className="mt-3 max-w-2xl text-3xl font-extrabold leading-snug tracking-tight text-gray-900 lg:text-4xl lg:leading-tight">
           {title}
         </h2>
       ) : null}
 
       {children ? (
-        <p className="max-w-2xl py-4 text-lg leading-normal text-gray-500 lg:text-xl xl:text-xl">
+        <p className="max-w-2xl py-4 text-lg leading-normal text-gray-700 lg:text-xl xl:text-xl">
           {children}
         </p>
       ) : null}

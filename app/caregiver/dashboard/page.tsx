@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import SiteHeader from "@/components/site-header";
+import {
+  statusDescription,
+  statusLabel,
+  type CaregiverLicenseStatus,
+} from "@/lib/caregiver-license-status";
 import { CARE_SERVICE_OPTIONS, sanitizeCareServices } from "@/lib/care-services";
 import {
   CAREGIVER_LANGUAGE_OPTIONS,
@@ -28,6 +33,10 @@ const PROFILE_BUCKET = "caregiver-profile-photos";
 const DOC_BUCKET = "verification-documents";
 const MAX_PROFILE_PHOTO_MB = 5;
 const MAX_DOC_MB = 8;
+const MIN_BIO_LENGTH = 20;
+const MIN_CREDENTIALS_SUMMARY_LENGTH = 8;
+const MIN_AVAILABILITY_SUMMARY_LENGTH = 5;
+const MIN_RESPONSE_TIME_SUMMARY_LENGTH = 5;
 
 type DashboardForm = {
   fullName: string;
@@ -62,6 +71,57 @@ const INITIAL_FORM: DashboardForm = {
   bio: "",
 };
 
+function getDraftStorageKey(userId: string): string {
+  return `caregiver_profile_draft_v1:${userId}`;
+}
+
+function readFormDraft(userId: string): DashboardForm | null {
+  if (typeof window === "undefined") return null;
+  const raw = window.localStorage.getItem(getDraftStorageKey(userId));
+  if (!raw) return null;
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<DashboardForm>;
+    if (
+      typeof parsed.fullName !== "string" ||
+      typeof parsed.hourlyRate !== "string" ||
+      typeof parsed.yearsExperience !== "string" ||
+      typeof parsed.credentialsSummary !== "string" ||
+      typeof parsed.availabilitySummary !== "string" ||
+      typeof parsed.responseTimeSummary !== "string" ||
+      typeof parsed.minimumShiftHours !== "string" ||
+      !Array.isArray(parsed.serviceRegions) ||
+      !Array.isArray(parsed.languages) ||
+      !Array.isArray(parsed.services) ||
+      typeof parsed.bio !== "string"
+    ) {
+      return null;
+    }
+
+    return {
+      fullName: parsed.fullName,
+      hourlyRate: parsed.hourlyRate,
+      yearsExperience: parsed.yearsExperience,
+      credentialsSummary: parsed.credentialsSummary,
+      availabilitySummary: parsed.availabilitySummary,
+      responseTimeSummary: parsed.responseTimeSummary,
+      minimumShiftHours: parsed.minimumShiftHours,
+      serviceRegions: sanitizeServiceRegions(
+        parsed.serviceRegions.filter((value): value is string => typeof value === "string")
+      ),
+      languages: sanitizeCaregiverLanguages(
+        parsed.languages.filter((value): value is string => typeof value === "string")
+      ),
+      services: sanitizeCareServices(
+        parsed.services.filter((value): value is string => typeof value === "string")
+      ),
+      bio: parsed.bio,
+    };
+  } catch {
+    return null;
+  }
+}
+
 function getFileExtension(fileName: string): string {
   const extension = fileName.split(".").pop()?.toLowerCase() ?? "jpg";
   const safeExtension = extension.replace(/[^a-z0-9]/g, "");
@@ -89,6 +149,7 @@ export default function CaregiverDashboardPage() {
   const [form, setForm] = useState<DashboardForm>(INITIAL_FORM);
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
   const [verificationDoc, setVerificationDoc] = useState<File | null>(null);
+  const [isOnboardingMode, setIsOnboardingMode] = useState(false);
   const [isBootLoading, setIsBootLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isBoosting, setIsBoosting] = useState(false);
@@ -100,11 +161,11 @@ export default function CaregiverDashboardPage() {
 
   const supabase = getSupabaseBrowserClient();
 
-  async function loadDashboard(user: User) {
+  async function loadDashboard(user: User): Promise<boolean> {
     const { data: profileRow, error: profileError } = await supabase
       .from("profiles")
       .select(
-        "id, user_id, full_name, service_category, service_categories, bio, years_experience, credentials_summary, availability_summary, response_time_summary, minimum_shift_hours, last_active_at, hourly_rate, home_nursing_rate, home_personal_care_rate, location, care_specialties, languages_spoken, profile_photo_url, is_verified, is_boosted, boost_expires_at, created_at, updated_at"
+        "id, user_id, full_name, service_category, service_categories, bio, years_experience, credentials_summary, availability_summary, response_time_summary, minimum_shift_hours, last_active_at, hourly_rate, home_nursing_rate, home_personal_care_rate, location, care_specialties, languages_spoken, profile_photo_url, licensed_nurse_status, is_verified, is_boosted, boost_expires_at, created_at, updated_at"
       )
       .eq("user_id", user.id)
       .limit(1)
@@ -113,7 +174,7 @@ export default function CaregiverDashboardPage() {
 
     if (profileError) {
       setErrorMessage(profileError.message);
-      return;
+      return false;
     }
 
     if (profileRow) {
@@ -135,6 +196,9 @@ export default function CaregiverDashboardPage() {
         services: sanitizeCareServices(profileRow.care_specialties ?? []),
         bio: profileRow.bio,
       });
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(getDraftStorageKey(user.id));
+      }
     } else {
       setProfile(null);
       setForm((previous) => ({
@@ -175,6 +239,14 @@ export default function CaregiverDashboardPage() {
             )
           : previous.services,
       }));
+
+      const draft = readFormDraft(user.id);
+      if (draft) {
+        setForm((previous) => ({
+          ...previous,
+          ...draft,
+        }));
+      }
     }
 
     const { data: docRows, error: docError } = await supabase
@@ -187,10 +259,11 @@ export default function CaregiverDashboardPage() {
 
     if (docError) {
       setErrorMessage(docError.message);
-      return;
+      return !!profileRow;
     }
 
     setLatestDoc(docRows?.[0] ?? null);
+    return !!profileRow;
   }
 
   useEffect(() => {
@@ -257,7 +330,13 @@ export default function CaregiverDashboardPage() {
         setIsRoleBlocked(false);
       }
 
-      await loadDashboard(user);
+      const hasProfile = await loadDashboard(user);
+      const setupRequested =
+        typeof window !== "undefined" &&
+        new URLSearchParams(window.location.search).get("setup") === "1";
+      if (alive) {
+        setIsOnboardingMode(setupRequested || !hasProfile);
+      }
       if (alive) {
         setIsBootLoading(false);
       }
@@ -329,6 +408,14 @@ export default function CaregiverDashboardPage() {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authUser]);
+
+  useEffect(() => {
+    if (!authUser) return;
+    if (typeof window === "undefined") return;
+    if (!isOnboardingMode) return;
+
+    window.localStorage.setItem(getDraftStorageKey(authUser.id), JSON.stringify(form));
+  }, [authUser, form, isOnboardingMode]);
 
   const updateField =
     (field: EditableDashboardField) =>
@@ -409,8 +496,8 @@ export default function CaregiverDashboardPage() {
       return;
     }
 
-    if (form.bio.trim().length < 20) {
-      setErrorMessage("Bio must be at least 20 characters.");
+    if (form.bio.trim().length < MIN_BIO_LENGTH) {
+      setErrorMessage(`Bio must be at least ${MIN_BIO_LENGTH} characters.`);
       return;
     }
 
@@ -426,15 +513,17 @@ export default function CaregiverDashboardPage() {
       setErrorMessage("Please enter valid years of experience (0 or more).");
       return;
     }
-    if (form.credentialsSummary.trim().length < 8) {
-      setErrorMessage("Credentials summary should be at least 8 characters.");
+    if (form.credentialsSummary.trim().length < MIN_CREDENTIALS_SUMMARY_LENGTH) {
+      setErrorMessage(
+        `Credentials summary should be at least ${MIN_CREDENTIALS_SUMMARY_LENGTH} characters.`
+      );
       return;
     }
-    if (form.availabilitySummary.trim().length < 5) {
+    if (form.availabilitySummary.trim().length < MIN_AVAILABILITY_SUMMARY_LENGTH) {
       setErrorMessage("Please enter your availability.");
       return;
     }
-    if (form.responseTimeSummary.trim().length < 5) {
+    if (form.responseTimeSummary.trim().length < MIN_RESPONSE_TIME_SUMMARY_LENGTH) {
       setErrorMessage("Please enter your typical response time.");
       return;
     }
@@ -543,14 +632,17 @@ export default function CaregiverDashboardPage() {
         care_specialties: sanitizeCareServices(form.services),
         languages_spoken: sanitizeCaregiverLanguages(form.languages),
         profile_photo_url: profilePhotoUrl,
-        is_verified: profile?.is_verified ?? false,
+        licensed_nurse_status: uploadedDocPath
+          ? "licence_submitted"
+          : profile?.licensed_nurse_status ?? "no_licence_uploaded",
+        is_verified: profile?.is_verified ?? true,
       };
 
       const { data: savedProfile, error: profileSaveError } = await supabase
         .from("profiles")
         .upsert(profilePayload, { onConflict: "user_id" })
         .select(
-          "id, user_id, full_name, service_category, service_categories, bio, years_experience, credentials_summary, availability_summary, response_time_summary, minimum_shift_hours, last_active_at, hourly_rate, home_nursing_rate, home_personal_care_rate, location, care_specialties, languages_spoken, profile_photo_url, is_verified, is_boosted, boost_expires_at, created_at, updated_at"
+          "id, user_id, full_name, service_category, service_categories, bio, years_experience, credentials_summary, availability_summary, response_time_summary, minimum_shift_hours, last_active_at, hourly_rate, home_nursing_rate, home_personal_care_rate, location, care_specialties, languages_spoken, profile_photo_url, licensed_nurse_status, is_verified, is_boosted, boost_expires_at, created_at, updated_at"
         )
         .limit(1)
         .single()
@@ -580,6 +672,7 @@ export default function CaregiverDashboardPage() {
         data: {
           full_name: form.fullName.trim(),
           account_type: "caregiver",
+          onboarding_stage: "profile_completed",
           service_category: primaryCategory,
           service_categories: [...caregiverServiceCategories],
           home_nursing_rate: homeNursingRate,
@@ -596,11 +689,15 @@ export default function CaregiverDashboardPage() {
 
       setProfile(savedProfile);
       setAccountRole("caregiver");
+      setIsOnboardingMode(false);
       setSuccessMessage("Profile saved successfully.");
       setProfilePhoto(null);
       setVerificationDoc(null);
       if (profileInputRef.current) profileInputRef.current.value = "";
       if (verificationInputRef.current) verificationInputRef.current.value = "";
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(getDraftStorageKey(authUser.id));
+      }
       await loadDashboard(authUser);
     } catch (error) {
       const message =
@@ -703,6 +800,26 @@ export default function CaregiverDashboardPage() {
     !!profile.boost_expires_at &&
     new Date(profile.boost_expires_at).getTime() > Date.now();
   const requiresProfilePhoto = !profile?.profile_photo_url;
+  const licenseStatus: CaregiverLicenseStatus =
+    profile?.licensed_nurse_status ?? "no_licence_uploaded";
+
+  const checklistItems = [
+    { id: "full-name", done: form.fullName.trim().length >= 2 },
+    { id: "hourly-rate", done: Number.isFinite(Number(form.hourlyRate)) && Number(form.hourlyRate) > 0 },
+    { id: "experience", done: form.yearsExperience.trim().length > 0 && Number(form.yearsExperience) >= 0 },
+    { id: "min-shift", done: Number.isFinite(Number(form.minimumShiftHours)) && Number(form.minimumShiftHours) > 0 },
+    { id: "credentials", done: form.credentialsSummary.trim().length >= MIN_CREDENTIALS_SUMMARY_LENGTH },
+    { id: "availability", done: form.availabilitySummary.trim().length >= MIN_AVAILABILITY_SUMMARY_LENGTH },
+    { id: "response-time", done: form.responseTimeSummary.trim().length >= MIN_RESPONSE_TIME_SUMMARY_LENGTH },
+    { id: "regions", done: form.serviceRegions.length > 0 },
+    { id: "languages", done: form.languages.length > 0 },
+    { id: "services", done: form.services.length > 0 },
+    { id: "bio", done: form.bio.trim().length >= MIN_BIO_LENGTH },
+    { id: "photo", done: !requiresProfilePhoto || !!profilePhoto },
+  ];
+  const completedChecklist = checklistItems.filter((item) => item.done).length;
+  const checklistProgress = Math.round((completedChecklist / checklistItems.length) * 100);
+  const checklistRemaining = checklistItems.length - completedChecklist;
   return (
     <div className="site-shell">
       <SiteHeader />
@@ -710,12 +827,16 @@ export default function CaregiverDashboardPage() {
       <section className="surface-panel page-enter p-6 md:p-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="eyebrow">Caregiver Dashboard</p>
+            <p className="eyebrow">
+              {isOnboardingMode ? "Caregiver Onboarding" : "Caregiver Dashboard"}
+            </p>
             <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-[#10233b] md:text-4xl">
-              Manage your profile
+              {isOnboardingMode ? "Complete your caregiver profile setup" : "Manage your profile"}
             </h1>
             <p className="mt-2 text-sm leading-6 text-[#56677c]">
-              Update your public card and boost your visibility.
+              {isOnboardingMode
+                ? "Stage 3 of 3: add your caregiver details. Your profile is listed as a basic caregiver profile once saved."
+                : "Update your public listing and profile settings."}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -731,6 +852,29 @@ export default function CaregiverDashboardPage() {
             </button>
           </div>
         </div>
+      </section>
+
+      <section className="surface-panel mt-6 p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl font-extrabold text-[#10233b]">Profile setup progress</h2>
+          <span className="rounded-full border border-[#dbe6ee] bg-white px-4 py-1.5 text-sm font-bold text-[#294765]">
+            {checklistProgress}% complete
+          </span>
+        </div>
+        <p className="mt-2 text-sm text-[#56677c]">
+          {checklistRemaining > 0
+            ? `${checklistRemaining} required item${checklistRemaining === 1 ? "" : "s"} remaining before your profile is complete.`
+            : "All required profile items are completed."}
+        </p>
+        <div className="mt-4 h-4 overflow-hidden rounded-full border border-[#d8e3eb] bg-[#eaf1f7]">
+          <div
+            className="h-full bg-gradient-to-r from-[#4338ca] to-[#4f46e5] transition-all"
+            style={{ width: `${checklistProgress}%` }}
+          />
+        </div>
+        <p className="mt-3 text-xs text-[#60758f]">
+          Draft changes are saved locally on this device while you complete setup.
+        </p>
       </section>
 
       {errorMessage && (
@@ -971,7 +1115,7 @@ export default function CaregiverDashboardPage() {
 
             <label className="space-y-2">
               <span className="text-sm font-semibold text-[#243d58]">
-                License / supporting ID (private, optional)
+                Nursing licence / SNB document (optional)
               </span>
               <input
                 ref={verificationInputRef}
@@ -981,7 +1125,9 @@ export default function CaregiverDashboardPage() {
                 className="field-file file:mr-3 file:rounded-md file:border-0 file:bg-[#edf3f7] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[#28435f] hover:file:bg-[#e2edf4]"
               />
               <p className="text-xs text-[#5d6d81]">
-                Optional private upload for your records.
+                Optional. Uploading a licence requests admin review for a public{" "}
+                <span className="font-semibold">Licensed Nurse</span> tag. Your basic caregiver
+                profile remains live while review is pending.
               </p>
             </label>
 
@@ -997,14 +1143,15 @@ export default function CaregiverDashboardPage() {
 
         <aside className="space-y-5">
           <section className="surface-panel p-5">
-            <h2 className="text-base font-bold text-[#10243b]">Supporting documents</h2>
+            <h2 className="text-base font-bold text-[#10243b]">Licensed Nurse tag status</h2>
             <div className="mt-3 space-y-2 text-sm text-[#52657e]">
               <p>
-                Latest upload:
+                Current status:
                 <span className="ml-2 font-semibold text-[#1f3654]">
-                  {latestDoc ? latestDoc.status : "No upload yet"}
+                  {statusLabel(licenseStatus)}
                 </span>
               </p>
+              <p className="text-xs text-[#5f7289]">{statusDescription(licenseStatus)}</p>
               {latestDoc && (
                 <p className="text-xs text-[#65778d]">
                   Last upload: {formatDate(latestDoc.created_at)}
@@ -1013,7 +1160,8 @@ export default function CaregiverDashboardPage() {
             </div>
           </section>
 
-          <section className="surface-panel p-5">
+          {profile && (
+            <section className="surface-panel p-5">
             <h2 className="text-base font-bold text-[#10243b]">Boost profile</h2>
             <p className="mt-2 text-sm leading-6 text-[#56677d]">
               Promote your listing to the top of directory search for 7 days.
@@ -1039,7 +1187,8 @@ export default function CaregiverDashboardPage() {
                 ? "Opening Stripe checkout..."
                 : "Boost profile for 7 days (S$5)"}
             </button>
-          </section>
+            </section>
+          )}
 
           <section className="surface-panel p-5">
             <h2 className="text-base font-bold text-[#10243b]">Your public page</h2>

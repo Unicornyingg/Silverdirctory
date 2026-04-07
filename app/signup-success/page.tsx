@@ -30,14 +30,20 @@ export default async function SignupSuccessPage({
         </h1>
         <p className="mt-3 text-sm leading-6 text-[#56677d]">
           {isCaregiver
-            ? "Your caregiver account has been created successfully. Your profile can now be listed in the directory."
+            ? "Your caregiver account has been created. Continue to profile setup to publish your basic caregiver listing."
             : "Your family account has been created successfully. We are bringing you to the caregiver directory now."}
         </p>
 
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link href={DIRECTORY_PATH} className="primary-btn text-sm">
-            Continue to directory
-          </Link>
+          {isCaregiver ? (
+            <Link href="/caregiver/dashboard?setup=1" className="primary-btn text-sm">
+              Continue to caregiver setup
+            </Link>
+          ) : (
+            <Link href={DIRECTORY_PATH} className="primary-btn text-sm">
+              Continue to directory
+            </Link>
+          )}
           <Link href={isCaregiver ? "/login?role=caregiver" : "/login?role=client"} className="secondary-btn text-sm">
             {isCaregiver ? "Go to caregiver login" : "Go to family login"}
           </Link>

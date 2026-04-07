@@ -7,6 +7,10 @@ import {
   sendNurseVerifiedEmail,
 } from "@/lib/email/send-verification-email";
 import {
+  statusLabel as licenseStatusLabel,
+  type CaregiverLicenseStatus,
+} from "@/lib/caregiver-license-status";
+import {
   CARE_SERVICE_CATEGORY_OPTIONS,
   type CareServiceCategory,
   getRateLabelByCategory,
@@ -52,6 +56,7 @@ type VerificationProfileRecord = Pick<
   | "care_specialties"
   | "languages_spoken"
   | "profile_photo_url"
+  | "licensed_nurse_status"
   | "is_verified"
 >;
 
@@ -101,6 +106,7 @@ type DirectoryCaregiverRecord = Pick<
   | "location"
   | "care_specialties"
   | "languages_spoken"
+  | "licensed_nurse_status"
   | "is_verified"
 >;
 
@@ -248,7 +254,7 @@ function DashboardHeader({ reviewKey }: { reviewKey: string }) {
           Metrics
         </a>
         <a href="#verification" className="nav-link">
-          Verification Queue
+          Licence Review Queue
         </a>
         <a href="#reports" className="nav-link">
           Trust & Safety
@@ -333,14 +339,19 @@ async function handleVerificationDecision(formData: FormData) {
       createStatusRedirect(
         activeKey,
         "error",
-        "Missing verification payload.",
+        "Missing licence review payload.",
         {},
         "verification"
       )
     );
   }
 
-  const decision = decisionInput === "rejected" ? "rejected" : "approved";
+  const decision: "approved" | "rejected" | "pending" =
+    decisionInput === "rejected"
+      ? "rejected"
+      : decisionInput === "pending"
+      ? "pending"
+      : "approved";
   if (decision === "rejected" && rejectionReason.length < 5) {
     redirect(
       createStatusRedirect(
@@ -371,7 +382,7 @@ async function handleVerificationDecision(formData: FormData) {
     .update({
       status: decision,
       review_notes: decision === "rejected" ? rejectionReason : null,
-      reviewed_at: new Date().toISOString(),
+      reviewed_at: decision === "pending" ? null : new Date().toISOString(),
     })
     .eq("id", docId)
     .eq("user_id", userId);
@@ -388,10 +399,16 @@ async function handleVerificationDecision(formData: FormData) {
     );
   }
 
-  const profilePatch =
-    decision === "approved"
-      ? { is_verified: true }
-      : { is_verified: false, is_boosted: false, boost_expires_at: null };
+  const profilePatch: {
+    licensed_nurse_status: CaregiverLicenseStatus;
+  } = {
+    licensed_nurse_status:
+      decision === "approved"
+        ? "licensed_nurse_approved"
+        : decision === "rejected"
+        ? "licence_rejected"
+        : "pending_admin_review",
+  };
 
   const { error: profileError } = await supabase
     .from("profiles")
@@ -410,11 +427,11 @@ async function handleVerificationDecision(formData: FormData) {
     );
   }
 
-  let status = decision;
+  let status: "approved" | "rejected" | "pending" | "partial" = decision;
   let statusMessage = "";
 
   const recipientEmail = caregiverEmail || null;
-  if (recipientEmail) {
+  if (recipientEmail && decision !== "pending") {
     try {
       if (decision === "approved") {
         await sendNurseVerifiedEmail({
@@ -433,7 +450,7 @@ async function handleVerificationDecision(formData: FormData) {
       statusMessage =
         error instanceof Error
           ? error.message
-          : "Profile decision saved, but notification email failed.";
+          : "Licence decision saved, but notification email failed.";
     }
   }
 
@@ -595,7 +612,6 @@ async function handleUserOverride(formData: FormData) {
   const hourlyRateRaw = String(formData.get("hourly_rate") ?? "").trim();
   const careSpecialtiesRaw = String(formData.get("care_specialties") ?? "").trim();
   const languagesSpokenRaw = String(formData.get("languages_spoken") ?? "").trim();
-  const isVerifiedInput = String(formData.get("is_verified") ?? "").trim();
   const accountStatus = String(formData.get("account_status") ?? "active").trim();
   const adminNote = String(formData.get("admin_note") ?? "").trim();
 
@@ -669,7 +685,6 @@ async function handleUserOverride(formData: FormData) {
 
     const careSpecialties = parseCareSpecialties(careSpecialtiesRaw, serviceCategory);
     const languagesSpoken = parseLanguagesSpoken(languagesSpokenRaw);
-    const isVerified = isVerifiedInput === "true";
     const caregiverPatch: {
       full_name: string;
       bio: string;
@@ -678,7 +693,7 @@ async function handleUserOverride(formData: FormData) {
       location: string;
       care_specialties: string[];
       languages_spoken: string[];
-      is_verified: boolean;
+      is_verified?: boolean;
       is_boosted?: boolean;
     } = {
       full_name: fullName,
@@ -688,9 +703,11 @@ async function handleUserOverride(formData: FormData) {
       location: location || "Not provided",
       care_specialties: careSpecialties,
       languages_spoken: languagesSpoken,
-      is_verified: isVerified && !isSuspended && !isBanned,
     };
-    if (isBanned) {
+    if (isSuspended || isBanned) {
+      caregiverPatch.is_verified = false;
+    }
+    if (isBanned || isSuspended) {
       caregiverPatch.is_boosted = false;
     }
 
@@ -820,7 +837,7 @@ export default async function AdminVerifyPage({
 
   const [
     pendingCountResult,
-    verifiedCaregiversResult,
+    approvedLicensedNurseResult,
     familyCountResult,
     inquiryCountResult,
   ] = await Promise.all([
@@ -831,7 +848,7 @@ export default async function AdminVerifyPage({
     supabase
       .from("profiles")
       .select("id", { head: true, count: "exact" })
-      .eq("is_verified", true),
+      .eq("licensed_nurse_status", "licensed_nurse_approved"),
     supabase
       .from("users")
       .select("id", { head: true, count: "exact" })
@@ -841,7 +858,7 @@ export default async function AdminVerifyPage({
   ]);
 
   const pendingVerificationCount = pendingCountResult.count ?? 0;
-  const totalVerifiedCaregivers = verifiedCaregiversResult.count ?? 0;
+  const totalApprovedLicensedNurses = approvedLicensedNurseResult.count ?? 0;
   const totalFamilyAccounts = familyCountResult.count ?? 0;
   const totalInquiriesSent = inquiryCountResult.count ?? 0;
 
@@ -861,7 +878,7 @@ export default async function AdminVerifyPage({
       supabase
         .from("profiles")
         .select(
-          "id, user_id, full_name, location, bio, hourly_rate, service_category, care_specialties, languages_spoken, profile_photo_url, is_verified"
+          "id, user_id, full_name, location, bio, hourly_rate, service_category, care_specialties, languages_spoken, profile_photo_url, licensed_nurse_status, is_verified"
         )
         .in("user_id", userIds)
         .returns<VerificationProfileRecord[]>(),
@@ -1017,7 +1034,9 @@ export default async function AdminVerifyPage({
     const [{ data: caregiverProfiles }, { data: clientProfiles }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("id, user_id, full_name, bio, hourly_rate, service_category, location, care_specialties, languages_spoken, is_verified")
+        .select(
+          "id, user_id, full_name, bio, hourly_rate, service_category, location, care_specialties, languages_spoken, licensed_nurse_status, is_verified"
+        )
         .in("user_id", allUserIds)
         .returns<DirectoryCaregiverRecord[]>(),
       supabase
@@ -1122,7 +1141,7 @@ export default async function AdminVerifyPage({
         </div>
       )}
 
-      <section id="metrics" className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section id="metrics" className="anchor-target mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <article
           className={`surface-panel p-5 ${
             pendingVerificationCount > 0
@@ -1144,9 +1163,11 @@ export default async function AdminVerifyPage({
 
         <article className="surface-panel p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#596d84]">
-            Total Verified Caregivers
+            Licensed Nurse Approved
           </p>
-          <p className="mt-2 text-3xl font-extrabold text-[#10233b]">{totalVerifiedCaregivers}</p>
+          <p className="mt-2 text-3xl font-extrabold text-[#10233b]">
+            {totalApprovedLicensedNurses}
+          </p>
         </article>
 
         <article className="surface-panel p-5">
@@ -1164,28 +1185,28 @@ export default async function AdminVerifyPage({
         </article>
       </section>
 
-      <section id="verification" className="surface-panel mt-6 p-6 md:p-8">
+      <section id="verification" className="surface-panel anchor-target mt-6 p-6 md:p-8">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="eyebrow">Caregiver Onboarding</p>
             <h2 className="mt-4 text-2xl font-extrabold tracking-tight text-[#10233b]">
-              Verification Queue
+              Licence Review Queue
             </h2>
             <p className="mt-2 text-sm leading-6 text-[#56677c]">
-              Review pending caregiver profiles against uploaded SNB certificate or student ID.
+              Review optional nursing licence uploads for the public Licensed Nurse tag.
             </p>
           </div>
         </div>
 
         {docsError && (
           <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            Could not load verification queue: {docsError.message}
+            Could not load licence review queue: {docsError.message}
           </div>
         )}
 
         {!docsError && reviewItems.length === 0 && (
           <div className="mt-4 rounded-xl border border-[#d8e3eb] bg-white/85 px-4 py-3 text-sm text-[#596d84]">
-            No pending caregivers right now.
+            No pending licence submissions right now.
           </div>
         )}
 
@@ -1248,6 +1269,12 @@ export default async function AdminVerifyPage({
                     <p className="mt-1 text-xs text-[#607187]">
                       {selectedReview.user?.email ?? "No email"}
                     </p>
+                    {selectedReview.profile && (
+                      <p className="mt-1 text-xs font-semibold text-[#4f6176]">
+                        Current tag status:{" "}
+                        {licenseStatusLabel(selectedReview.profile.licensed_nurse_status)}
+                      </p>
+                    )}
 
                     {selectedReview.profile?.profile_photo_url && (
                       <div className="mt-4 flex items-center gap-3">
@@ -1256,6 +1283,10 @@ export default async function AdminVerifyPage({
                           <img
                             src={selectedReview.profile.profile_photo_url}
                             alt={`${selectedReview.profile.full_name} profile`}
+                            width={64}
+                            height={64}
+                            loading="lazy"
+                            decoding="async"
                             className="h-full w-full object-cover"
                           />
                         </div>
@@ -1341,7 +1372,7 @@ export default async function AdminVerifyPage({
 
                   <section className="rounded-xl border border-[#dce7ee] bg-white/90 p-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#57708f]">
-                      Verification Document
+                      Uploaded Licence Document
                     </p>
                     <div className="mt-3 rounded-xl border border-[#dde7ee] bg-[#f5f8fb] p-3">
                       {selectedReview.previewUrl ? (
@@ -1359,6 +1390,10 @@ export default async function AdminVerifyPage({
                           <img
                             src={selectedReview.previewUrl}
                             alt={`${selectedReview.profile?.full_name ?? "Caregiver"} verification document`}
+                            width={1200}
+                            height={900}
+                            loading="lazy"
+                            decoding="async"
                             className="h-80 w-full rounded-lg object-contain"
                           />
                         )
@@ -1386,7 +1421,27 @@ export default async function AdminVerifyPage({
                         />
                         <input type="hidden" name="decision" value="approved" />
                         <button type="submit" className="primary-btn w-full text-sm">
-                          Approve (publish + email)
+                          Approve Licensed Nurse Tag
+                        </button>
+                      </form>
+
+                      <form action={handleVerificationDecision} className="space-y-2">
+                        <input type="hidden" name="review_key" value={reviewKey} />
+                        <input type="hidden" name="doc_id" value={selectedReview.docId} />
+                        <input type="hidden" name="user_id" value={selectedReview.userId} />
+                        <input
+                          type="hidden"
+                          name="caregiver_name"
+                          value={selectedReview.profile?.full_name ?? "Caregiver"}
+                        />
+                        <input
+                          type="hidden"
+                          name="caregiver_email"
+                          value={selectedReview.user?.email ?? ""}
+                        />
+                        <input type="hidden" name="decision" value="pending" />
+                        <button type="submit" className="outline-btn w-full text-sm">
+                          Keep as Pending Review
                         </button>
                       </form>
 
@@ -1412,7 +1467,7 @@ export default async function AdminVerifyPage({
                           required
                         />
                         <button type="submit" className="secondary-btn w-full text-sm">
-                          Reject (send reason by email)
+                          Reject Licence (send reason by email)
                         </button>
                       </form>
                     </div>
@@ -1424,7 +1479,7 @@ export default async function AdminVerifyPage({
         )}
       </section>
 
-      <section id="reports" className="surface-panel mt-6 p-6 md:p-8">
+      <section id="reports" className="surface-panel anchor-target mt-6 p-6 md:p-8">
         <p className="eyebrow">Trust & Safety</p>
         <h2 className="mt-4 text-2xl font-extrabold tracking-tight text-[#10233b]">
           Report Inbox
@@ -1603,7 +1658,7 @@ export default async function AdminVerifyPage({
         )}
       </section>
 
-      <section id="users" className="surface-panel mt-6 p-6 md:p-8">
+      <section id="users" className="surface-panel anchor-target mt-6 p-6 md:p-8">
         <p className="eyebrow">CRM</p>
         <h2 className="mt-4 text-2xl font-extrabold tracking-tight text-[#10233b]">
           User Directory
@@ -1819,17 +1874,15 @@ export default async function AdminVerifyPage({
                             className="field-textarea min-h-[100px]"
                           />
                         </label>
-
-                        <label className="inline-flex items-center gap-2 text-sm font-semibold text-[#243d58]">
-                          <input
-                            name="is_verified"
-                            type="checkbox"
-                            value="true"
-                            defaultChecked={selectedCaregiverProfile?.is_verified ?? false}
-                            className="h-4 w-4 rounded border-[#b3c6d8] text-[#0f766e] focus:ring-[#0f766e]"
-                          />
-                          Verified caregiver profile
-                        </label>
+                        <p className="rounded-lg border border-[#d8e3eb] bg-white/85 px-3 py-2 text-sm text-[#4f647c] md:col-span-2">
+                          Licensed Nurse status:{" "}
+                          <span className="font-semibold text-[#1d3b59]">
+                            {licenseStatusLabel(
+                              selectedCaregiverProfile?.licensed_nurse_status ??
+                                "no_licence_uploaded"
+                            )}
+                          </span>
+                        </p>
                       </>
                     )}
                   </div>

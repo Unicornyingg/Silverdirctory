@@ -41,10 +41,10 @@ export function Benefits({ imgPos, data }: Readonly<BenefitsProps>) {
       <div className="flex w-full flex-wrap items-center lg:w-1/2">
         <div>
           <div className="mt-4 flex w-full flex-col">
-            <h3 className="mt-3 max-w-2xl text-3xl font-bold leading-snug tracking-tight text-gray-800 lg:text-4xl lg:leading-tight">
+            <h3 className="mt-3 max-w-2xl text-3xl font-extrabold leading-snug tracking-tight text-gray-900 lg:text-4xl lg:leading-tight">
               {data.title}
             </h3>
-            <p className="max-w-2xl py-4 text-lg leading-normal text-gray-500 lg:text-xl xl:text-xl">
+            <p className="max-w-2xl py-4 text-lg leading-normal text-gray-700 lg:text-xl xl:text-xl">
               {data.desc}
             </p>
           </div>
@@ -77,8 +77,8 @@ function Benefit({ title, icon, children }: Readonly<BenefitProps>) {
         })}
       </div>
       <div>
-        <h4 className="text-xl font-medium text-gray-800">{title}</h4>
-        <p className="mt-1 text-gray-500">{children}</p>
+        <h4 className="text-xl font-semibold text-gray-900">{title}</h4>
+        <p className="mt-1 text-gray-700">{children}</p>
       </div>
     </div>
   );

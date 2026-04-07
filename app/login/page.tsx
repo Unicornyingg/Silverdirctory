@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import SiteHeader from "@/components/site-header";
+import { normalizePhoneForAuth } from "@/lib/phone-format";
+import { getReadableAuthError } from "@/lib/supabase/auth-errors";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type AccountType = "caregiver" | "client";
@@ -16,7 +18,7 @@ function normalizeRequestedRole(role: string | null): AccountType | null {
 }
 
 function getRedirectForRole(role: string | null): string {
-  if (role === "caregiver") return "/caregiver/dashboard";
+  if (role === "caregiver") return "/caregiver/dashboard?setup=1";
   return "/directory";
 }
 
@@ -88,6 +90,17 @@ export default function LoginPage() {
       return true;
     }
 
+    if (role === "caregiver") {
+      const { data: caregiverProfile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("user_id", userId)
+        .limit(1)
+        .maybeSingle();
+      router.replace(caregiverProfile ? "/caregiver/dashboard" : "/caregiver/dashboard?setup=1");
+      return true;
+    }
+
     router.replace(getRedirectForRole(role));
     return true;
   }, [router]);
@@ -156,7 +169,7 @@ export default function LoginPage() {
       });
 
       if (error) {
-        setErrorMessage(error.message);
+        setErrorMessage(getReadableAuthError(error));
         return;
       }
 
@@ -169,7 +182,7 @@ export default function LoginPage() {
       await redirectByRole(data.user.id, nextPath);
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Unable to sign in.";
+        error instanceof Error ? getReadableAuthError(error) : "Unable to sign in.";
       setErrorMessage(message);
     } finally {
       setIsSubmitting(false);
@@ -201,7 +214,7 @@ export default function LoginPage() {
       });
 
       if (error) {
-        setErrorMessage(error.message);
+        setErrorMessage(getReadableAuthError(error));
         setIsGoogleSubmitting(false);
       }
     } catch (error) {
@@ -216,7 +229,7 @@ export default function LoginPage() {
     setErrorMessage(null);
     setStatusMessage(null);
 
-    const normalizedPhone = phoneOtp.trim();
+    const normalizedPhone = normalizePhoneForAuth(phoneOtp);
     if (normalizedPhone.length < 6) {
       setErrorMessage("Please enter your phone number.");
       return;
@@ -233,7 +246,7 @@ export default function LoginPage() {
       });
 
       if (error) {
-        setErrorMessage(error.message);
+        setErrorMessage(getReadableAuthError(error));
         return;
       }
 
@@ -241,7 +254,9 @@ export default function LoginPage() {
       setStatusMessage(`SMS code sent to ${normalizedPhone}.`);
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Unable to send SMS code.";
+        error instanceof Error
+          ? getReadableAuthError(error)
+          : "Unable to send SMS code.";
       setErrorMessage(message);
     } finally {
       setIsPhoneOtpSubmitting(false);
@@ -252,7 +267,7 @@ export default function LoginPage() {
     setErrorMessage(null);
     setStatusMessage(null);
 
-    const normalizedPhone = phoneOtp.trim();
+    const normalizedPhone = normalizePhoneForAuth(phoneOtp);
     const token = phoneOtpCode.trim();
     if (normalizedPhone.length < 6) {
       setErrorMessage("Please enter your phone number.");
@@ -273,7 +288,7 @@ export default function LoginPage() {
       });
 
       if (error) {
-        setErrorMessage(error.message);
+        setErrorMessage(getReadableAuthError(error));
         return;
       }
 
@@ -286,7 +301,9 @@ export default function LoginPage() {
       await redirectByRole(data.user.id, nextPath);
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Unable to verify SMS code.";
+        error instanceof Error
+          ? getReadableAuthError(error)
+          : "Unable to verify SMS code.";
       setErrorMessage(message);
     } finally {
       setIsPhoneOtpSubmitting(false);
@@ -313,7 +330,7 @@ export default function LoginPage() {
       });
 
       if (error) {
-        setErrorMessage(error.message);
+        setErrorMessage(getReadableAuthError(error));
         return;
       }
 
@@ -323,7 +340,7 @@ export default function LoginPage() {
     } catch (error) {
       const message =
         error instanceof Error
-          ? error.message
+          ? getReadableAuthError(error)
           : "Unable to send password reset email.";
       setErrorMessage(message);
     } finally {

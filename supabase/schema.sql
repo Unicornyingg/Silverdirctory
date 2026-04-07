@@ -59,6 +59,16 @@ create table if not exists public.profiles (
   care_specialties text[] not null default '{}',
   languages_spoken text[] not null default '{}',
   profile_photo_url text not null default '',
+  licensed_nurse_status text not null default 'no_licence_uploaded'
+    check (
+      licensed_nurse_status in (
+        'no_licence_uploaded',
+        'licence_submitted',
+        'pending_admin_review',
+        'licensed_nurse_approved',
+        'licence_rejected'
+      )
+    ),
   is_verified boolean not null default false,
   is_boosted boolean not null default false,
   boost_expires_at timestamptz,
@@ -89,6 +99,7 @@ alter table public.profiles add column if not exists last_active_at timestamptz 
 alter table public.profiles add column if not exists home_nursing_rate numeric(10,2);
 alter table public.profiles add column if not exists home_personal_care_rate numeric(10,2);
 alter table public.profiles add column if not exists languages_spoken text[] not null default '{}';
+alter table public.profiles add column if not exists licensed_nurse_status text not null default 'no_licence_uploaded';
 alter table public.profiles add column if not exists is_boosted boolean not null default false;
 alter table public.profiles add column if not exists boost_expires_at timestamptz;
 alter table public.client_profiles add column if not exists phone text;
@@ -215,6 +226,22 @@ update public.profiles
 set response_time_summary = coalesce(response_time_summary, '');
 
 update public.profiles
+set licensed_nurse_status = coalesce(licensed_nurse_status, 'no_licence_uploaded');
+
+update public.profiles profile_row
+set licensed_nurse_status = case latest_doc.status
+  when 'approved' then 'licensed_nurse_approved'
+  when 'rejected' then 'licence_rejected'
+  else 'pending_admin_review'
+end
+from (
+  select distinct on (user_id) user_id, status
+  from public.verification_docs
+  order by user_id, created_at desc
+) as latest_doc
+where profile_row.user_id = latest_doc.user_id;
+
+update public.profiles
 set minimum_shift_hours = null
 where minimum_shift_hours is not null and minimum_shift_hours <= 0;
 
@@ -246,6 +273,37 @@ begin
       and (not ('home_personal_care' = any(service_categories)) or home_personal_care_rate is not null)
     ) not valid;
   end if;
+end;
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'profiles_licensed_nurse_status_check'
+  ) then
+    alter table public.profiles
+    add constraint profiles_licensed_nurse_status_check
+    check (
+      licensed_nurse_status in (
+        'no_licence_uploaded',
+        'licence_submitted',
+        'pending_admin_review',
+        'licensed_nurse_approved',
+        'licence_rejected'
+      )
+    ) not valid;
+  end if;
+end;
+$$;
+
+do $$
+begin
+  alter table public.profiles validate constraint profiles_licensed_nurse_status_check;
+exception
+  when undefined_object then
+    null;
 end;
 $$;
 
@@ -454,215 +512,9 @@ begin
   end;
 
   if mapped_role = 'caregiver' then
-    profile_photo_value := nullif(new.raw_user_meta_data ->> 'profile_photo_url', '');
-    doc_url_value := nullif(new.raw_user_meta_data ->> 'verification_doc_url', '');
-    if doc_url_value is null then
-      doc_url_value := nullif(new.raw_user_meta_data ->> 'verification_doc_path', '');
-    end if;
-
-    if profile_photo_value is null then
-      raise exception 'Caregiver signup requires profile photo upload.';
-    end if;
-
-    service_category_value := lower(coalesce(new.raw_user_meta_data ->> 'service_category', 'home_personal_care'));
-    if service_category_value not in ('home_nursing', 'home_personal_care') then
-      service_category_value := 'home_personal_care';
-    end if;
-
-    service_categories_value := '{}'::text[];
-    if jsonb_typeof(new.raw_user_meta_data -> 'service_categories') = 'array' then
-      select coalesce(
-        array_agg(distinct lower(value)::text)
-        filter (where lower(value) in ('home_nursing', 'home_personal_care')),
-        '{}'::text[]
-      )
-      into service_categories_value
-      from jsonb_array_elements_text(new.raw_user_meta_data -> 'service_categories');
-    end if;
-
-    if cardinality(service_categories_value) = 0 then
-      service_categories_value := array[service_category_value];
-    end if;
-
-    if cardinality(service_categories_value) = 0 then
-      service_categories_value := array['home_personal_care'];
-    end if;
-
-    supplied_rate := nullif(new.raw_user_meta_data ->> 'hourly_rate', '');
-    parsed_rate := case
-      when supplied_rate is not null and supplied_rate ~ '^[0-9]+(\.[0-9]+)?$'
-        then supplied_rate::numeric
-      else null
-    end;
-
-    supplied_home_nursing_rate := nullif(new.raw_user_meta_data ->> 'home_nursing_rate', '');
-    parsed_home_nursing_rate := case
-      when supplied_home_nursing_rate is not null and supplied_home_nursing_rate ~ '^[0-9]+(\.[0-9]+)?$'
-        then supplied_home_nursing_rate::numeric
-      else null
-    end;
-
-    supplied_home_personal_care_rate := nullif(new.raw_user_meta_data ->> 'home_personal_care_rate', '');
-    parsed_home_personal_care_rate := case
-      when supplied_home_personal_care_rate is not null and supplied_home_personal_care_rate ~ '^[0-9]+(\.[0-9]+)?$'
-        then supplied_home_personal_care_rate::numeric
-      else null
-    end;
-
-    supplied_years_experience := nullif(new.raw_user_meta_data ->> 'years_experience', '');
-    years_experience_value := case
-      when supplied_years_experience is not null and supplied_years_experience ~ '^[0-9]+$'
-        then greatest(supplied_years_experience::integer, 0)
-      else 0
-    end;
-
-    credentials_summary_value := coalesce(
-      nullif(new.raw_user_meta_data ->> 'credentials_summary', ''),
-      ''
-    );
-    availability_summary_value := coalesce(
-      nullif(new.raw_user_meta_data ->> 'availability_summary', ''),
-      ''
-    );
-    response_time_summary_value := coalesce(
-      nullif(new.raw_user_meta_data ->> 'response_time_summary', ''),
-      ''
-    );
-
-    supplied_minimum_shift_hours := nullif(new.raw_user_meta_data ->> 'minimum_shift_hours', '');
-    minimum_shift_hours_value := case
-      when supplied_minimum_shift_hours is not null
-        and supplied_minimum_shift_hours ~ '^[0-9]+(\.[0-9]+)?$'
-        then supplied_minimum_shift_hours::numeric
-      else null
-    end;
-
-    if minimum_shift_hours_value is not null and minimum_shift_hours_value <= 0 then
-      minimum_shift_hours_value := null;
-    end if;
-
-    if parsed_home_nursing_rate is null
-      and 'home_nursing' = any(service_categories_value)
-      and service_category_value = 'home_nursing'
-      and parsed_rate is not null then
-      parsed_home_nursing_rate := parsed_rate;
-    end if;
-
-    if parsed_home_personal_care_rate is null
-      and 'home_personal_care' = any(service_categories_value)
-      and service_category_value = 'home_personal_care'
-      and parsed_rate is not null then
-      parsed_home_personal_care_rate := parsed_rate;
-    end if;
-
-    if 'home_nursing' = any(service_categories_value) and parsed_home_nursing_rate is null then
-      raise exception 'Caregiver signup requires Home Nursing rate.';
-    end if;
-
-    if 'home_personal_care' = any(service_categories_value) and parsed_home_personal_care_rate is null then
-      raise exception 'Caregiver signup requires Home Personal Care rate.';
-    end if;
-
-    service_category_value := case
-      when 'home_personal_care' = any(service_categories_value) then 'home_personal_care'
-      when 'home_nursing' = any(service_categories_value) then 'home_nursing'
-      else 'home_personal_care'
-    end;
-
-    parsed_rate := coalesce(
-      case
-        when service_category_value = 'home_personal_care' then parsed_home_personal_care_rate
-        else parsed_home_nursing_rate
-      end,
-      parsed_home_personal_care_rate,
-      parsed_home_nursing_rate,
-      1
-    );
-
-    specialties := '{}'::text[];
-    if jsonb_typeof(new.raw_user_meta_data -> 'care_specialties') = 'array' then
-      select coalesce(array_agg(value::text), '{}'::text[])
-      into specialties
-      from jsonb_array_elements_text(new.raw_user_meta_data -> 'care_specialties');
-    end if;
-
-    languages := '{}'::text[];
-    if jsonb_typeof(new.raw_user_meta_data -> 'languages_spoken') = 'array' then
-      select coalesce(array_agg(value::text), '{}'::text[])
-      into languages
-      from jsonb_array_elements_text(new.raw_user_meta_data -> 'languages_spoken');
-    end if;
-
-    insert into public.profiles (
-      user_id,
-      full_name,
-      service_category,
-      service_categories,
-      bio,
-      years_experience,
-      credentials_summary,
-      availability_summary,
-      response_time_summary,
-      minimum_shift_hours,
-      last_active_at,
-      hourly_rate,
-      home_nursing_rate,
-      home_personal_care_rate,
-      location,
-      care_specialties,
-      languages_spoken,
-      profile_photo_url,
-      is_verified,
-      is_boosted,
-      boost_expires_at
-    )
-    values (
-      new.id,
-      coalesce(nullif(new.raw_user_meta_data ->> 'full_name', ''), 'New Caregiver'),
-      service_category_value,
-      service_categories_value,
-      coalesce(nullif(new.raw_user_meta_data ->> 'bio', ''), ''),
-      years_experience_value,
-      credentials_summary_value,
-      availability_summary_value,
-      response_time_summary_value,
-      minimum_shift_hours_value,
-      timezone('utc', now()),
-      greatest(parsed_rate, 1),
-      case when parsed_home_nursing_rate is null then null else greatest(parsed_home_nursing_rate, 1) end,
-      case when parsed_home_personal_care_rate is null then null else greatest(parsed_home_personal_care_rate, 1) end,
-      coalesce(nullif(new.raw_user_meta_data ->> 'location', ''), 'Not provided'),
-      specialties,
-      languages,
-      profile_photo_value,
-      false,
-      false,
-      null
-    )
-    on conflict (user_id) do update
-    set
-      full_name = excluded.full_name,
-      service_category = excluded.service_category,
-      service_categories = excluded.service_categories,
-      bio = excluded.bio,
-      years_experience = excluded.years_experience,
-      credentials_summary = excluded.credentials_summary,
-      availability_summary = excluded.availability_summary,
-      response_time_summary = excluded.response_time_summary,
-      minimum_shift_hours = excluded.minimum_shift_hours,
-      last_active_at = excluded.last_active_at,
-      hourly_rate = excluded.hourly_rate,
-      home_nursing_rate = excluded.home_nursing_rate,
-      home_personal_care_rate = excluded.home_personal_care_rate,
-      location = excluded.location,
-      care_specialties = excluded.care_specialties,
-      languages_spoken = excluded.languages_spoken,
-      profile_photo_url = excluded.profile_photo_url,
-      updated_at = timezone('utc', now());
-
-    insert into public.verification_docs (user_id, document_url, status)
-    values (new.id, doc_url_value, 'pending')
-    on conflict (user_id, document_url) do nothing;
+    -- Caregiver accounts are created first, then complete profile setup after OTP success.
+    -- Profile rows are created from the caregiver dashboard flow.
+    return new;
   elsif mapped_role = 'client' then
     insert into public.client_profiles (
       user_id,

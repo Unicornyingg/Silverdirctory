@@ -16,7 +16,7 @@ export function CtaBanner() {
         <div className="w-full flex-shrink-0 text-center lg:w-auto">
           <Link
             href="/directory"
-            className="mx-auto inline-block rounded-md bg-white px-7 py-3 text-center text-lg font-medium text-indigo-600 lg:px-10 lg:py-5"
+            className="secondary-btn mx-auto inline-block border-indigo-200 bg-white px-7 py-3 text-center text-lg font-semibold text-indigo-700 hover:text-indigo-800 lg:px-10 lg:py-5"
           >
             Browse Caregivers
           </Link>

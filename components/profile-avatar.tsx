@@ -31,6 +31,8 @@ export default function ProfileAvatar({
         <img
           src={src ?? ""}
           alt={alt}
+          width={256}
+          height={256}
           loading={loading}
           decoding="async"
           onLoad={() => setHasLoaded(true)}
@@ -42,7 +44,7 @@ export default function ProfileAvatar({
       )}
 
       {!hasLoaded && shouldRenderImage && (
-        <div className="absolute inset-0 animate-pulse bg-[#dce8f1]" aria-hidden="true" />
+        <div className="absolute inset-0 bg-[#dce8f1]" aria-hidden="true" />
       )}
 
       {!shouldRenderImage && (

@@ -50,6 +50,12 @@ export type CaregiverProfile = {
   care_specialties: string[];
   languages_spoken: string[];
   profile_photo_url: string;
+  licensed_nurse_status:
+    | "no_licence_uploaded"
+    | "licence_submitted"
+    | "pending_admin_review"
+    | "licensed_nurse_approved"
+    | "licence_rejected";
   is_verified: boolean;
   is_boosted: boolean;
   boost_expires_at: string | null;
@@ -189,6 +195,12 @@ export type Database = {
           care_specialties?: string[];
           languages_spoken?: string[];
           profile_photo_url: string;
+          licensed_nurse_status?:
+            | "no_licence_uploaded"
+            | "licence_submitted"
+            | "pending_admin_review"
+            | "licensed_nurse_approved"
+            | "licence_rejected";
           is_verified?: boolean;
           is_boosted?: boolean;
           boost_expires_at?: string | null;
@@ -213,6 +225,12 @@ export type Database = {
           care_specialties: string[];
           languages_spoken: string[];
           profile_photo_url: string;
+          licensed_nurse_status:
+            | "no_licence_uploaded"
+            | "licence_submitted"
+            | "pending_admin_review"
+            | "licensed_nurse_approved"
+            | "licence_rejected";
           is_verified: boolean;
           is_boosted: boolean;
           boost_expires_at: string | null;

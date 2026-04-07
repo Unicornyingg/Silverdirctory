@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import ProfileAvatar from "@/components/profile-avatar";
+import { isLicensedNurseApproved } from "@/lib/caregiver-license-status";
 
 type DirectoryListProfile = {
   id: string;
@@ -17,6 +18,12 @@ type DirectoryListProfile = {
   minimum_shift_hours: number | null;
   last_active_at: string;
   hourly_rate: number;
+  licensed_nurse_status:
+    | "no_licence_uploaded"
+    | "licence_submitted"
+    | "pending_admin_review"
+    | "licensed_nurse_approved"
+    | "licence_rejected";
   hasActiveBoost: boolean;
   care_specialties: string[];
   languages_spoken: string[];
@@ -115,6 +122,11 @@ export default function CaregiverDirectoryList({
                     {profile.hasActiveBoost && (
                       <span className="rounded-full border border-[#f2cb8f] bg-[#fff4e3] px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.08em] text-[#8a4c08]">
                         Boosted
+                      </span>
+                    )}
+                    {isLicensedNurseApproved(profile.licensed_nurse_status) && (
+                      <span className="rounded-full border border-[#c7d7fb] bg-[#edf2ff] px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.08em] text-[#2f3ea3]">
+                        Licensed Nurse
                       </span>
                     )}
                   </div>
@@ -265,6 +277,11 @@ export default function CaregiverDirectoryList({
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="text-3xl font-bold tracking-tight text-[#10233b]">{expandedProfile.full_name}</h2>
+                  {isLicensedNurseApproved(expandedProfile.licensed_nurse_status) && (
+                    <span className="rounded-full border border-[#c7d7fb] bg-[#edf2ff] px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.08em] text-[#2f3ea3]">
+                      Licensed Nurse
+                    </span>
+                  )}
                 </div>
 
                 <p className="mt-2 text-sm font-semibold text-[#58708c]">{expandedProfile.location}</p>

@@ -81,7 +81,7 @@ export default function SiteHeader() {
         <div className="mr-2 ml-auto flex gap-3 lg:order-2 lg:ml-0">
           <Link
             href="/directory"
-            className="hidden rounded-md bg-indigo-600 px-6 py-2 text-white md:ml-5 lg:flex"
+            className="primary-btn hidden min-h-[2.5rem] px-6 py-2 text-sm md:ml-5 lg:flex"
           >
             Browse Caregivers
           </Link>
@@ -91,7 +91,7 @@ export default function SiteHeader() {
           type="button"
           aria-label="Toggle Menu"
           onClick={() => setMobileMenuOpen((previous) => !previous)}
-          className="rounded-md px-2 py-1 text-gray-500 hover:text-indigo-500 focus:bg-indigo-100 focus:text-indigo-500 focus:outline-none lg:hidden"
+          className="rounded-md px-2 py-1 text-gray-700 hover:text-indigo-700 focus:bg-indigo-100 focus:text-indigo-700 focus:outline-none lg:hidden"
         >
           <svg className="h-6 w-6 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             {mobileMenuOpen ? (
@@ -201,7 +201,7 @@ export default function SiteHeader() {
                 className={`-ml-4 w-full rounded-md px-4 py-2 ${
                   isActivePath(pathname, item.href)
                     ? "bg-indigo-50 text-indigo-600"
-                    : "text-gray-500 hover:text-indigo-500"
+                    : "text-gray-700 hover:text-indigo-700"
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -216,7 +216,7 @@ export default function SiteHeader() {
                   className={`-ml-4 w-full rounded-md px-4 py-2 ${
                     isActivePath(pathname, "/chats")
                       ? "bg-indigo-50 text-indigo-600"
-                      : "text-gray-500 hover:text-indigo-500"
+                      : "text-gray-700 hover:text-indigo-700"
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -228,7 +228,7 @@ export default function SiteHeader() {
                     className={`-ml-4 w-full rounded-md px-4 py-2 ${
                       isActivePath(pathname, "/caregiver/dashboard")
                         ? "bg-indigo-50 text-indigo-600"
-                        : "text-gray-500 hover:text-indigo-500"
+                        : "text-gray-700 hover:text-indigo-700"
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -241,7 +241,7 @@ export default function SiteHeader() {
                     className={`-ml-4 w-full rounded-md px-4 py-2 ${
                       isActivePath(pathname, "/client/profile")
                         ? "bg-indigo-50 text-indigo-600"
-                        : "text-gray-500 hover:text-indigo-500"
+                        : "text-gray-700 hover:text-indigo-700"
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -256,7 +256,7 @@ export default function SiteHeader() {
                   className={`-ml-4 w-full rounded-md px-4 py-2 ${
                     isActivePath(pathname, "/for-nurses")
                       ? "bg-indigo-50 text-indigo-600"
-                      : "text-gray-500 hover:text-indigo-500"
+                      : "text-gray-700 hover:text-indigo-700"
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -267,7 +267,7 @@ export default function SiteHeader() {
                   className={`-ml-4 w-full rounded-md px-4 py-2 ${
                     isActivePath(pathname, "/login")
                       ? "bg-indigo-50 text-indigo-600"
-                      : "text-gray-500 hover:text-indigo-500"
+                      : "text-gray-700 hover:text-indigo-700"
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -278,7 +278,7 @@ export default function SiteHeader() {
 
             <Link
               href="/directory"
-              className="mt-3 w-full rounded-md bg-indigo-600 px-6 py-2 text-center text-white"
+              className="primary-btn mt-3 w-full text-center text-sm"
               onClick={() => setMobileMenuOpen(false)}
             >
               Browse Caregivers
