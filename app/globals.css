@@ -1,58 +1,58 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f9fafb;
+  --background: #f8f4ee;
   --foreground: #111827;
   --muted: #4b5563;
-  --panel: rgba(255, 255, 255, 0.92);
-  --panel-strong: rgba(255, 255, 255, 0.98);
-  --line: #e5e7eb;
-  --line-strong: #d1d5db;
+  --panel: rgba(255, 252, 247, 0.92);
+  --panel-strong: rgba(255, 252, 247, 0.98);
+  --line: #e8e1d7;
+  --line-strong: #d8cec1;
   --brand: #4f46e5;
   --brand-strong: #4338ca;
   --accent: #6366f1;
-  --accent-soft: #eef2ff;
+  --accent-soft: #f2efff;
   --btn-primary-bg: #4338ca;
-  --btn-primary-fg: #ffffff;
+  --btn-primary-fg: #fcfcff;
   --btn-primary-hover-bg: #3730a3;
   --btn-primary-active-bg: #312e81;
   --btn-secondary-bg: #ffffff;
   --btn-secondary-fg: #1f2937;
-  --btn-secondary-border: #b8c2d1;
-  --btn-secondary-hover-bg: #eef2ff;
+  --btn-secondary-border: #ccbfae;
+  --btn-secondary-hover-bg: #f6f0e8;
   --btn-secondary-hover-fg: #312e81;
   --btn-secondary-hover-border: #a5b4fc;
   --btn-outline-bg: transparent;
   --btn-outline-fg: #1f2937;
-  --btn-outline-border: #b8c2d1;
-  --btn-outline-hover-bg: #eef2ff;
+  --btn-outline-border: #ccbfae;
+  --btn-outline-hover-bg: #f6f0e8;
   --btn-outline-hover-fg: #312e81;
   --btn-outline-hover-border: #a5b4fc;
   --btn-ghost-bg: transparent;
   --btn-ghost-fg: #1f2937;
-  --btn-ghost-hover-bg: #eef2ff;
+  --btn-ghost-hover-bg: #f6f0e8;
   --btn-ghost-hover-fg: #312e81;
-  --btn-disabled-bg: #e5e7eb;
-  --btn-disabled-fg: #4b5563;
-  --btn-disabled-border: #d1d5db;
+  --btn-disabled-bg: #ebe3d8;
+  --btn-disabled-fg: #6b6154;
+  --btn-disabled-border: #d7ccbe;
   --btn-focus-ring: rgba(99, 102, 241, 0.45);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-warm-bg: #f9fafb;
-  --color-warm-surface: #ffffff;
-  --color-warm-surface-soft: #f8fafc;
-  --color-warm-border: #e5e7eb;
+  --color-warm-bg: #f8f4ee;
+  --color-warm-surface: #fffdf9;
+  --color-warm-surface-soft: #f4eee6;
+  --color-warm-border: #e8e1d7;
   --color-warm-ink: #111827;
   --color-warm-muted: #4b5563;
-  --color-sand-100: #f3f4f6;
-  --color-sand-200: #e5e7eb;
-  --color-peach-100: #eef2ff;
+  --color-sand-100: #f2ece4;
+  --color-sand-200: #e8dfd2;
+  --color-peach-100: #f6efe7;
   --color-peach-600: #4338ca;
   --color-sage-100: #e0e7ff;
-  --color-sage-50: #eef2ff;
+  --color-sage-50: #f2efff;
   --color-sage-500: #4f46e5;
   --color-sage-600: #4338ca;
   --color-terracotta-100: #ede9fe;
@@ -83,7 +83,8 @@ html {
 body {
   margin: 0;
   color: var(--foreground);
-  background: #fff;
+  background: var(--background);
+  background-image: linear-gradient(180deg, #fbf8f3 0%, var(--background) 18%, var(--background) 100%);
   font-family: var(--font-sans);
   line-height: 1.5;
   position: relative;
@@ -163,8 +164,8 @@ a:hover {
   justify-content: space-between;
   gap: 0.75rem;
   border-radius: 1rem;
-  border: 1px solid rgba(229, 231, 235, 0.95);
-  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid var(--line);
+  background: var(--panel-strong);
   padding: 0.65rem;
   box-shadow: 0 8px 18px rgba(17, 24, 39, 0.07);
 }
@@ -174,7 +175,7 @@ a:hover {
   align-items: center;
   gap: 0.65rem;
   border-radius: 999px;
-  border: 1px solid rgba(229, 231, 235, 0.95);
+  border: 1px solid var(--line);
   background: var(--panel-strong);
   padding: 0.4rem 0.9rem 0.4rem 0.45rem;
   box-shadow: 0 6px 16px rgba(17, 24, 39, 0.06);
@@ -210,8 +211,8 @@ a:hover {
 
 .nav-link {
   border-radius: 999px;
-  border: 1px solid rgba(229, 231, 235, 0.95);
-  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--line);
+  background: var(--panel);
   padding: 0.48rem 0.82rem;
   font-size: 0.82rem;
   font-weight: 700;
@@ -237,8 +238,8 @@ a:hover {
 
 .menu-toggle {
   border-radius: 999px;
-  border: 1px solid rgba(229, 231, 235, 0.95);
-  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--line);
+  background: var(--panel);
   padding: 0.48rem 0.9rem;
   font-size: 0.82rem;
   font-weight: 700;
@@ -256,16 +257,16 @@ a:hover {
   display: grid;
   gap: 0.5rem;
   border-radius: 0.9rem;
-  border: 1px solid rgba(229, 231, 235, 0.95);
-  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid var(--line);
+  background: var(--panel-strong);
   padding: 0.7rem;
   box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
 }
 
 .mobile-nav-link {
   border-radius: 0.72rem;
-  border: 1px solid rgba(229, 231, 235, 0.9);
-  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--line);
+  background: var(--panel);
   padding: 0.58rem 0.72rem;
   font-size: 0.86rem;
   font-weight: 650;
@@ -485,11 +486,11 @@ a:hover {
 }
 
 .field-file::file-selector-button {
-  border: 1px solid #d1d5db;
+  border: 1px solid #d7ccbe;
   border-radius: 0.55rem;
   padding: 0.44rem 0.66rem;
   margin-right: 0.62rem;
-  background: #f9fafb;
+  background: #f6f0e8;
   color: #374151;
   font-size: 0.84rem;
   font-weight: 650;

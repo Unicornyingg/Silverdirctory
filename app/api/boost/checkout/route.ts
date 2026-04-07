@@ -1,10 +1,21 @@
 import { NextResponse } from "next/server";
+import { enforceRateLimit } from "@/lib/security/api-guard";
 import { getAuthenticatedUserFromRequest } from "@/lib/supabase/auth-session";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const BOOST_PRICE_SGD_CENTS = 500;
+const ROUTE_LIMIT = 30;
+const ROUTE_WINDOW_MS = 15 * 60 * 1000;
 
 export async function POST(request: Request) {
+  const rateLimitResponse = enforceRateLimit({
+    request,
+    scope: "api:boost-checkout",
+    limit: ROUTE_LIMIT,
+    windowMs: ROUTE_WINDOW_MS,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
   if (!stripeSecretKey) {
     return NextResponse.json(

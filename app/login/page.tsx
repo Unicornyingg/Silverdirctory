@@ -5,10 +5,15 @@ import { useRouter } from "next/navigation";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import SiteHeader from "@/components/site-header";
 import { normalizePhoneForAuth } from "@/lib/phone-format";
+import { enforceAuthAttemptLimit } from "@/lib/security/auth-attempt-client";
 import { getReadableAuthError } from "@/lib/supabase/auth-errors";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type AccountType = "caregiver" | "client";
+const MAX_EMAIL_LENGTH = 320;
+const MAX_PHONE_LENGTH = 24;
+const MAX_OTP_LENGTH = 10;
+const MAX_PASSWORD_LENGTH = 128;
 
 function normalizeRequestedRole(role: string | null): AccountType | null {
   if (role === "caregiver" || role === "client") {
@@ -162,9 +167,20 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
+      const normalizedEmail = email.trim().toLowerCase();
+      if (normalizedEmail.length > MAX_EMAIL_LENGTH) {
+        setErrorMessage("Email is too long.");
+        return;
+      }
+      if (password.length > MAX_PASSWORD_LENGTH) {
+        setErrorMessage("Password is too long.");
+        return;
+      }
+
+      await enforceAuthAttemptLimit("login_password");
       const supabase = getSupabaseBrowserClient();
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
         password,
       });
 
@@ -198,6 +214,7 @@ export default function LoginPage() {
     }
     setIsGoogleSubmitting(true);
     try {
+      await enforceAuthAttemptLimit("login_google");
       const supabase = getSupabaseBrowserClient();
       const oauthParams = new URLSearchParams({
         source: "login",
@@ -234,9 +251,14 @@ export default function LoginPage() {
       setErrorMessage("Please enter your phone number.");
       return;
     }
+    if (normalizedPhone.length > MAX_PHONE_LENGTH) {
+      setErrorMessage("Phone number is too long.");
+      return;
+    }
 
     setIsPhoneOtpSubmitting(true);
     try {
+      await enforceAuthAttemptLimit("login_send_otp");
       const supabase = getSupabaseBrowserClient();
       const { error } = await supabase.auth.signInWithOtp({
         phone: normalizedPhone,
@@ -273,13 +295,22 @@ export default function LoginPage() {
       setErrorMessage("Please enter your phone number.");
       return;
     }
+    if (normalizedPhone.length > MAX_PHONE_LENGTH) {
+      setErrorMessage("Phone number is too long.");
+      return;
+    }
     if (token.length < 4) {
       setErrorMessage("Please enter the SMS verification code.");
+      return;
+    }
+    if (token.length > MAX_OTP_LENGTH) {
+      setErrorMessage("SMS verification code is too long.");
       return;
     }
 
     setIsPhoneOtpSubmitting(true);
     try {
+      await enforceAuthAttemptLimit("login_verify_otp");
       const supabase = getSupabaseBrowserClient();
       const { data, error } = await supabase.auth.verifyOtp({
         phone: normalizedPhone,
@@ -319,6 +350,10 @@ export default function LoginPage() {
     const normalizedEmail = forgotEmail.trim().toLowerCase();
     if (normalizedEmail.length < 4) {
       setErrorMessage("Please enter your account email to reset password.");
+      return;
+    }
+    if (normalizedEmail.length > MAX_EMAIL_LENGTH) {
+      setErrorMessage("Email is too long.");
       return;
     }
 
@@ -452,6 +487,7 @@ export default function LoginPage() {
                     onChange={(event) => setPhoneOtp(event.target.value)}
                     className="field-input"
                     placeholder="+65 8123 4567"
+                    maxLength={MAX_PHONE_LENGTH}
                   />
                 </label>
                 {isPhoneOtpSent && (
@@ -464,6 +500,7 @@ export default function LoginPage() {
                       placeholder="123456"
                       inputMode="numeric"
                       autoComplete="one-time-code"
+                      maxLength={MAX_OTP_LENGTH}
                     />
                   </label>
                 )}
@@ -513,6 +550,7 @@ export default function LoginPage() {
                   onChange={(event) => setPhoneOtp(event.target.value)}
                   className="field-input"
                   placeholder="+65 8123 4567"
+                  maxLength={MAX_PHONE_LENGTH}
                 />
               </label>
               {isPhoneOtpSent && (
@@ -525,6 +563,7 @@ export default function LoginPage() {
                     placeholder="123456"
                     inputMode="numeric"
                     autoComplete="one-time-code"
+                    maxLength={MAX_OTP_LENGTH}
                   />
                 </label>
               )}
@@ -567,6 +606,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="you@email.com"
+                maxLength={MAX_EMAIL_LENGTH}
                 required
               />
             </label>
@@ -579,6 +619,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="Your password"
+                maxLength={MAX_PASSWORD_LENGTH}
                 required
               />
             </label>
@@ -624,6 +665,7 @@ export default function LoginPage() {
                   value={forgotEmail}
                   onChange={(event) => setForgotEmail(event.target.value)}
                   placeholder="you@email.com"
+                  maxLength={MAX_EMAIL_LENGTH}
                   required
                 />
               </label>

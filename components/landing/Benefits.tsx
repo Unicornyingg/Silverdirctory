@@ -12,6 +12,7 @@ type BenefitData = {
   title: string;
   desc: string;
   image: StaticImageData;
+  imageAlt: string;
   bullets: BenefitBullet[];
 };
 
@@ -30,10 +31,10 @@ export function Benefits({ imgPos, data }: Readonly<BenefitsProps>) {
       >
         <Image
           src={data.image}
-          width={521}
-          height={521}
-          alt={data.title}
-          className="object-cover"
+          width={data.image.width}
+          height={data.image.height}
+          alt={data.imageAlt}
+          className="h-auto w-full max-w-[560px] object-contain"
           placeholder="blur"
         />
       </div>

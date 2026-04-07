@@ -22,7 +22,7 @@ export function Testimonials({ items }: Readonly<TestimonialsProps>) {
             key={item.name}
             className={index === 0 ? "lg:col-span-2 xl:col-auto" : ""}
           >
-            <div className="flex h-full w-full flex-col justify-between rounded-2xl bg-gray-100 px-14 py-14">
+            <div className="flex h-full w-full flex-col justify-between rounded-2xl border border-[var(--line)] bg-[var(--color-warm-surface-soft)] px-14 py-14">
               <p className="text-2xl leading-normal text-gray-900">{item.quote}</p>
               <Avatar image={item.image} name={item.name} title={item.title} />
             </div>

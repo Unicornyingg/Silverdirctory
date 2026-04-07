@@ -131,6 +131,15 @@ type ReportEvidence = {
 };
 
 const CARE_SPECIALTY_SPLIT = /[,;\n]/;
+const MAX_REJECTION_REASON_LENGTH = 2000;
+const MAX_RESOLUTION_NOTES_LENGTH = 3000;
+const MAX_FULL_NAME_LENGTH = 120;
+const MAX_PHONE_LENGTH = 32;
+const MAX_LOCATION_LENGTH = 200;
+const MAX_BIO_LENGTH = 5000;
+const MAX_SPECIALTIES_LENGTH = 2000;
+const MAX_LANGUAGES_LENGTH = 1000;
+const MAX_ADMIN_NOTE_LENGTH = 600;
 
 function getParam(value: string | string[] | undefined): string {
   if (Array.isArray(value)) {
@@ -345,6 +354,28 @@ async function handleVerificationDecision(formData: FormData) {
       )
     );
   }
+  if (docId.length > 64 || userId.length > 64) {
+    redirect(
+      createStatusRedirect(
+        activeKey,
+        "error",
+        "Malformed verification identifiers.",
+        {},
+        "verification"
+      )
+    );
+  }
+  if (caregiverName.length > MAX_FULL_NAME_LENGTH || caregiverEmail.length > 320) {
+    redirect(
+      createStatusRedirect(
+        activeKey,
+        "error",
+        "Malformed caregiver metadata.",
+        { review: docId },
+        "verification"
+      )
+    );
+  }
 
   const decision: "approved" | "rejected" | "pending" =
     decisionInput === "rejected"
@@ -358,6 +389,17 @@ async function handleVerificationDecision(formData: FormData) {
         activeKey,
         "error",
         "Please provide a rejection reason of at least 5 characters.",
+        { review: docId },
+        "verification"
+      )
+    );
+  }
+  if (rejectionReason.length > MAX_REJECTION_REASON_LENGTH) {
+    redirect(
+      createStatusRedirect(
+        activeKey,
+        "error",
+        "Rejection reason is too long.",
         { review: docId },
         "verification"
       )
@@ -475,6 +517,28 @@ async function handleReportResolution(formData: FormData) {
 
   if (!reportId) {
     redirect(createStatusRedirect(activeKey, "error", "Missing report ticket id.", {}, "reports"));
+  }
+  if (reportId.length > 64) {
+    redirect(
+      createStatusRedirect(
+        activeKey,
+        "error",
+        "Malformed report ticket id.",
+        {},
+        "reports"
+      )
+    );
+  }
+  if (resolutionNotes.length > MAX_RESOLUTION_NOTES_LENGTH) {
+    redirect(
+      createStatusRedirect(
+        activeKey,
+        "error",
+        "Resolution notes are too long.",
+        { report: reportId },
+        "reports"
+      )
+    );
   }
 
   if (!["dismiss", "suspend", "ban"].includes(resolution)) {
@@ -621,6 +685,36 @@ async function handleUserOverride(formData: FormData) {
 
   if (!userId || fullName.length < 2) {
     redirect(createStatusRedirect(activeKey, "error", "User id and full name are required.", {}, "users"));
+  }
+  if (userId.length > 64) {
+    redirect(
+      createStatusRedirect(
+        activeKey,
+        "error",
+        "Malformed user id.",
+        {},
+        "users"
+      )
+    );
+  }
+  if (
+    fullName.length > MAX_FULL_NAME_LENGTH ||
+    phone.length > MAX_PHONE_LENGTH ||
+    location.length > MAX_LOCATION_LENGTH ||
+    bio.length > MAX_BIO_LENGTH ||
+    careSpecialtiesRaw.length > MAX_SPECIALTIES_LENGTH ||
+    languagesSpokenRaw.length > MAX_LANGUAGES_LENGTH ||
+    adminNote.length > MAX_ADMIN_NOTE_LENGTH
+  ) {
+    redirect(
+      createStatusRedirect(
+        activeKey,
+        "error",
+        "One or more fields exceed allowed size limits.",
+        { user: userId },
+        "users"
+      )
+    );
   }
 
   if (!["client", "caregiver", "admin"].includes(userRole)) {

@@ -6,6 +6,7 @@ import { type FormEvent, useEffect, useState } from "react";
 import SiteHeader from "@/components/site-header";
 import { saveCaregiverSignupContext } from "@/lib/caregiver-signup-context";
 import { normalizePhoneForAuth } from "@/lib/phone-format";
+import { enforceAuthAttemptLimit } from "@/lib/security/auth-attempt-client";
 import { getReadableAuthError } from "@/lib/supabase/auth-errors";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -24,6 +25,11 @@ const INITIAL_FORM: SignupForm = {
   password: "",
   confirmPassword: "",
 };
+
+const MAX_FULL_NAME_LENGTH = 120;
+const MAX_EMAIL_LENGTH = 320;
+const MAX_PHONE_LENGTH = 24;
+const MAX_PASSWORD_LENGTH = 128;
 
 export default function CaregiverAccountCreationPage() {
   const router = useRouter();
@@ -78,16 +84,32 @@ export default function CaregiverAccountCreationPage() {
       setErrorMessage("Please enter your full name.");
       return;
     }
+    if (fullName.length > MAX_FULL_NAME_LENGTH) {
+      setErrorMessage("Full name is too long.");
+      return;
+    }
     if (email.length < 4 || !email.includes("@")) {
       setErrorMessage("Please enter a valid email.");
+      return;
+    }
+    if (email.length > MAX_EMAIL_LENGTH) {
+      setErrorMessage("Email is too long.");
       return;
     }
     if (phone.length < 6) {
       setErrorMessage("Please enter your phone number.");
       return;
     }
+    if (phone.length > MAX_PHONE_LENGTH) {
+      setErrorMessage("Phone number is too long.");
+      return;
+    }
     if (password.length < 8) {
       setErrorMessage("Password must be at least 8 characters.");
+      return;
+    }
+    if (password.length > MAX_PASSWORD_LENGTH || confirmPassword.length > MAX_PASSWORD_LENGTH) {
+      setErrorMessage("Password is too long.");
       return;
     }
     if (confirmPassword !== password) {
@@ -97,6 +119,7 @@ export default function CaregiverAccountCreationPage() {
 
     setIsSubmitting(true);
     try {
+      await enforceAuthAttemptLimit("caregiver_signup");
       const supabase = getSupabaseBrowserClient();
       const metadata = {
         account_type: "caregiver" as const,
@@ -163,6 +186,7 @@ export default function CaregiverAccountCreationPage() {
                 }
                 className="field-input"
                 placeholder="Jane Smith"
+                maxLength={MAX_FULL_NAME_LENGTH}
                 required
               />
             </label>
@@ -177,6 +201,7 @@ export default function CaregiverAccountCreationPage() {
                 }
                 className="field-input"
                 placeholder="jane@domain.com"
+                maxLength={MAX_EMAIL_LENGTH}
                 required
               />
             </label>
@@ -190,6 +215,7 @@ export default function CaregiverAccountCreationPage() {
                 }
                 className="field-input"
                 placeholder="8123 4567"
+                maxLength={MAX_PHONE_LENGTH}
                 required
               />
             </label>
@@ -205,6 +231,7 @@ export default function CaregiverAccountCreationPage() {
                 className="field-input"
                 placeholder="Minimum 8 characters"
                 minLength={8}
+                maxLength={MAX_PASSWORD_LENGTH}
                 required
               />
             </label>
@@ -223,6 +250,7 @@ export default function CaregiverAccountCreationPage() {
                 className="field-input"
                 placeholder="Re-enter your password"
                 minLength={8}
+                maxLength={MAX_PASSWORD_LENGTH}
                 required
               />
             </label>

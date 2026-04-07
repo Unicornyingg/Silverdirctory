@@ -16,7 +16,7 @@ export function FaqList({ items }: Readonly<FaqListProps>) {
         {items.map((item) => (
           <div key={item.question} className="mb-5">
             <details>
-              <summary className="flex w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-4 text-left text-lg font-semibold text-gray-900 hover:bg-gray-50">
+              <summary className="flex w-full items-center justify-between rounded-lg border border-[var(--line)] bg-[var(--panel-strong)] px-4 py-4 text-left text-lg font-semibold text-gray-900 hover:bg-[var(--color-warm-surface-soft)]">
                 <span>{item.question}</span>
                 <span className="text-indigo-500">+</span>
               </summary>

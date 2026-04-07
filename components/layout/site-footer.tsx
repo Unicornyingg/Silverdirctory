@@ -3,7 +3,7 @@ import { Container } from "@/components/landing/Container";
 
 export function SiteFooter() {
   return (
-    <div className="relative mt-10 border-t border-gray-100">
+    <div className="relative mt-10 border-t border-[var(--line)]">
       <Container>
         <div className="mx-auto mt-5 grid max-w-screen-xl grid-cols-1 gap-10 pt-10 lg:grid-cols-5">
           <div className="lg:col-span-2">

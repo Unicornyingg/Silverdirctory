@@ -9,8 +9,12 @@ import {
   readCaregiverSignupContext,
 } from "@/lib/caregiver-signup-context";
 import { normalizePhoneForAuth } from "@/lib/phone-format";
+import { enforceAuthAttemptLimit } from "@/lib/security/auth-attempt-client";
 import { getReadableAuthError } from "@/lib/supabase/auth-errors";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+
+const MAX_PHONE_LENGTH = 24;
+const MAX_OTP_LENGTH = 10;
 
 export default function CaregiverOtpVerificationPage() {
   const router = useRouter();
@@ -78,13 +82,22 @@ export default function CaregiverOtpVerificationPage() {
       setErrorMessage("Phone number is missing. Go back and create your account first.");
       return;
     }
+    if (normalizedPhone.length > MAX_PHONE_LENGTH) {
+      setErrorMessage("Phone number is too long.");
+      return;
+    }
     if (token.length < 4) {
       setErrorMessage("Enter the SMS verification code.");
+      return;
+    }
+    if (token.length > MAX_OTP_LENGTH) {
+      setErrorMessage("OTP code is too long.");
       return;
     }
 
     setIsVerifying(true);
     try {
+      await enforceAuthAttemptLimit("caregiver_verify_otp");
       const supabase = getSupabaseBrowserClient();
       const { data, error } = await supabase.auth.verifyOtp({
         phone: normalizedPhone,
@@ -140,9 +153,14 @@ export default function CaregiverOtpVerificationPage() {
       setErrorMessage("Please enter your phone number.");
       return;
     }
+    if (normalizedPhone.length > MAX_PHONE_LENGTH) {
+      setErrorMessage("Phone number is too long.");
+      return;
+    }
 
     setIsResending(true);
     try {
+      await enforceAuthAttemptLimit("caregiver_resend_otp");
       const supabase = getSupabaseBrowserClient();
       const { error } = await supabase.auth.signInWithOtp({
         phone: normalizedPhone,
@@ -189,6 +207,7 @@ export default function CaregiverOtpVerificationPage() {
                 onChange={(event) => setPhone(event.target.value)}
                 className="field-input"
                 placeholder="8123 4567"
+                maxLength={MAX_PHONE_LENGTH}
                 required
               />
             </label>
@@ -202,6 +221,7 @@ export default function CaregiverOtpVerificationPage() {
                 placeholder="123456"
                 inputMode="numeric"
                 autoComplete="one-time-code"
+                maxLength={MAX_OTP_LENGTH}
                 required
               />
             </label>

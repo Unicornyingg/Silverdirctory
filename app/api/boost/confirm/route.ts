@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { enforceRateLimit, readJsonWithLimit } from "@/lib/security/api-guard";
 import { getAuthenticatedUserFromRequest } from "@/lib/supabase/auth-session";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -12,7 +13,24 @@ type StripeCheckoutSession = {
   metadata?: Record<string, string>;
 };
 
+const ROUTE_LIMIT = 30;
+const ROUTE_WINDOW_MS = 15 * 60 * 1000;
+const MAX_CONFIRM_PAYLOAD_BYTES = 8 * 1024;
+
+function isValidStripeSessionId(value: string): boolean {
+  if (value.length < 8 || value.length > 200) return false;
+  return /^cs_[A-Za-z0-9_]+$/.test(value);
+}
+
 export async function POST(request: Request) {
+  const rateLimitResponse = enforceRateLimit({
+    request,
+    scope: "api:boost-confirm",
+    limit: ROUTE_LIMIT,
+    windowMs: ROUTE_WINDOW_MS,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
   if (!stripeSecretKey) {
     return NextResponse.json(
@@ -29,12 +47,17 @@ export async function POST(request: Request) {
     );
   }
 
-  let payload: ConfirmPayload;
-  try {
-    payload = (await request.json()) as ConfirmPayload;
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+  const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
+  if (!contentType.includes("application/json")) {
+    return NextResponse.json({ error: "Content-Type must be application/json." }, { status: 415 });
   }
+
+  const rawBody = await request.text();
+  const parsed = readJsonWithLimit(rawBody, MAX_CONFIRM_PAYLOAD_BYTES);
+  if (parsed.error) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 });
+  }
+  const payload = (parsed.data ?? {}) as ConfirmPayload;
 
   const sessionId = payload.sessionId?.trim();
   if (!sessionId) {
@@ -42,6 +65,9 @@ export async function POST(request: Request) {
       { error: "Missing Stripe session id." },
       { status: 400 }
     );
+  }
+  if (!isValidStripeSessionId(sessionId)) {
+    return NextResponse.json({ error: "Malformed Stripe session id." }, { status: 400 });
   }
 
   const sessionResponse = await fetch(

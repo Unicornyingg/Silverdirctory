@@ -37,7 +37,7 @@ export default function RootLayout({
       lang="en"
       className={`${plusJakartaSans.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable}`}
     >
-      <body className="antialiased text-[15px] md:text-[16px]">{children}</body>
+      <body className="bg-[var(--background)] antialiased text-[15px] md:text-[16px]">{children}</body>
     </html>
   );
 }

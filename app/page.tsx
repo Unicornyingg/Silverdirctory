@@ -3,14 +3,13 @@ import SiteHeader from "@/components/site-header";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { SectionTitle } from "@/components/landing/SectionTitle";
 import { Benefits } from "@/components/landing/Benefits";
-import { VideoPanel } from "@/components/landing/VideoPanel";
 import { Testimonials, Mark } from "@/components/landing/Testimonials";
 import { FaqList } from "@/components/landing/FaqList";
 import { CtaBanner } from "@/components/landing/CtaBanner";
 import { SiteFooter } from "@/components/layout/site-footer";
 
-import benefitOneImg from "@/public/img/benefit-one.png";
-import benefitTwoImg from "@/public/img/benefit-two.png";
+import benefitOneImg from "@/public/images/direct-caregiver-discovery.png";
+import benefitTwoImg from "@/public/images/caregiver-marketplace-rules.png";
 import userOneImg from "@/public/img/user1.jpg";
 import userTwoImg from "@/public/img/user2.jpg";
 import userThreeImg from "@/public/img/user3.jpg";
@@ -19,6 +18,8 @@ const benefitOne = {
   title: "Built for direct caregiver discovery",
   desc: "Families can browse profiles, compare hourly rates, and shortlist caregivers based on region and care services before starting a chat.",
   image: benefitOneImg,
+  imageAlt:
+    "Family and caregiver discussing care options in a Singapore home living room",
   bullets: [
     {
       title: "Filter by real care needs",
@@ -42,6 +43,8 @@ const benefitTwo = {
   title: "Fair marketplace rules for caregivers",
   desc: "Independent caregivers keep control over their profiles, rates, and availability while retaining 100% of wage payments.",
   image: benefitTwoImg,
+  imageAlt:
+    "Independent caregiver managing her service listings and schedule on a laptop",
   bullets: [
     {
       title: "Zero wage commission",
@@ -122,7 +125,7 @@ const faqItems = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[var(--background)]">
       <SiteHeader />
 
       <HeroSection />
@@ -137,16 +140,6 @@ export default function Home() {
 
       <Benefits data={benefitOne} />
       <Benefits imgPos="right" data={benefitTwo} />
-
-      <SectionTitle
-        preTitle="Platform Walkthrough"
-        title="See how families and caregivers connect in three practical steps"
-      >
-        Browse profiles, start in-app chat, and confirm care details directly without agency
-        lock-in.
-      </SectionTitle>
-
-      <VideoPanel videoId="fZ0D0cnR88E" />
 
       <SectionTitle preTitle="Community Feedback" title="What users value about Silver Directory">
         Real experiences from families and caregivers using a direct listing model.

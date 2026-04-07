@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/landing/Container";
-import heroImg from "@/public/img/hero.png";
+import heroImg from "@/public/images/eldercare-hero.png";
 
 export function HeroSection() {
   return (
@@ -36,10 +36,10 @@ export function HeroSection() {
         <div className="flex w-full items-center justify-center lg:w-1/2">
           <Image
             src={heroImg}
-            width={616}
-            height={617}
-            className="object-cover"
-            alt="Caregiver directory illustration"
+            width={heroImg.width}
+            height={heroImg.height}
+            className="h-auto w-full max-w-[640px] object-contain"
+            alt="Nurse supporting an elderly man while a family member coordinates home care in Singapore"
             loading="eager"
             placeholder="blur"
           />
@@ -53,16 +53,16 @@ export function HeroSection() {
           </div>
 
           <div className="mt-10 flex flex-wrap justify-center gap-3 md:justify-around">
-            <span className="rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-800">
+            <span className="rounded-full border border-[var(--line)] bg-[var(--color-warm-surface-soft)] px-4 py-2 text-sm font-medium text-gray-800">
               In-app chat first
             </span>
-            <span className="rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-800">
+            <span className="rounded-full border border-[var(--line)] bg-[var(--color-warm-surface-soft)] px-4 py-2 text-sm font-medium text-gray-800">
               Zero wage commission
             </span>
-            <span className="rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-800">
+            <span className="rounded-full border border-[var(--line)] bg-[var(--color-warm-surface-soft)] px-4 py-2 text-sm font-medium text-gray-800">
               No auto-matching
             </span>
-            <span className="rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-800">
+            <span className="rounded-full border border-[var(--line)] bg-[var(--color-warm-surface-soft)] px-4 py-2 text-sm font-medium text-gray-800">
               Hyper-local listings
             </span>
           </div>

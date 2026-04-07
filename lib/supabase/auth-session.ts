@@ -22,8 +22,13 @@ function getAnonServerClient() {
 function readBearerToken(request: Request): string | null {
   const authHeader = request.headers.get("authorization");
   if (!authHeader) return null;
+  if (authHeader.length > 8192) return null;
+
   const [prefix, token] = authHeader.split(" ");
   if (prefix?.toLowerCase() !== "bearer" || !token) {
+    return null;
+  }
+  if (token.length < 20 || token.length > 4096) {
     return null;
   }
   return token;

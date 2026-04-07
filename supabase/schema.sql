@@ -5,7 +5,30 @@
 -- PRD MVP TABLES (Notice-board model)
 -- ============================================================
 
-drop table if exists public.users cascade;
+do $$
+begin
+  -- `public.users` is now a view; older environments may still have a table.
+  if exists (
+    select 1
+    from pg_class c
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public'
+      and c.relname = 'users'
+      and c.relkind = 'v'
+  ) then
+    execute 'drop view public.users cascade';
+  elsif exists (
+    select 1
+    from pg_class c
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public'
+      and c.relname = 'users'
+      and c.relkind in ('r', 'p')
+  ) then
+    execute 'drop table public.users cascade';
+  end if;
+end
+$$;
 
 create table if not exists public.user_moderation (
   user_id uuid primary key references auth.users(id) on delete cascade,
@@ -346,6 +369,174 @@ $$;
 
 do $$
 begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'profiles_full_name_length_check'
+  ) then
+    alter table public.profiles
+    add constraint profiles_full_name_length_check
+    check (char_length(full_name) between 2 and 120) not valid;
+  end if;
+end;
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'profiles_location_length_check'
+  ) then
+    alter table public.profiles
+    add constraint profiles_location_length_check
+    check (char_length(location) between 1 and 200) not valid;
+  end if;
+end;
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'profiles_bio_length_check'
+  ) then
+    alter table public.profiles
+    add constraint profiles_bio_length_check
+    check (char_length(bio) <= 5000) not valid;
+  end if;
+end;
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'profiles_credentials_summary_length_check'
+  ) then
+    alter table public.profiles
+    add constraint profiles_credentials_summary_length_check
+    check (char_length(credentials_summary) <= 500) not valid;
+  end if;
+end;
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'profiles_availability_summary_length_check'
+  ) then
+    alter table public.profiles
+    add constraint profiles_availability_summary_length_check
+    check (char_length(availability_summary) <= 500) not valid;
+  end if;
+end;
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'profiles_response_time_summary_length_check'
+  ) then
+    alter table public.profiles
+    add constraint profiles_response_time_summary_length_check
+    check (char_length(response_time_summary) <= 200) not valid;
+  end if;
+end;
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'profiles_profile_photo_url_length_check'
+  ) then
+    alter table public.profiles
+    add constraint profiles_profile_photo_url_length_check
+    check (char_length(profile_photo_url) <= 2000) not valid;
+  end if;
+end;
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'client_profiles_full_name_length_check'
+  ) then
+    alter table public.client_profiles
+    add constraint client_profiles_full_name_length_check
+    check (char_length(full_name) between 2 and 120) not valid;
+  end if;
+end;
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'client_profiles_phone_length_check'
+  ) then
+    alter table public.client_profiles
+    add constraint client_profiles_phone_length_check
+    check (phone is null or char_length(phone) <= 32) not valid;
+  end if;
+end;
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'client_profiles_location_length_check'
+  ) then
+    alter table public.client_profiles
+    add constraint client_profiles_location_length_check
+    check (location is null or char_length(location) <= 200) not valid;
+  end if;
+end;
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'verification_docs_document_url_length_check'
+  ) then
+    alter table public.verification_docs
+    add constraint verification_docs_document_url_length_check
+    check (char_length(document_url) between 1 and 2000) not valid;
+  end if;
+end;
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'verification_docs_review_notes_length_check'
+  ) then
+    alter table public.verification_docs
+    add constraint verification_docs_review_notes_length_check
+    check (review_notes is null or char_length(review_notes) <= 2000) not valid;
+  end if;
+end;
+$$;
+
+do $$
+begin
   alter table public.profiles validate constraint profiles_years_experience_check;
 exception
   when undefined_object then
@@ -359,6 +550,20 @@ begin
 exception
   when undefined_object then
     null;
+end;
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'chat_messages_body_max_length_check'
+  ) then
+    alter table public.chat_messages
+    add constraint chat_messages_body_max_length_check
+    check (char_length(body) <= 4000) not valid;
+  end if;
 end;
 $$;
 
