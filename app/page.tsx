@@ -1,253 +1,275 @@
 import Link from "next/link";
 import SiteHeader from "@/components/site-header";
+import { CARE_SERVICE_OPTIONS } from "@/lib/care-services";
+import { SERVICE_REGION_OPTIONS } from "@/lib/service-regions";
 
-const valueProps = [
+type Highlight = {
+  title: string;
+  description: string;
+};
+
+const PRIMARY_HIGHLIGHTS: Highlight[] = [
   {
-    title: "Direct listings",
+    title: "Direct caregiver listings",
     description:
-      "Caregiver profiles are listed directly so families can browse and contact quickly.",
+      "Families browse profiles, compare rates, and contact caregivers directly without waiting for coordinator matching.",
   },
   {
-    title: "In-app family-to-caregiver chat",
+    title: "In-app chat first",
     description:
-      "Families start conversations in-app first, then share details only when ready.",
+      "Start conversations in the platform first, then finalize home-care arrangements only when both sides are ready.",
   },
   {
-    title: "Hyper-local notice board model",
+    title: "Zero commission model",
     description:
-      "No auto-matching and no built-in scheduling. Browse and coordinate directly.",
+      "Silver Directory does not deduct wage percentages from caregivers. Families and caregivers agree payment directly.",
   },
 ];
 
-const rolePaths = [
+const HOW_IT_WORKS = [
   {
-    title: "I need a caregiver",
+    title: "1. Browse profiles",
     description:
-      "Browse caregiver profiles, compare rates, and start in-app chat safely.",
-    href: "/directory",
-    cta: "Find a caregiver",
+      "Use location, service, and max-rate filters to shortlist caregivers that match your care needs.",
   },
   {
-    title: "I want to list my services",
+    title: "2. Start a secure chat",
     description:
-      "Create your profile and get listed for families looking for eldercare support.",
-    href: "/for-nurses",
-    cta: "Create caregiver profile",
+      "Message your shortlisted caregivers in-app to discuss tasks, timing, and expectations before any visit.",
+  },
+  {
+    title: "3. Confirm details directly",
+    description:
+      "Agree rates, payment method, and care scope privately. There is no lock-in contract imposed by the platform.",
   },
 ];
 
-const firstMeetingChecklist = [
-  "Run a short video call before confirming the first visit.",
-  "Confirm caregiver identity and name against profile details.",
-  "Share care needs clearly: tasks, schedule, mobility needs, medications.",
-  "Agree payment method and timing before the first shift.",
+const SAFETY_NOTES = [
+  "Arrange a short video call before the first home visit.",
+  "Confirm caregiver identity against profile details before handover.",
+  "Discuss care boundaries, escalation plans, and payment timing clearly.",
+  "Call 995 for urgent medical emergencies.",
 ];
 
-const identityChecklist = [
-  "Request a quick video call and photo confirmation before first visit.",
-  "Confirm profile photo matches the caregiver attending.",
-  "Confirm agreed scope and responsibilities before handover.",
+const FAQ_PREVIEW = [
+  {
+    question: "How does Silver Directory match families with caregivers?",
+    answer:
+      "We do not auto-match. Families choose caregivers directly after reviewing profile details and rates.",
+  },
+  {
+    question: "Does the platform process caregiver wages?",
+    answer:
+      "No. Wage payments are agreed and handled directly between families and caregivers.",
+  },
+  {
+    question: "Can caregivers keep 100% of their earnings?",
+    answer:
+      "Yes. Silver Directory does not charge matching commissions or wage percentages.",
+  },
 ];
+
+const regionBadges = SERVICE_REGION_OPTIONS.filter((region) => region.value !== "No Preference");
 
 export default function Home() {
   return (
     <div className="site-shell text-warm-ink">
       <SiteHeader />
 
-      <main className="grid items-start gap-8 lg:grid-cols-[1.12fr_0.88fr]">
-        <section className="space-y-8 page-enter">
-          <div className="space-y-5">
-            <h1 className="font-display text-[clamp(2.05rem,5.7vw,4.15rem)] leading-[1.04] font-bold tracking-[-0.026em] text-warm-ink">
-              Silver Directory helps families find local eldercare support fast.
-            </h1>
-            <p className="max-w-[44rem] text-[clamp(1rem,1.35vw,1.18rem)] leading-[1.72] text-warm-muted">
-              A zero-commission classifieds board where caregivers list services
-              and families connect directly for temporary eldercare support.
-            </p>
+      <main className="space-y-6">
+        <section className="surface-panel page-enter overflow-hidden p-6 md:p-8">
+          <div className="grid gap-6 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
+            <div>
+              <p className="eyebrow">Silver Directory</p>
+              <h1 className="mt-4 font-display text-[clamp(2rem,5vw,4rem)] leading-[1.05] font-bold tracking-[-0.025em] text-warm-ink">
+                A hyper-local eldercare marketplace for families and independent caregivers.
+              </h1>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-warm-muted md:text-lg">
+                Browse local caregiver listings, compare rates, and start in-app chat without agency lock-in or auto-matching.
+              </p>
+
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Link href="/directory" className="primary-btn min-w-[210px]">
+                  Find a caregiver
+                </Link>
+                <Link href="/for-nurses" className="secondary-btn min-w-[210px]">
+                  Create caregiver profile
+                </Link>
+              </div>
+            </div>
+
+            <aside className="rounded-card border border-warm-border bg-warm-surface-soft p-5 shadow-soft">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-sage-600">
+                Platform Snapshot
+              </p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                <article className="rounded-xl border border-[#cfe0c7] bg-sage-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-sage-600">
+                    Care Model
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-warm-muted">
+                    Direct listing board for temporary eldercare support in Singapore.
+                  </p>
+                </article>
+                <article className="rounded-xl border border-sand-200 bg-sand-100 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#8d6a52]">
+                    Matching
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-[#7b5f4d]">
+                    No algorithmic auto-assignment. Families decide who to contact.
+                  </p>
+                </article>
+                <article className="rounded-xl border border-[#eacabd] bg-peach-100 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-peach-600">
+                    Payments
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-[#815948]">
+                    No wage gateway. Payment method and timing are agreed directly.
+                  </p>
+                </article>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section className="surface-panel p-6 md:p-8">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="eyebrow">Benefits</p>
+              <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-warm-ink md:text-3xl">
+                Why families and caregivers use Silver Directory
+              </h2>
+            </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            {rolePaths.map((path) => (
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
+            {PRIMARY_HIGHLIGHTS.map((item) => (
               <article
-                key={path.title}
-                className="flex h-full flex-col rounded-card border border-warm-border bg-warm-surface p-6 shadow-soft"
+                key={item.title}
+                className="rounded-card border border-warm-border bg-warm-surface-soft p-5 shadow-sm"
               >
-                <h2 className="text-lg font-bold text-warm-ink">{path.title}</h2>
-                <p className="mt-3 flex-1 text-sm leading-6 text-warm-muted">{path.description}</p>
-                <Link
-                  href={path.href}
-                  className="mt-5 inline-flex min-h-[2.9rem] w-full items-center justify-center rounded-xl bg-sage-500 px-5 py-3 text-[0.95rem] font-bold tracking-[0.01em] text-white shadow-sm transition hover:-translate-y-px hover:bg-sage-600 hover:shadow-md"
-                >
-                  {path.cta}
-                </Link>
+                <h3 className="text-lg font-bold text-warm-ink">{item.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-warm-muted">{item.description}</p>
               </article>
             ))}
           </div>
         </section>
 
-        <aside className="page-enter overflow-hidden rounded-panel border border-warm-border bg-warm-surface p-6 shadow-soft-lg">
-          <div className="space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sage-600">
-              Platform highlights
-            </p>
-            <div className="stagger space-y-3">
-              {valueProps.map((item) => (
-                <article
-                  key={item.title}
-                  className="rounded-card border border-warm-border bg-warm-surface-soft p-4 shadow-sm"
+        <section className="grid gap-6 lg:grid-cols-[1fr_1fr]">
+          <article className="surface-panel p-6 md:p-8">
+            <p className="eyebrow">How It Works</p>
+            <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-warm-ink md:text-3xl">
+              Three simple steps from search to first shift
+            </h2>
+            <div className="mt-5 space-y-3">
+              {HOW_IT_WORKS.map((step) => (
+                <div
+                  key={step.title}
+                  className="rounded-xl border border-warm-border bg-warm-surface-soft p-4"
                 >
-                  <h2 className="text-[1.01rem] font-bold text-warm-ink">{item.title}</h2>
-                  <p className="mt-2 text-sm leading-6 text-warm-muted">{item.description}</p>
-                </article>
+                  <h3 className="text-sm font-extrabold uppercase tracking-[0.08em] text-sage-600">
+                    {step.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-warm-muted">{step.description}</p>
+                </div>
               ))}
             </div>
+          </article>
+
+          <article className="surface-panel p-6 md:p-8">
+            <p className="eyebrow">Safety Basics</p>
+            <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-warm-ink md:text-3xl">
+              Keep first-time visits safe and clear
+            </h2>
+            <ul className="mt-5 space-y-3 text-sm leading-6 text-warm-muted">
+              {SAFETY_NOTES.map((item) => (
+                <li key={item} className="flex items-start gap-3 rounded-xl border border-warm-border bg-warm-surface-soft p-3.5">
+                  <span className="mt-0.5 inline-flex h-5 w-5 flex-none items-center justify-center rounded-full bg-sage-100 text-xs font-bold text-sage-600">
+                    ✓
+                  </span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        </section>
+
+        <section className="surface-panel p-6 md:p-8">
+          <p className="eyebrow">Service Scope</p>
+          <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-warm-ink md:text-3xl">
+            Home personal care services caregivers can list
+          </h2>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {CARE_SERVICE_OPTIONS.map((service) => (
+              <span
+                key={service}
+                className="rounded-full border border-warm-border bg-warm-surface-soft px-3 py-1.5 text-xs font-semibold text-warm-muted"
+              >
+                {service}
+              </span>
+            ))}
           </div>
-        </aside>
+        </section>
+
+        <section className="surface-panel p-6 md:p-8">
+          <p className="eyebrow">Coverage</p>
+          <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-warm-ink md:text-3xl">
+            Region-based listings across Singapore
+          </h2>
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {regionBadges.map((region) => (
+              <article
+                key={region.value}
+                className="rounded-xl border border-warm-border bg-warm-surface-soft p-4"
+              >
+                <h3 className="text-base font-bold text-warm-ink">{region.value}</h3>
+                <p className="mt-2 text-xs leading-5 text-warm-muted">{region.areas}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="grid gap-6 lg:grid-cols-[1fr_0.95fr]">
+          <article className="surface-panel p-6 md:p-8">
+            <p className="eyebrow">FAQ Preview</p>
+            <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-warm-ink md:text-3xl">
+              Common questions before hiring or listing
+            </h2>
+            <div className="mt-5 space-y-3">
+              {FAQ_PREVIEW.map((item) => (
+                <details key={item.question} className="rounded-xl border border-warm-border bg-warm-surface-soft">
+                  <summary className="faq-summary">
+                    <span>{item.question}</span>
+                    <span className="faq-summary-icon">+</span>
+                  </summary>
+                  <div className="px-4 pb-4 text-sm leading-6 text-warm-muted">{item.answer}</div>
+                </details>
+              ))}
+            </div>
+          </article>
+
+          <aside className="surface-panel flex flex-col justify-between p-6 md:p-8">
+            <div>
+              <p className="eyebrow">Need Full Guidance?</p>
+              <h3 className="mt-3 text-2xl font-extrabold tracking-tight text-warm-ink">
+                Open detailed FAQs for families and caregivers
+              </h3>
+              <p className="mt-3 text-sm leading-6 text-warm-muted">
+                Read complete guidance on hiring flow, payments, registration, and platform rules.
+              </p>
+            </div>
+
+            <div className="mt-6 grid gap-3">
+              <Link href="/faq/families" className="primary-btn text-sm">
+                FAQ for Families
+              </Link>
+              <Link href="/faq/caregivers" className="secondary-btn text-sm">
+                FAQ for Caregivers
+              </Link>
+            </div>
+          </aside>
+        </section>
       </main>
-
-      <section className="mt-6 rounded-panel border border-sand-200 bg-sand-100 p-6 shadow-soft md:p-8">
-        <p className="text-sm leading-6 text-warm-muted">
-          Helpful safety notes for a calm and confident first visit.
-        </p>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <article className="rounded-card border border-[#e7ccb8] bg-peach-100 p-5">
-            <div className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#e3bea6] bg-[#f7e1d2] text-peach-600">
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 8v5" />
-                <path d="M12 16h.01" />
-                <path d="M10.3 3.6 2.9 16.1A2 2 0 0 0 4.6 19h14.8a2 2 0 0 0 1.7-2.9L13.7 3.6a2 2 0 0 0-3.4 0Z" />
-              </svg>
-            </div>
-            <h2 className="mt-3 text-base font-bold text-peach-600">Not for emergencies</h2>
-            <p className="mt-2 text-sm leading-6 text-[#8d6652]">
-              Silver Directory is not an emergency service. For urgent medical emergencies,
-              call 995 immediately.
-            </p>
-          </article>
-
-          <article className="rounded-card border border-[#d4dfcd] bg-sage-50 p-5">
-            <div className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#bfd1b8] bg-sage-100 text-sage-600">
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M3 11.5 12 4l9 7.5" />
-                <path d="M5.5 10.5V20h13V10.5" />
-                <path d="M9 20v-5h6v5" />
-              </svg>
-            </div>
-            <h2 className="mt-3 text-base font-bold text-warm-ink">Plan care details together</h2>
-            <p className="mt-2 text-sm leading-6 text-warm-muted">
-              Caregivers are independent professionals. Families and caregivers must align
-              responsibilities, limits, and clinical escalation plans before care starts.
-            </p>
-          </article>
-        </div>
-
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <article className="rounded-card border border-[#d4dfcd] bg-sage-50 p-5">
-            <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#bfd1b8] bg-sage-100 text-sage-600">
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                className="h-4.5 w-4.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="m20 7-11 11-5-5" />
-              </svg>
-            </div>
-            <h3 className="mt-3 text-sm font-bold uppercase tracking-[0.08em] text-sage-600">
-              First-meeting safety checklist
-            </h3>
-            <ul className="mt-3 space-y-2 text-sm leading-6 text-warm-muted">
-              {firstMeetingChecklist.map((item) => (
-                <li key={item} className="flex items-start gap-2">
-                  <span className="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sage-100 text-[0.7rem] font-bold text-sage-600">
-                    ✓
-                  </span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </article>
-
-          <article className="rounded-card border border-[#d6dece] bg-[#f4f7f1] p-5 md:mt-1">
-            <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#bfd1b8] bg-sage-100 text-sage-600">
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                className="h-4.5 w-4.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 3 6 5.5v6.3c0 4 2.6 7.7 6 9.2 3.4-1.5 6-5.2 6-9.2V5.5L12 3Z" />
-                <path d="m9.3 12.4 1.8 1.8 3.7-3.7" />
-              </svg>
-            </div>
-            <h3 className="mt-3 text-sm font-bold uppercase tracking-[0.08em] text-sage-600">
-              Identity verification checklist
-            </h3>
-            <ul className="mt-3 space-y-2 text-sm leading-6 text-warm-muted">
-              {identityChecklist.map((item) => (
-                <li key={item} className="flex items-start gap-2">
-                  <span className="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sage-100 text-[0.7rem] font-bold text-sage-600">
-                    ✓
-                  </span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </article>
-        </div>
-
-        <article className="mt-4 rounded-card border border-warm-border bg-warm-surface-soft p-5">
-          <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#d5ddcc] bg-sage-50 text-sage-600">
-            <svg
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-              className="h-4.5 w-4.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z" />
-              <path d="M8 9h8M8 13h5" />
-            </svg>
-          </div>
-          <h3 className="mt-3 text-sm font-bold uppercase tracking-[0.08em] text-sage-600">
-            Reporting and escalation flow
-          </h3>
-          <p className="mt-2 text-sm leading-6 text-warm-muted">
-            If there is harassment, scam behavior, or agency poaching, report the user to
-            platform support. Trust & Safety can review evidence and take action.
-          </p>
-        </article>
-      </section>
     </div>
   );
 }
