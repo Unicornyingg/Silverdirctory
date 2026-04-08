@@ -38,7 +38,7 @@ export function HeroSection() {
             src={heroImg}
             width={heroImg.width}
             height={heroImg.height}
-            className="h-auto w-full max-w-[640px] object-contain"
+            className="h-auto w-full max-w-[640px] rounded-2xl object-contain"
             alt="Nurse supporting an elderly man while a family member coordinates home care in Singapore"
             loading="eager"
             placeholder="blur"

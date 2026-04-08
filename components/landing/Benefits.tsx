@@ -34,7 +34,7 @@ export function Benefits({ imgPos, data }: Readonly<BenefitsProps>) {
           width={data.image.width}
           height={data.image.height}
           alt={data.imageAlt}
-          className="h-auto w-full max-w-[560px] object-contain"
+          className="h-auto w-full max-w-[560px] rounded-2xl object-contain"
           placeholder="blur"
         />
       </div>
