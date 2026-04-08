@@ -74,7 +74,7 @@ function Benefit({ title, icon, children }: Readonly<BenefitProps>) {
     <div className="mt-8 flex items-start space-x-3">
       <div className="mt-1 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-md bg-indigo-500">
         {cloneElement(icon, {
-          className: "h-7 w-7 text-indigo-50",
+          className: "h-7 w-7 text-white",
         })}
       </div>
       <div>
