@@ -15,15 +15,15 @@ type TestimonialsProps = {
 
 export function Testimonials({ items }: Readonly<TestimonialsProps>) {
   return (
-    <Container>
-      <div className="grid gap-10 lg:grid-cols-2 xl:grid-cols-3">
+    <Container className="home-section-surface-soft py-6 lg:py-8">
+      <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
         {items.map((item, index) => (
           <div
             key={item.name}
             className={index === 0 ? "lg:col-span-2 xl:col-auto" : ""}
           >
-            <div className="flex h-full w-full flex-col justify-between rounded-2xl border border-[var(--line)] bg-[var(--color-warm-surface-soft)] px-14 py-14">
-              <p className="text-2xl leading-normal text-gray-900">{item.quote}</p>
+            <div className="flex h-full w-full flex-col justify-between rounded-[1.4rem] border border-[var(--line)] bg-[var(--panel-strong)] px-8 py-8 shadow-[0_10px_26px_rgba(59,40,20,0.07)] lg:px-10 lg:py-10">
+              <p className="text-2xl leading-[1.48] text-gray-900">{item.quote}</p>
               <Avatar image={item.image} name={item.name} title={item.title} />
             </div>
           </div>
@@ -55,7 +55,7 @@ function Avatar({ image, name, title }: Readonly<AvatarProps>) {
 
 export function Mark({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <mark className="rounded-md bg-indigo-100 text-indigo-800 ring-4 ring-indigo-100">
+    <mark className="rounded-md bg-indigo-100 text-indigo-800 ring-4 ring-indigo-100/80">
       {children}
     </mark>
   );

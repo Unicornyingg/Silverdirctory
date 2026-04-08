@@ -125,33 +125,39 @@ const faqItems = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[var(--background)]">
+    <div className="min-h-screen bg-[var(--background)] pb-8">
       <SiteHeader />
 
       <HeroSection />
 
-      <SectionTitle
-        preTitle="Silver Directory Benefits"
-        title="A caregiving marketplace shaped around direct, transparent connection"
-      >
-        Families can discover local caregivers quickly, and caregivers can present their services
-        clearly with no hidden matching logic.
-      </SectionTitle>
+      <section className="mt-5">
+        <SectionTitle
+          preTitle="Silver Directory Benefits"
+          title="A caregiving marketplace shaped around direct, transparent connection"
+        >
+          Families can discover local caregivers quickly, and caregivers can present their services
+          clearly with no hidden matching logic.
+        </SectionTitle>
 
-      <Benefits data={benefitOne} />
-      <Benefits imgPos="right" data={benefitTwo} />
+        <Benefits data={benefitOne} />
+        <Benefits imgPos="right" data={benefitTwo} />
+      </section>
 
-      <SectionTitle preTitle="Community Feedback" title="What users value about Silver Directory">
-        Real experiences from families and caregivers using a direct listing model.
-      </SectionTitle>
+      <section className="mt-2">
+        <SectionTitle preTitle="Community Feedback" title="What users value about Silver Directory">
+          Real experiences from families and caregivers using a direct listing model.
+        </SectionTitle>
 
-      <Testimonials items={testimonialItems} />
+        <Testimonials items={testimonialItems} />
+      </section>
 
-      <SectionTitle preTitle="FAQ" title="Frequently Asked Questions">
-        Core guidance on matching, payments, and first-visit safety.
-      </SectionTitle>
+      <section className="mt-4">
+        <SectionTitle preTitle="FAQ" title="Frequently Asked Questions">
+          Core guidance on matching, payments, and first-visit safety.
+        </SectionTitle>
 
-      <FaqList items={faqItems} />
+        <FaqList items={faqItems} />
+      </section>
       <CtaBanner />
       <SiteFooter />
     </div>

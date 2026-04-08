@@ -4,15 +4,22 @@ import { Container } from "@/components/landing/Container";
 import heroImg from "@/public/images/eldercare-hero.png";
 
 export function HeroSection() {
+  const featureChips = [
+    "In-app chat first",
+    "Zero wage commission",
+    "No auto-matching",
+    "Hyper-local listings",
+  ];
+
   return (
     <>
-      <Container className="flex flex-wrap">
+      <Container className="flex flex-wrap items-center">
         <div className="flex w-full items-center lg:w-1/2">
-          <div className="mb-8 max-w-2xl">
+          <div className="mb-8 max-w-2xl lg:pr-8">
             <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-gray-900 lg:text-4xl lg:leading-tight xl:text-6xl xl:leading-tight">
               Find trusted eldercare support directly in your neighborhood
             </h1>
-            <p className="py-5 text-xl leading-normal text-gray-700 lg:text-xl xl:text-2xl">
+            <p className="copy-soft py-6 text-xl lg:text-xl xl:text-2xl">
               Silver Directory helps families browse caregiver profiles, compare rates, and start
               in-app chat without auto-matching or agency lock-in.
             </p>
@@ -34,15 +41,17 @@ export function HeroSection() {
           </div>
         </div>
         <div className="flex w-full items-center justify-center lg:w-1/2">
-          <Image
-            src={heroImg}
-            width={heroImg.width}
-            height={heroImg.height}
-            className="h-auto w-full max-w-[640px] rounded-2xl object-contain"
-            alt="Nurse supporting an elderly man while a family member coordinates home care in Singapore"
-            loading="eager"
-            placeholder="blur"
-          />
+          <div className="image-frame w-full max-w-[640px]">
+            <Image
+              src={heroImg}
+              width={heroImg.width}
+              height={heroImg.height}
+              className="h-auto w-full rounded-[1.45rem] object-contain"
+              alt="Nurse supporting an elderly man while a family member coordinates home care in Singapore"
+              loading="eager"
+              placeholder="blur"
+            />
+          </div>
         </div>
       </Container>
       <Container>
@@ -52,19 +61,13 @@ export function HeroSection() {
             across Singapore
           </div>
 
-          <div className="mt-10 flex flex-wrap justify-center gap-3 md:justify-around">
-            <span className="rounded-full border border-[var(--line)] bg-[var(--color-warm-surface-soft)] px-4 py-2 text-sm font-medium text-gray-800">
-              In-app chat first
-            </span>
-            <span className="rounded-full border border-[var(--line)] bg-[var(--color-warm-surface-soft)] px-4 py-2 text-sm font-medium text-gray-800">
-              Zero wage commission
-            </span>
-            <span className="rounded-full border border-[var(--line)] bg-[var(--color-warm-surface-soft)] px-4 py-2 text-sm font-medium text-gray-800">
-              No auto-matching
-            </span>
-            <span className="rounded-full border border-[var(--line)] bg-[var(--color-warm-surface-soft)] px-4 py-2 text-sm font-medium text-gray-800">
-              Hyper-local listings
-            </span>
+          <div className="mt-8 flex flex-wrap justify-center gap-3 md:gap-4">
+            {featureChips.map((chip) => (
+              <span key={chip} className="hero-chip">
+                <span className="hero-chip-dot" aria-hidden="true" />
+                {chip}
+              </span>
+            ))}
           </div>
         </div>
       </Container>
