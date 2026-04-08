@@ -41,12 +41,12 @@ export function HeroSection() {
           </div>
         </div>
         <div className="flex w-full items-center justify-center lg:w-1/2">
-          <div className="image-frame w-full max-w-[640px]">
+          <div className="image-frame relative w-full max-w-[640px] aspect-[5/4]">
             <Image
               src={heroImg}
-              width={heroImg.width}
-              height={heroImg.height}
-              className="h-auto w-full rounded-[1.45rem] object-contain"
+              fill
+              sizes="(max-width: 1024px) 100vw, 640px"
+              className="rounded-[1rem] object-contain"
               alt="Nurse supporting an elderly man while a family member coordinates home care in Singapore"
               loading="eager"
               placeholder="blur"

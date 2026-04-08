@@ -29,13 +29,13 @@ export function Benefits({ imgPos, data }: Readonly<BenefitsProps>) {
           imgPos === "right" ? "lg:order-1" : ""
         }`}
       >
-        <div className="image-frame w-full max-w-[560px]">
+        <div className="image-frame relative w-full max-w-[560px] aspect-[4/3]">
           <Image
             src={data.image}
-            width={data.image.width}
-            height={data.image.height}
+            fill
+            sizes="(max-width: 1024px) 100vw, 560px"
             alt={data.imageAlt}
-            className="h-auto w-full rounded-[1.35rem] object-contain"
+            className="rounded-[1rem] object-contain"
             placeholder="blur"
           />
         </div>
