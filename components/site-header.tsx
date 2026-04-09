@@ -7,7 +7,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { MarketplaceUser } from "@/lib/supabase/types";
 
 const NAV_LINKS = [
-  { href: "/directory", label: "Directory" },
+  { href: "/directory", label: "Browse Caregivers" },
   { href: "/faq/families", label: "Families FAQ" },
   { href: "/faq/caregivers", label: "Caregivers FAQ" },
 ] as const;
@@ -94,14 +94,7 @@ export default function SiteHeader() {
           </span>
         </Link>
 
-        <div className="mr-2 ml-auto flex gap-3 lg:order-2 lg:ml-0">
-          <Link
-            href="/directory"
-            className="primary-btn hidden min-h-[2.5rem] px-6 py-2 text-sm md:ml-5 lg:flex"
-          >
-            Browse Caregivers
-          </Link>
-        </div>
+        <div className="mr-2 ml-auto flex gap-3 lg:order-2 lg:ml-0" />
 
         <button
           type="button"
