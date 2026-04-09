@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import ProfileAvatar from "@/components/profile-avatar";
 import { isLicensedNurseApproved } from "@/lib/caregiver-license-status";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type DirectoryListProfile = {
   id: string;
@@ -60,12 +61,11 @@ function formatExperienceLabel(yearsExperience: number): string {
 
 export default function CaregiverDirectoryList({
   profiles,
-  viewerAuthenticated,
 }: {
   profiles: DirectoryListProfile[];
-  viewerAuthenticated: boolean;
 }) {
   const [expandedProfileId, setExpandedProfileId] = useState<string | null>(null);
+  const [viewerAuthenticated, setViewerAuthenticated] = useState(false);
 
   const expandedProfile = useMemo(
     () => profiles.find((profile) => profile.id === expandedProfileId) ?? null,
@@ -76,6 +76,21 @@ export default function CaregiverDirectoryList({
     : undefined;
 
   useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+    let active = true;
+
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      setViewerAuthenticated(!!data.session?.user);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
+      setViewerAuthenticated(!!session?.user);
+    });
+
     function handleEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setExpandedProfileId(null);
@@ -84,6 +99,8 @@ export default function CaregiverDirectoryList({
 
     window.addEventListener("keydown", handleEscape);
     return () => {
+      active = false;
+      subscription.unsubscribe();
       window.removeEventListener("keydown", handleEscape);
     };
   }, []);

@@ -183,8 +183,6 @@ export default async function DirectoryPage({
   }
 
   const { data, error } = await query.returns<DirectoryProfile[]>();
-  const { data: authState } = await supabase.auth.getUser();
-  const isAuthenticated = !!authState.user;
   const orderedProfiles = sortProfilesForDirectory(data ?? [], sortBy);
   const hasActiveFilters =
     !!locationFilter ||
@@ -283,7 +281,7 @@ export default async function DirectoryPage({
       )}
 
       {!error && orderedProfiles.length > 0 && (
-        <CaregiverDirectoryList profiles={orderedProfiles} viewerAuthenticated={isAuthenticated} />
+        <CaregiverDirectoryList profiles={orderedProfiles} />
       )}
     </div>
   );
