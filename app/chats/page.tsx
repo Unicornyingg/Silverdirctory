@@ -618,12 +618,28 @@ function ChatsPageContent() {
     router.replace(`/chats?thread=${threadId}`);
   }
 
+  function handleBackToThreads() {
+    setSelectedThreadId(null);
+    setErrorMessage(null);
+    setInfoMessage(null);
+    router.replace("/chats");
+  }
+
   if (isBootLoading) {
     return (
       <div className="site-shell">
         <SiteHeader />
-        <section className="surface-panel page-enter p-6 text-sm text-[#54677f]">
-          Loading your chat inbox...
+        <section className="surface-panel page-enter space-y-4 p-6">
+          <div className="h-5 w-36 animate-pulse rounded-md bg-[#e3ebf2]" />
+          <div className="h-9 w-52 animate-pulse rounded-md bg-[#dbe6ef]" />
+          <div className="grid gap-3 lg:grid-cols-[280px_1fr]">
+            <div className="space-y-2">
+              <div className="h-20 animate-pulse rounded-xl border border-[#d8e3eb] bg-white/80" />
+              <div className="h-20 animate-pulse rounded-xl border border-[#d8e3eb] bg-white/80" />
+              <div className="h-20 animate-pulse rounded-xl border border-[#d8e3eb] bg-white/80" />
+            </div>
+            <div className="h-72 animate-pulse rounded-xl border border-[#d8e3eb] bg-white/80" />
+          </div>
         </section>
       </div>
     );
@@ -676,12 +692,21 @@ function ChatsPageContent() {
       )}
 
       <main className="mt-6 grid gap-4 lg:grid-cols-[330px_1fr]">
-        <aside className="surface-panel overflow-hidden p-3">
+        <aside
+          className={`surface-panel overflow-hidden p-3 ${selectedThread ? "hidden lg:block" : ""}`}
+        >
           {threads.length === 0 ? (
             <div className="rounded-lg border border-[#d8e3eb] bg-white/85 p-4 text-sm text-[#4f627a]">
-              {role === "client"
-                ? "No conversations yet. Open a caregiver profile and select Start chat."
-                : "No family conversations yet. New chats from families will appear here."}
+              <p>
+                {role === "client"
+                  ? "No conversations yet. Open a caregiver profile and select Start chat."
+                  : "No family conversations yet. New chats from families will appear here."}
+              </p>
+              {role === "client" && (
+                <Link href="/directory" className="mt-3 inline-flex font-semibold text-[#1f6b93]">
+                  Browse caregivers
+                </Link>
+              )}
             </div>
           ) : (
             <div className="space-y-2">
@@ -717,14 +742,32 @@ function ChatsPageContent() {
           )}
         </aside>
 
-        <section className="surface-panel flex min-h-[420px] flex-col overflow-hidden">
+        <section
+          className={`surface-panel min-h-[420px] overflow-hidden ${selectedThread ? "flex" : "hidden lg:flex"} flex-col`}
+        >
           {!selectedThread ? (
-            <div className="flex flex-1 items-center justify-center p-6 text-center text-sm text-[#556980]">
-              Select a conversation to view messages.
+            <div className="flex flex-1 items-center justify-center p-6">
+              <div className="max-w-md rounded-xl border border-[#d8e3eb] bg-white/90 p-5 text-center">
+                <p className="text-sm font-semibold text-[#1b3a5a]">Pick a conversation to begin</p>
+                <p className="mt-2 text-sm text-[#556980]">
+                  Select a thread from the left to view messages, or start a new chat from the
+                  directory.
+                </p>
+                <Link href="/directory" className="mt-4 inline-flex font-semibold text-[#1f6b93]">
+                  Browse caregivers
+                </Link>
+              </div>
             </div>
           ) : (
             <>
               <header className="border-b border-[#d8e3eb] px-5 py-4">
+                <button
+                  type="button"
+                  onClick={handleBackToThreads}
+                  className="mb-2 inline-flex text-xs font-semibold text-[#1f6b93] lg:hidden"
+                >
+                  ← Back to conversations
+                </button>
                 <p className="text-base font-bold text-[#132f4d]">
                   {selectedThread.participantName}
                 </p>
@@ -735,11 +778,15 @@ function ChatsPageContent() {
 
               <div className="flex-1 space-y-3 overflow-y-auto bg-[#f7fafc] px-4 py-4">
                 {isMessagesLoading ? (
-                  <p className="text-sm text-[#5d718a]">Loading messages...</p>
+                  <div className="space-y-3">
+                    <div className="h-16 w-[72%] animate-pulse rounded-2xl border border-[#d5e1ea] bg-white/95" />
+                    <div className="ml-auto h-14 w-[66%] animate-pulse rounded-2xl border border-[#cfe2ef] bg-[#e8f3ef]" />
+                    <div className="h-12 w-[54%] animate-pulse rounded-2xl border border-[#d5e1ea] bg-white/95" />
+                  </div>
                 ) : messages.length === 0 ? (
-                  <p className="text-sm text-[#5d718a]">
+                  <div className="rounded-xl border border-[#d8e3eb] bg-white/90 p-4 text-sm text-[#5d718a]">
                     No messages yet. Start with a short introduction and care requirements.
-                  </p>
+                  </div>
                 ) : (
                   messages.map((message) => {
                     const isOwn = message.sender_user_id === authUser?.id;
@@ -809,8 +856,17 @@ function ChatsPageFallback() {
   return (
     <div className="site-shell">
       <SiteHeader />
-      <section className="surface-panel page-enter p-6 text-sm text-[#54677f]">
-        Loading your chat inbox...
+      <section className="surface-panel page-enter space-y-4 p-6">
+        <div className="h-5 w-36 animate-pulse rounded-md bg-[#e3ebf2]" />
+        <div className="h-9 w-52 animate-pulse rounded-md bg-[#dbe6ef]" />
+        <div className="grid gap-3 lg:grid-cols-[280px_1fr]">
+          <div className="space-y-2">
+            <div className="h-20 animate-pulse rounded-xl border border-[#d8e3eb] bg-white/80" />
+            <div className="h-20 animate-pulse rounded-xl border border-[#d8e3eb] bg-white/80" />
+            <div className="h-20 animate-pulse rounded-xl border border-[#d8e3eb] bg-white/80" />
+          </div>
+          <div className="h-72 animate-pulse rounded-xl border border-[#d8e3eb] bg-white/80" />
+        </div>
       </section>
     </div>
   );

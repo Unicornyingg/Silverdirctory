@@ -60,8 +60,10 @@ function formatExperienceLabel(yearsExperience: number): string {
 
 export default function CaregiverDirectoryList({
   profiles,
+  viewerAuthenticated,
 }: {
   profiles: DirectoryListProfile[];
+  viewerAuthenticated: boolean;
 }) {
   const [expandedProfileId, setExpandedProfileId] = useState<string | null>(null);
 
@@ -90,10 +92,16 @@ export default function CaregiverDirectoryList({
     <>
       <section className="stagger mt-6 space-y-4">
         {profiles.map((profile) => {
+          const chatPath = `/chats?caregiver=${profile.id}`;
+          const chatHref = viewerAuthenticated
+            ? chatPath
+            : `/login?role=client&next=${encodeURIComponent(chatPath)}`;
+          const chatButtonLabel = viewerAuthenticated ? "Start chat" : "Sign in to start chat";
           const shortLanguages = profile.languages_spoken.slice(0, 3);
           const hiddenLanguageCount = Math.max(0, profile.languages_spoken.length - 3);
           const shortServices = profile.care_specialties.slice(0, 3);
           const hiddenServiceCount = Math.max(0, profile.care_specialties.length - 3);
+          const hasLongBio = profile.bio.trim().length > 180;
 
           return (
             <article key={profile.id} className="surface-panel overflow-hidden p-4 md:p-5">
@@ -145,6 +153,11 @@ export default function CaregiverDirectoryList({
                   <p className="mt-3 line-clamp-3 break-words text-sm leading-6 text-[#59697e]">
                     {profile.bio}
                   </p>
+                  {hasLongBio && (
+                    <p className="mt-1 text-xs font-semibold text-[#4a617b]">
+                      View full profile to read complete bio.
+                    </p>
+                  )}
 
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
                     <p className="rounded-lg border border-[#d8e3eb] bg-white/85 px-2.5 py-2 text-xs font-semibold text-[#375474]">
@@ -235,11 +248,14 @@ export default function CaregiverDirectoryList({
                     </p>
                   </div>
                   <Link
-                    href={`/chats?caregiver=${profile.id}`}
+                    href={chatHref}
                     className="primary-btn w-full text-sm md:w-auto"
                   >
-                    Start chat
+                    {chatButtonLabel}
                   </Link>
+                  {!viewerAuthenticated && (
+                    <p className="text-xs text-[#5d718a]">Family login required before messaging.</p>
+                  )}
                   <button
                     type="button"
                     onClick={() => setExpandedProfileId(profile.id)}
@@ -385,11 +401,22 @@ export default function CaregiverDirectoryList({
                   </p>
                   <div className="mt-4">
                     <Link
-                      href={`/chats?caregiver=${expandedProfile.id}`}
+                      href={
+                        viewerAuthenticated
+                          ? `/chats?caregiver=${expandedProfile.id}`
+                          : `/login?role=client&next=${encodeURIComponent(
+                              `/chats?caregiver=${expandedProfile.id}`
+                            )}`
+                      }
                       className="primary-btn text-sm"
                     >
-                      Start chat
+                      {viewerAuthenticated ? "Start chat" : "Sign in to start chat"}
                     </Link>
+                    {!viewerAuthenticated && (
+                      <p className="mt-2 text-xs text-[#5d718a]">
+                        Sign in with your family account to start in-app chat.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

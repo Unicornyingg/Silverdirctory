@@ -70,6 +70,7 @@ export default function LoginPage() {
   const [isPhoneOtpSubmitting, setIsPhoneOtpSubmitting] = useState(false);
   const [isForgotSubmitting, setIsForgotSubmitting] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const isRoleLocked = forcedAccountType !== null;
 
   const redirectByRole = useCallback(async (userId: string, nextPath: string | null) => {
@@ -626,16 +627,26 @@ export default function LoginPage() {
 
             <label className="space-y-2">
               <span className="text-sm font-semibold text-[#243d58]">Password</span>
-              <input
-                type="password"
-                className="field-input"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="Your password"
-                autoComplete="current-password"
-                maxLength={MAX_PASSWORD_LENGTH}
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className="field-input pr-20"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="Your password"
+                  autoComplete="current-password"
+                  maxLength={MAX_PASSWORD_LENGTH}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((previous) => !previous)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#2d4f6e] hover:text-[#1b3c59]"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
             </label>
 
             <button

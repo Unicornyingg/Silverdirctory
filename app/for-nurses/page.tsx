@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
+import OnboardingStepper from "@/components/onboarding-stepper";
 import SiteHeader from "@/components/site-header";
 import { saveCaregiverSignupContext } from "@/lib/caregiver-signup-context";
 import { normalizePhoneForAuth } from "@/lib/phone-format";
@@ -171,6 +172,7 @@ export default function CaregiverAccountCreationPage() {
           <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-[#10233b] md:text-4xl">
             Create your caregiver account
           </h1>
+          <OnboardingStepper currentStep={1} className="mt-4" />
           <p className="mt-2 text-sm leading-6 text-[#56677c]">
             Stage 1 of 3: account creation. You will verify your phone next, then complete your
             caregiver profile setup.

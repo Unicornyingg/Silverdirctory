@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useMemo, useState } from "react";
+import OnboardingStepper from "@/components/onboarding-stepper";
 import SiteHeader from "@/components/site-header";
 import {
   clearCaregiverSignupContext,
@@ -216,6 +217,7 @@ export default function CaregiverOtpVerificationPage() {
           <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-[#10233b] md:text-4xl">
             Verify your phone number
           </h1>
+          <OnboardingStepper currentStep={2} className="mt-4" />
           <p className="mt-2 text-sm leading-6 text-[#56677c]">
             Stage 2 of 3: enter the OTP sent by SMS. After verification, you will continue to
             caregiver profile setup.

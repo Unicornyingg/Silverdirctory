@@ -20,9 +20,12 @@ function getSafeNextPath(raw: string | null): string | null {
   return trimmed;
 }
 
+const SUPPORT_PATH = "/faq/families#family-12";
+
 export default function OAuthCompletePage() {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isRestrictedError, setIsRestrictedError] = useState(false);
   const ranRef = useRef(false);
 
   useEffect(() => {
@@ -38,12 +41,14 @@ export default function OAuthCompletePage() {
       const { data, error } = await supabase.auth.getSession();
       if (error) {
         setErrorMessage(error.message);
+        setIsRestrictedError(false);
         return;
       }
 
       const user = data.session?.user;
       if (!user) {
         setErrorMessage("Login session was not found. Please try signing in again.");
+        setIsRestrictedError(false);
         return;
       }
 
@@ -66,6 +71,7 @@ export default function OAuthCompletePage() {
         setErrorMessage(
           "Offering care accounts must sign in with email/password."
         );
+        setIsRestrictedError(false);
         return;
       }
 
@@ -74,6 +80,7 @@ export default function OAuthCompletePage() {
         setErrorMessage(
           "Your account is currently restricted. Contact support if you believe this is a mistake."
         );
+        setIsRestrictedError(true);
         return;
       }
 
@@ -98,6 +105,12 @@ export default function OAuthCompletePage() {
             <p role="alert" aria-live="assertive" className="text-red-700">
               {errorMessage}
             </p>
+            {isRestrictedError && (
+              <p className="max-w-md rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                Need an account review? Contact platform support with your sign-in email and
+                recent login time.
+              </p>
+            )}
             <div className="flex flex-wrap justify-center gap-3">
               <Link href="/login?role=client" className="primary-btn text-sm">
                 Try family sign in
@@ -105,6 +118,11 @@ export default function OAuthCompletePage() {
               <Link href="/login" className="secondary-btn text-sm">
                 Back to login
               </Link>
+              {isRestrictedError && (
+                <Link href={SUPPORT_PATH} className="secondary-btn text-sm">
+                  Contact platform support
+                </Link>
+              )}
             </div>
           </>
         ) : (

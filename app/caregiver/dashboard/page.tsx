@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
+import OnboardingStepper from "@/components/onboarding-stepper";
 import SiteHeader from "@/components/site-header";
 import {
   statusDescription,
@@ -552,11 +553,6 @@ export default function CaregiverDashboardPage() {
       return;
     }
 
-    if (!profile?.profile_photo_url && !profilePhoto) {
-      setErrorMessage("Please upload a profile photo.");
-      return;
-    }
-
     if (profilePhoto) {
       if (!profilePhoto.type.startsWith("image/")) {
         setErrorMessage("Profile photo must be an image.");
@@ -768,8 +764,13 @@ export default function CaregiverDashboardPage() {
     return (
       <div className="site-shell">
         <SiteHeader />
-        <section className="surface-panel page-enter p-6 text-sm text-[#54677f]">
-          Loading caregiver dashboard...
+        <section className="surface-panel page-enter space-y-4 p-6">
+          <div className="h-5 w-44 animate-pulse rounded-md bg-[#e3ebf2]" />
+          <div className="h-9 w-64 animate-pulse rounded-md bg-[#dbe6ef]" />
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="h-24 animate-pulse rounded-xl border border-[#d8e3eb] bg-white/80" />
+            <div className="h-24 animate-pulse rounded-xl border border-[#d8e3eb] bg-white/80" />
+          </div>
         </section>
       </div>
     );
@@ -867,6 +868,7 @@ export default function CaregiverDashboardPage() {
             <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-[#10233b] md:text-4xl">
               {isOnboardingMode ? "Complete your caregiver profile setup" : "Manage your profile"}
             </h1>
+            {isOnboardingMode && <OnboardingStepper currentStep={3} className="mt-4" />}
             <p className="mt-2 text-sm leading-6 text-[#56677c]">
               {isOnboardingMode
                 ? "Stage 3 of 3: add your caregiver details. Your profile is listed as a basic caregiver profile once saved."
@@ -897,8 +899,8 @@ export default function CaregiverDashboardPage() {
         </div>
         <p className="mt-2 text-sm text-[#56677c]">
           {checklistRemaining > 0
-            ? `${checklistRemaining} required item${checklistRemaining === 1 ? "" : "s"} remaining before your profile is complete.`
-            : "All required profile items are completed."}
+            ? `${checklistRemaining} profile item${checklistRemaining === 1 ? "" : "s"} remaining for a complete listing.`
+            : "All profile checklist items are completed."}
         </p>
         <div className="mt-4 h-4 overflow-hidden rounded-full border border-[#d8e3eb] bg-[#eaf1f7]">
           <div
@@ -1179,11 +1181,12 @@ export default function CaregiverDashboardPage() {
                     accept="image/*"
                     onChange={onProfilePhotoChange}
                     className="field-file file:mr-3 file:rounded-md file:border-0 file:bg-[#edf3f7] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[#28435f] hover:file:bg-[#e2edf4]"
-                    required={requiresProfilePhoto}
                   />
                   <p className="text-xs text-[#5d6d81]">
                     Max {MAX_PROFILE_PHOTO_MB}MB. This image appears on your public directory card.{" "}
-                    {requiresProfilePhoto ? "Required to publish profile." : ""}
+                    {requiresProfilePhoto
+                      ? "Recommended for trust and better response rates."
+                      : "You can replace this any time."}
                   </p>
                 </label>
 

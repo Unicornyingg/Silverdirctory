@@ -194,10 +194,10 @@ export default function DirectoryFilters({
               key={tag.key}
               type="button"
               onClick={tag.remove}
-              className="rounded-full border border-[#c8d9e6] bg-white/85 px-3 py-1.5 text-xs font-semibold text-[#345472]"
+              className="rounded-full border border-[#c8d9e6] bg-white/85 px-3 py-1.5 text-xs font-semibold text-[#345472] transition hover:border-[#b7ccdc] hover:bg-[#f4f9fc]"
               aria-label={`Remove ${tag.label} filter`}
             >
-              {tag.label} x
+              {tag.label} ×
             </button>
           ))}
         </div>

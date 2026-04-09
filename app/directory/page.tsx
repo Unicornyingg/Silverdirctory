@@ -183,6 +183,8 @@ export default async function DirectoryPage({
   }
 
   const { data, error } = await query.returns<DirectoryProfile[]>();
+  const { data: authState } = await supabase.auth.getUser();
+  const isAuthenticated = !!authState.user;
   const orderedProfiles = sortProfilesForDirectory(data ?? [], sortBy);
   const hasActiveFilters =
     !!locationFilter ||
@@ -248,12 +250,25 @@ export default async function DirectoryPage({
 
       {!error && orderedProfiles.length === 0 && (
         <div className="surface-panel mt-6 p-6 text-[#4e6077]">
-          <p className="text-sm font-semibold text-[#193652]">
-            No caregiver profiles match your current filters.
-          </p>
-          <p className="mt-2 text-sm">
-            Try increasing max rate or removing one filter.
-          </p>
+          {hasActiveFilters ? (
+            <>
+              <p className="text-sm font-semibold text-[#193652]">
+                No caregiver profiles match your current filters.
+              </p>
+              <p className="mt-2 text-sm">
+                Try increasing max rate or removing one filter.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-semibold text-[#193652]">
+                No caregiver profiles are live in the directory yet.
+              </p>
+              <p className="mt-2 text-sm">
+                New caregiver listings appear here as soon as they complete profile setup.
+              </p>
+            </>
+          )}
           <div className="mt-4 flex flex-wrap gap-3">
             {hasActiveFilters && (
               <Link href="/directory" className="secondary-btn text-sm">
@@ -268,7 +283,7 @@ export default async function DirectoryPage({
       )}
 
       {!error && orderedProfiles.length > 0 && (
-        <CaregiverDirectoryList profiles={orderedProfiles} />
+        <CaregiverDirectoryList profiles={orderedProfiles} viewerAuthenticated={isAuthenticated} />
       )}
     </div>
   );

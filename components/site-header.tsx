@@ -123,10 +123,10 @@ export default function SiteHeader() {
         <div className="hidden text-center lg:flex lg:items-center">
           <ul className="flex flex-1 items-center justify-end pt-6 lg:pt-0">
             {NAV_LINKS.map((item) => (
-              <li key={item.href} className="mr-3">
+              <li key={item.href} className="mr-1 xl:mr-2">
                 <Link
                   href={item.href}
-                  className={`inline-block rounded-md px-4 py-2 text-lg no-underline transition hover:text-indigo-500 focus:bg-indigo-100 focus:text-indigo-500 focus:outline-none ${
+                  className={`inline-block rounded-md px-3 py-2 text-base no-underline transition hover:text-indigo-500 focus:bg-indigo-100 focus:text-indigo-500 focus:outline-none xl:px-4 xl:text-lg ${
                     isActivePath(pathname, item.href)
                       ? "font-semibold text-indigo-700 underline decoration-2 underline-offset-8"
                       : "font-normal text-gray-800"
@@ -142,7 +142,7 @@ export default function SiteHeader() {
                 <li className="mr-3">
                   <Link
                     href="/chats"
-                    className={`inline-block rounded-md px-4 py-2 text-lg no-underline transition hover:text-indigo-500 ${
+                    className={`inline-block rounded-md px-3 py-2 text-base no-underline transition hover:text-indigo-500 xl:px-4 xl:text-lg ${
                       isActivePath(pathname, "/chats")
                         ? "font-semibold text-indigo-700 underline decoration-2 underline-offset-8"
                         : "font-normal text-gray-800"
@@ -152,10 +152,10 @@ export default function SiteHeader() {
                   </Link>
                 </li>
                 {accountRole === "caregiver" ? (
-                  <li className="mr-3">
+                  <li className="mr-1 xl:mr-2">
                     <Link
                       href="/caregiver/dashboard"
-                      className={`inline-block rounded-md px-4 py-2 text-lg no-underline transition hover:text-indigo-500 ${
+                      className={`inline-block rounded-md px-3 py-2 text-base no-underline transition hover:text-indigo-500 xl:px-4 xl:text-lg ${
                         isActivePath(pathname, "/caregiver/dashboard")
                           ? "font-semibold text-indigo-700 underline decoration-2 underline-offset-8"
                           : "font-normal text-gray-800"
@@ -166,10 +166,10 @@ export default function SiteHeader() {
                   </li>
                 ) : null}
                 {accountRole === "client" ? (
-                  <li className="mr-3">
+                  <li className="mr-1 xl:mr-2">
                     <Link
                       href="/client/profile"
-                      className={`inline-block rounded-md px-4 py-2 text-lg no-underline transition hover:text-indigo-500 ${
+                      className={`inline-block rounded-md px-3 py-2 text-base no-underline transition hover:text-indigo-500 xl:px-4 xl:text-lg ${
                         isActivePath(pathname, "/client/profile")
                           ? "font-semibold text-indigo-700 underline decoration-2 underline-offset-8"
                           : "font-normal text-gray-800"
@@ -182,10 +182,10 @@ export default function SiteHeader() {
               </>
             ) : (
               <>
-                <li className="mr-3">
+                <li className="mr-1 xl:mr-2">
                   <Link
                     href="/for-nurses"
-                    className={`inline-block rounded-md px-4 py-2 text-lg no-underline transition hover:text-indigo-500 ${
+                    className={`inline-block rounded-md px-3 py-2 text-base no-underline transition hover:text-indigo-500 xl:px-4 xl:text-lg ${
                       isActivePath(pathname, "/for-nurses")
                         ? "font-semibold text-indigo-700 underline decoration-2 underline-offset-8"
                         : "font-normal text-gray-800"
@@ -194,10 +194,18 @@ export default function SiteHeader() {
                     Caregiver Sign Up
                   </Link>
                 </li>
-                <li className="mr-3">
+                <li className="mr-1 xl:mr-2">
+                  <Link
+                    href="/login?role=client"
+                    className="inline-block rounded-md px-3 py-2 text-base font-normal text-gray-800 no-underline transition hover:text-indigo-500 xl:px-4 xl:text-lg"
+                  >
+                    Family Sign Up
+                  </Link>
+                </li>
+                <li className="mr-1 xl:mr-2">
                   <Link
                     href="/login"
-                    className={`inline-block rounded-md px-4 py-2 text-lg no-underline transition hover:text-indigo-500 ${
+                    className={`inline-block rounded-md px-3 py-2 text-base no-underline transition hover:text-indigo-500 xl:px-4 xl:text-lg ${
                       isActivePath(pathname, "/login")
                         ? "font-semibold text-indigo-700 underline decoration-2 underline-offset-8"
                         : "font-normal text-gray-800"
@@ -287,6 +295,13 @@ export default function SiteHeader() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Caregiver Sign Up
+                </Link>
+                <Link
+                  href="/login?role=client"
+                  className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-indigo-50 hover:text-indigo-700"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Family Sign Up
                 </Link>
                 <Link
                   href="/login"

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import OnboardingStepper from "@/components/onboarding-stepper";
 import SiteHeader from "@/components/site-header";
 const DIRECTORY_PATH = "/directory";
 
@@ -31,8 +32,9 @@ export default async function SignupSuccessPage({
         <p className="mt-3 text-sm leading-6 text-[#56677d]">
           {isCaregiver
             ? "Your caregiver account has been created. Continue to profile setup to publish your basic caregiver listing."
-            : "Your family account has been created successfully. We are bringing you to the caregiver directory now."}
+            : "Your family account has been created successfully. Continue to the directory when you are ready to shortlist caregivers."}
         </p>
+        {isCaregiver && <OnboardingStepper currentStep={3} className="mt-4" />}
 
         {isCaregiver ? (
           <ol className="mt-6 space-y-2 rounded-xl border border-[#d8e3eb] bg-white/80 p-4 text-left text-sm text-[#4f647e]">

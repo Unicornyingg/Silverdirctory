@@ -1,7 +1,35 @@
 # Silver Directory — UI/UX Audit
 **Date:** 9 April 2026  
 **Scope:** All major user-facing routes, shared components, and design system  
-**Status:** Audit only — no code has been modified
+**Status:** In progress — implementation updates are being applied in milestones
+
+---
+
+## Implementation Progress (9 April 2026)
+
+### Completed in this pass
+- [x] `D3` — Caregiver dashboard first-save flow no longer hard-blocks when photo is missing (`app/caregiver/dashboard/page.tsx`)
+- [x] `E3` / `A6` — Directory now distinguishes no-filter-match vs truly-empty states (`app/directory/page.tsx`)
+- [x] `R6` — Mobile inbox now has clear thread navigation with back-to-conversations behavior (`app/chats/page.tsx`)
+- [x] `E2` — Empty chat panel now provides clearer guidance and a directory CTA (`app/chats/page.tsx`)
+- [x] `L4` — Message loading and empty states now have distinct visuals (`app/chats/page.tsx`)
+- [x] `TR7` — Unauthenticated users now see explicit “Sign in to start chat” CTA and guided login path (`components/caregiver-directory-list.tsx`, `app/directory/page.tsx`)
+- [x] `SU3` — Signup success copy no longer promises auto-redirect that may not happen (`app/signup-success/page.tsx`)
+- [x] `F4` — Login now includes password show/hide control (`app/login/page.tsx`)
+- [x] `SU2` — Reset-password success now shows visible redirect countdown (`app/reset-password/page.tsx`)
+- [x] `T3` — Header desktop link spacing/typography tuned to reduce mid-width wrapping (`components/site-header.tsx`)
+- [x] `HF2` — Filter-tag buttons now include visible hover state polish (`components/directory-filters.tsx`)
+- [x] `A5` — FAQ accordion now exposes explicit expanded-state semantics (`components/faq-accordion.tsx`)
+- [x] `D1` — Shared caregiver onboarding stepper added across onboarding flow pages (`components/onboarding-stepper.tsx`, `app/for-nurses/page.tsx`, `app/for-nurses/verify-otp/page.tsx`, `app/caregiver/dashboard/page.tsx`, `app/signup-success/page.tsx`)
+- [x] `TR4` — OAuth restricted-account state now includes explicit account-review/support path (`app/oauth-complete/page.tsx`)
+- [x] `L2` — Caregiver dashboard boot state now uses visual loading skeleton instead of plain text (`app/caregiver/dashboard/page.tsx`)
+- [x] `L3` — Chat inbox boot/fallback states now use skeleton layout and avoid content flash (`app/chats/page.tsx`)
+- [x] `T1` — Directory cards now provide a clear “read full profile” indicator for truncated bios (`components/caregiver-directory-list.tsx`)
+
+### Intentionally deferred in this pass
+- [ ] `TR6` — Session-expiry handling should be centralized across authenticated actions/pages
+- [ ] `L5` — Add explicit submit-to-redirect transition state on `/for-nurses`
+- [ ] `TR5` — Replace static “Draft changes are saved locally” copy with actual save timestamp/state
 
 ---
 

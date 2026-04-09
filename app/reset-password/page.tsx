@@ -13,6 +13,7 @@ export default function ResetPasswordPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -49,10 +50,31 @@ export default function ResetPasswordPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (redirectCountdown === null) return;
+
+    if (redirectCountdown <= 0) {
+      router.replace("/login?status=password-reset");
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setRedirectCountdown((previous) => {
+        if (previous === null) return null;
+        return previous - 1;
+      });
+    }, 1000);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [redirectCountdown, router]);
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setErrorMessage(null);
     setSuccessMessage(null);
+    setRedirectCountdown(null);
 
     if (!isReady) {
       setErrorMessage("Reset session is not ready. Open the email link again.");
@@ -81,11 +103,9 @@ export default function ResetPasswordPage() {
         return;
       }
 
-      setSuccessMessage("Password updated successfully. Redirecting to login...");
+      setSuccessMessage("Password updated successfully.");
       await supabase.auth.signOut();
-      window.setTimeout(() => {
-        router.replace("/login?status=password-reset");
-      }, 900);
+      setRedirectCountdown(3);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unable to update password.";
@@ -161,12 +181,17 @@ export default function ResetPasswordPage() {
                 className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
               >
                 {successMessage}
+                {redirectCountdown !== null && (
+                  <span className="ml-1">
+                    Redirecting to login in {Math.max(redirectCountdown, 0)}s...
+                  </span>
+                )}
               </p>
             )}
 
             <button
               type="submit"
-              disabled={isSubmitting || !isReady}
+              disabled={isSubmitting || !isReady || redirectCountdown !== null}
               className="primary-btn w-full disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? "Updating password..." : "Update password"}
