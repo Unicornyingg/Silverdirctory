@@ -12,13 +12,20 @@ type AuthAttemptRoute =
 export async function enforceAuthAttemptLimit(
   route: AuthAttemptRoute
 ): Promise<void> {
-  const response = await fetch("/api/auth/attempt", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ route }),
-  });
+  let response: Response;
+  try {
+    response = await fetch("/api/auth/attempt", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ route }),
+    });
+  } catch {
+    throw new Error(
+      "Network error: unable to reach the app server. Refresh and try again."
+    );
+  }
 
   if (response.ok) return;
 

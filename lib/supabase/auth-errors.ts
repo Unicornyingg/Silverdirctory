@@ -38,5 +38,13 @@ export function getReadableAuthError(error: AuthLikeError): string {
     return "The OTP is invalid. Please check the code and try again.";
   }
 
+  if (
+    message.includes("failed to fetch") ||
+    message.includes("fetch failed") ||
+    message.includes("networkerror")
+  ) {
+    return "Network error: unable to reach authentication services. Check your internet connection and refresh the page.";
+  }
+
   return error.message || "Authentication failed.";
 }

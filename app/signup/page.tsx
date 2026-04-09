@@ -94,7 +94,7 @@ export default function SignupPage() {
     try {
       await enforceAuthAttemptLimit("client_signup");
       const supabase = getSupabaseBrowserClient();
-      const { error } = await supabase.auth.signUp({
+      const { data: signUpData, error } = await supabase.auth.signUp({
         email: normalizedEmail,
         password,
         options: {
@@ -107,6 +107,14 @@ export default function SignupPage() {
 
       if (error) {
         setErrorMessage(getReadableAuthError(error));
+        return;
+      }
+
+      // If email confirmation is enabled, session will be null — tell the user to check their inbox.
+      if (!signUpData.session) {
+        setStatusMessage(
+          "Almost there! Check your email inbox and click the confirmation link to activate your account."
+        );
         return;
       }
 
