@@ -1,11 +1,11 @@
 import Image, { type StaticImageData } from "next/image";
-import { cloneElement, type ReactElement, type ReactNode } from "react";
+import { type ReactElement, type ReactNode } from "react";
 import { Container } from "@/components/landing/Container";
 
 type BenefitBullet = {
   title: string;
   desc: string;
-  icon: ReactElement<{ className?: string }>;
+  icon: ReactElement;
 };
 
 type BenefitData = {
@@ -67,17 +67,15 @@ export function Benefits({ imgPos, data }: Readonly<BenefitsProps>) {
 
 type BenefitProps = {
   title: string;
-  icon: ReactElement<{ className?: string }>;
+  icon: ReactElement;
   children: ReactNode;
 };
 
 function Benefit({ title, icon, children }: Readonly<BenefitProps>) {
   return (
     <div className="mt-8 flex items-start space-x-4">
-      <div className="mt-0.5 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-[0_8px_18px_rgba(67,56,202,0.28)]">
-        {cloneElement(icon, {
-          className: "h-7 w-7 text-white",
-        })}
+      <div className="mt-0.5 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-[0_8px_18px_rgba(67,56,202,0.28)] [&_svg]:h-7 [&_svg]:w-7 [&_svg]:fill-none [&_svg]:stroke-current">
+        {icon}
       </div>
       <div>
         <h4 className="text-xl font-semibold text-gray-900">{title}</h4>

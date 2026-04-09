@@ -22,7 +22,7 @@ export function CtaBanner() {
           </Link>
           <Link
             href="/for-nurses"
-            className="outline-btn mx-auto inline-block w-full border-white/80 bg-transparent px-7 py-3 text-center text-lg font-semibold text-white hover:border-white hover:bg-white/10 hover:text-white sm:w-auto lg:px-10 lg:py-5"
+            className="secondary-btn mx-auto inline-block w-full border-[var(--line)] bg-[var(--panel-strong)] px-7 py-3 text-center text-lg font-semibold text-indigo-700 hover:text-indigo-800 sm:w-auto lg:px-10 lg:py-5"
           >
             I&apos;m a Caregiver
           </Link>

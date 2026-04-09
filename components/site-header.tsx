@@ -309,13 +309,6 @@ export default function SiteHeader() {
               </>
             )}
 
-            <Link
-              href="/directory"
-              className="primary-btn mt-3 w-full text-center text-sm"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Browse Caregivers
-            </Link>
           </div>
         ) : null}
       </nav>
