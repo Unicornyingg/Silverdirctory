@@ -351,7 +351,7 @@ a:hover {
   border-radius: calc(var(--radius-panel) + 0.15rem);
   background: linear-gradient(180deg, rgba(255, 253, 250, 0.95) 0%, rgba(246, 238, 227, 0.9) 100%);
   box-shadow: var(--shadow-soft-lg);
-  padding: 0.7rem;
+  padding: 0.45rem;
 }
 
 .hero-chip {

@@ -142,6 +142,16 @@ export default function ClientProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (!successMessage) return;
+    const timeout = window.setTimeout(() => {
+      setSuccessMessage(null);
+    }, 5000);
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [successMessage]);
+
   async function handleSignOut(redirectTo = "/login") {
     await supabase.auth.signOut();
     router.push(redirectTo);
@@ -270,13 +280,21 @@ export default function ClientProfilePage() {
       </section>
 
       {errorMessage && (
-        <div className="surface-panel mt-6 border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="surface-panel mt-6 border-red-200 bg-red-50 p-4 text-sm text-red-700"
+        >
           {errorMessage}
         </div>
       )}
 
       {successMessage && (
-        <div className="surface-panel mt-6 border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
+        <div
+          role="status"
+          aria-live="polite"
+          className="surface-panel mt-6 border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700"
+        >
           {successMessage}
         </div>
       )}
@@ -293,6 +311,7 @@ export default function ClientProfilePage() {
                 }
                 className="field-input"
                 placeholder="Alex Tan"
+                autoComplete="name"
                 required
               />
             </label>
@@ -306,6 +325,9 @@ export default function ClientProfilePage() {
                 }
                 className="field-input"
                 placeholder="+65 8123 4567"
+                type="tel"
+                inputMode="numeric"
+                autoComplete="tel"
               />
             </label>
 
@@ -318,6 +340,7 @@ export default function ClientProfilePage() {
                 }
                 className="field-input"
                 placeholder="Bedok"
+                autoComplete="address-level2"
               />
             </label>
 

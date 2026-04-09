@@ -34,6 +34,22 @@ export default async function SignupSuccessPage({
             : "Your family account has been created successfully. We are bringing you to the caregiver directory now."}
         </p>
 
+        {isCaregiver ? (
+          <ol className="mt-6 space-y-2 rounded-xl border border-[#d8e3eb] bg-white/80 p-4 text-left text-sm text-[#4f647e]">
+            <li>1. Phone verified and account created</li>
+            <li>2. Complete your caregiver profile details</li>
+            <li>3. Add profile photo and service regions</li>
+            <li>4. Go live in the directory and start receiving chats</li>
+          </ol>
+        ) : (
+          <ol className="mt-6 space-y-2 rounded-xl border border-[#d8e3eb] bg-white/80 p-4 text-left text-sm text-[#4f647e]">
+            <li>1. Family account created</li>
+            <li>2. Browse caregiver profiles by service and rate</li>
+            <li>3. Start in-app chat with shortlisted caregivers</li>
+            <li>4. Confirm care scope and first-visit details directly</li>
+          </ol>
+        )}
+
         <div className="mt-6 flex flex-wrap gap-3">
           {isCaregiver ? (
             <Link href="/caregiver/dashboard?setup=1" className="primary-btn text-sm">

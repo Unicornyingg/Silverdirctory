@@ -656,13 +656,21 @@ function ChatsPageContent() {
       </section>
 
       {errorMessage && (
-        <section className="surface-panel mt-6 border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <section
+          role="alert"
+          aria-live="assertive"
+          className="surface-panel mt-6 border-red-200 bg-red-50 p-4 text-sm text-red-700"
+        >
           {errorMessage}
         </section>
       )}
 
       {infoMessage && (
-        <section className="surface-panel mt-6 border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+        <section
+          role="status"
+          aria-live="polite"
+          className="surface-panel mt-6 border-amber-200 bg-amber-50 p-4 text-sm text-amber-800"
+        >
           {infoMessage}
         </section>
       )}

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import SiteHeader from "@/components/site-header";
@@ -91,11 +92,30 @@ export default function OAuthCompletePage() {
   return (
     <div className="site-shell">
       <SiteHeader />
-      <section className="surface-panel page-enter p-6 text-sm text-[#54677f]">
+      <section className="surface-panel page-enter flex flex-col items-center gap-3 p-6 text-center text-sm text-[#54677f]">
         {errorMessage ? (
-          <p className="text-red-700">{errorMessage}</p>
+          <>
+            <p role="alert" aria-live="assertive" className="text-red-700">
+              {errorMessage}
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
+              <Link href="/login?role=client" className="primary-btn text-sm">
+                Try family sign in
+              </Link>
+              <Link href="/login" className="secondary-btn text-sm">
+                Back to login
+              </Link>
+            </div>
+          </>
         ) : (
-          <p>Finalizing your sign in...</p>
+          <>
+            <div
+              aria-hidden="true"
+              className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"
+            />
+            <p>Finalizing your sign in...</p>
+            <p className="text-xs text-[#5d718a]">This usually takes a moment.</p>
+          </>
         )}
       </section>
     </div>

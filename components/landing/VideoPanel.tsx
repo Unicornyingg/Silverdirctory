@@ -13,11 +13,12 @@ export function VideoPanel({ videoId }: Readonly<VideoPanelProps>) {
 
   return (
     <Container>
-      <div className="relative mx-auto h-[500px] w-full max-w-4xl cursor-pointer overflow-hidden rounded-2xl bg-gradient-to-tr from-purple-400 to-indigo-700 lg:mb-20">
+      <div className="relative mx-auto aspect-video w-full max-w-4xl cursor-pointer overflow-hidden rounded-2xl bg-gradient-to-tr from-purple-400 to-indigo-700 lg:mb-20">
         {!playVideo ? (
           <button
             onClick={() => setPlayVideo(true)}
             className="absolute top-1/2 left-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 transform text-white lg:h-28 lg:w-28"
+            aria-label="Play platform walkthrough video"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -39,7 +40,7 @@ export function VideoPanel({ videoId }: Readonly<VideoPanelProps>) {
             src={`https://www.youtube-nocookie.com/embed/${videoId}?controls=0&autoplay=1`}
             title="Platform walkthrough video"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            className="h-full w-full aspect-video"
+            className="absolute inset-0 h-full w-full"
           />
         ) : null}
       </div>

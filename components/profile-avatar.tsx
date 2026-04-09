@@ -48,7 +48,11 @@ export default function ProfileAvatar({
       )}
 
       {!shouldRenderImage && (
-        <div className="absolute inset-0 flex items-center justify-center text-xl font-bold text-[#2c4f70]">
+        <div
+          role="img"
+          aria-label={alt}
+          className="absolute inset-0 flex items-center justify-center text-xl font-bold text-[#2c4f70]"
+        >
           {fallbackText || "RN"}
         </div>
       )}

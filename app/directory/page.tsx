@@ -231,11 +231,18 @@ export default async function DirectoryPage({
             first visit.
           </p>
         </div>
+        <p className="mt-3 text-xs text-[#5f7289]">
+          Boosted listings appear first and are paid promotions.
+        </p>
       </section>
 
       {error && (
-        <div className="surface-panel mt-6 border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          Unable to load profiles from Supabase: {error.message}
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="surface-panel mt-6 border-red-200 bg-red-50 p-4 text-sm text-red-700"
+        >
+          Unable to load caregiver profiles right now. Please refresh and try again.
         </div>
       )}
 

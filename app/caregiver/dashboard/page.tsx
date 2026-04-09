@@ -417,6 +417,16 @@ export default function CaregiverDashboardPage() {
     window.localStorage.setItem(getDraftStorageKey(authUser.id), JSON.stringify(form));
   }, [authUser, form, isOnboardingMode]);
 
+  useEffect(() => {
+    if (!successMessage) return;
+    const timeout = window.setTimeout(() => {
+      setSuccessMessage(null);
+    }, 5000);
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [successMessage]);
+
   const updateField =
     (field: EditableDashboardField) =>
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -804,18 +814,42 @@ export default function CaregiverDashboardPage() {
     profile?.licensed_nurse_status ?? "no_licence_uploaded";
 
   const checklistItems = [
-    { id: "full-name", done: form.fullName.trim().length >= 2 },
-    { id: "hourly-rate", done: Number.isFinite(Number(form.hourlyRate)) && Number(form.hourlyRate) > 0 },
-    { id: "experience", done: form.yearsExperience.trim().length > 0 && Number(form.yearsExperience) >= 0 },
-    { id: "min-shift", done: Number.isFinite(Number(form.minimumShiftHours)) && Number(form.minimumShiftHours) > 0 },
-    { id: "credentials", done: form.credentialsSummary.trim().length >= MIN_CREDENTIALS_SUMMARY_LENGTH },
-    { id: "availability", done: form.availabilitySummary.trim().length >= MIN_AVAILABILITY_SUMMARY_LENGTH },
-    { id: "response-time", done: form.responseTimeSummary.trim().length >= MIN_RESPONSE_TIME_SUMMARY_LENGTH },
-    { id: "regions", done: form.serviceRegions.length > 0 },
-    { id: "languages", done: form.languages.length > 0 },
-    { id: "services", done: form.services.length > 0 },
-    { id: "bio", done: form.bio.trim().length >= MIN_BIO_LENGTH },
-    { id: "photo", done: !requiresProfilePhoto || !!profilePhoto },
+    { id: "full-name", label: "Full name", done: form.fullName.trim().length >= 2 },
+    {
+      id: "hourly-rate",
+      label: "Hourly rate",
+      done: Number.isFinite(Number(form.hourlyRate)) && Number(form.hourlyRate) > 0,
+    },
+    {
+      id: "experience",
+      label: "Years of experience",
+      done: form.yearsExperience.trim().length > 0 && Number(form.yearsExperience) >= 0,
+    },
+    {
+      id: "min-shift",
+      label: "Minimum shift duration",
+      done: Number.isFinite(Number(form.minimumShiftHours)) && Number(form.minimumShiftHours) > 0,
+    },
+    {
+      id: "credentials",
+      label: "Credentials summary",
+      done: form.credentialsSummary.trim().length >= MIN_CREDENTIALS_SUMMARY_LENGTH,
+    },
+    {
+      id: "availability",
+      label: "Availability summary",
+      done: form.availabilitySummary.trim().length >= MIN_AVAILABILITY_SUMMARY_LENGTH,
+    },
+    {
+      id: "response-time",
+      label: "Response time",
+      done: form.responseTimeSummary.trim().length >= MIN_RESPONSE_TIME_SUMMARY_LENGTH,
+    },
+    { id: "regions", label: "Service regions", done: form.serviceRegions.length > 0 },
+    { id: "languages", label: "Languages", done: form.languages.length > 0 },
+    { id: "services", label: "Services", done: form.services.length > 0 },
+    { id: "bio", label: "Bio", done: form.bio.trim().length >= MIN_BIO_LENGTH },
+    { id: "photo", label: "Profile photo", done: !requiresProfilePhoto || !!profilePhoto },
   ];
   const completedChecklist = checklistItems.filter((item) => item.done).length;
   const checklistProgress = Math.round((completedChecklist / checklistItems.length) * 100);
@@ -875,88 +909,242 @@ export default function CaregiverDashboardPage() {
         <p className="mt-3 text-xs text-[#60758f]">
           Draft changes are saved locally on this device while you complete setup.
         </p>
+        {checklistRemaining > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {checklistItems
+              .filter((item) => !item.done)
+              .map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() =>
+                    document
+                      .getElementById(item.id)
+                      ?.scrollIntoView({ behavior: "smooth", block: "center" })
+                  }
+                  className="rounded-full border border-[#cfdbeb] bg-white/90 px-3 py-1.5 text-xs font-semibold text-[#2e4f6f] hover:border-[#b4c6dc] hover:bg-[#f5f9fc]"
+                >
+                  Complete: {item.label}
+                </button>
+              ))}
+          </div>
+        )}
       </section>
 
       {errorMessage && (
-        <div className="surface-panel mt-6 border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="surface-panel mt-6 border-red-200 bg-red-50 p-4 text-sm text-red-700"
+        >
           {errorMessage}
         </div>
       )}
 
       {successMessage && (
-        <div className="surface-panel mt-6 border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
+        <div
+          role="status"
+          aria-live="polite"
+          className="surface-panel mt-6 border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700"
+        >
           {successMessage}
         </div>
       )}
 
-      <main className="mt-6 grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+      <main className="mt-6 grid gap-5 md:grid-cols-[1fr_280px] lg:grid-cols-[1.15fr_0.85fr]">
         <section className="surface-panel p-6 md:p-8">
           <form onSubmit={handleSaveProfile} className="space-y-5">
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-[#243d58]">Full name</span>
-                <input
-                  value={form.fullName}
-                  onChange={updateField("fullName")}
-                  className="field-input"
-                  placeholder="Jane Smith"
-                  required
-                />
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-[#243d58]">
-                  Hourly rate (SGD)
-                </span>
-                <input
-                  type="number"
-                  min={1}
-                  step={1}
-                  value={form.hourlyRate}
-                  onChange={updateField("hourlyRate")}
-                  className="field-input no-spinner"
-                  placeholder="45"
-                  required
-                />
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-[#243d58]">
-                  Years of caregiving experience
-                </span>
-                <input
-                  type="number"
-                  min={0}
-                  step={1}
-                  value={form.yearsExperience}
-                  onChange={updateField("yearsExperience")}
-                  className="field-input no-spinner"
-                  placeholder="5"
-                  required
-                />
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-[#243d58]">
-                  Minimum shift duration (hours)
-                </span>
-                <input
-                  type="number"
-                  min={0.5}
-                  step={0.5}
-                  value={form.minimumShiftHours}
-                  onChange={updateField("minimumShiftHours")}
-                  className="field-input no-spinner"
-                  placeholder="3"
-                  required
-                />
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-[#243d58]">
-                  Credentials summary
-                </span>
+            <fieldset className="rounded-xl border border-[#d8e3eb] bg-white/80 p-4 md:p-5">
+              <legend className="px-1 text-base font-bold text-[#1d3b59]">Rates &amp; Experience</legend>
+              <div className="mt-2 grid gap-4 md:grid-cols-2">
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-[#243d58]">Full name</span>
                   <input
+                    id="full-name"
+                    value={form.fullName}
+                    onChange={updateField("fullName")}
+                    className="field-input"
+                    placeholder="Jane Smith"
+                    required
+                    autoComplete="name"
+                  />
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-[#243d58]">Hourly rate (SGD)</span>
+                  <input
+                    id="hourly-rate"
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={form.hourlyRate}
+                    onChange={updateField("hourlyRate")}
+                    className="field-input no-spinner"
+                    placeholder="45"
+                    required
+                  />
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-[#243d58]">
+                    Years of caregiving experience
+                  </span>
+                  <input
+                    id="experience"
+                    type="number"
+                    min={0}
+                    step={1}
+                    value={form.yearsExperience}
+                    onChange={updateField("yearsExperience")}
+                    className="field-input no-spinner"
+                    placeholder="5"
+                    required
+                  />
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-[#243d58]">
+                    Minimum shift duration (hours)
+                  </span>
+                  <input
+                    id="min-shift"
+                    type="number"
+                    min={0.5}
+                    step={0.5}
+                    value={form.minimumShiftHours}
+                    onChange={updateField("minimumShiftHours")}
+                    className="field-input no-spinner"
+                    placeholder="3"
+                    required
+                  />
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset className="rounded-xl border border-[#d8e3eb] bg-white/80 p-4 md:p-5">
+              <legend className="px-1 text-base font-bold text-[#1d3b59]">
+                Availability &amp; Response
+              </legend>
+              <div className="mt-2 grid gap-4">
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-[#243d58]">Availability</span>
+                  <input
+                    id="availability"
+                    value={form.availabilitySummary}
+                    onChange={updateField("availabilitySummary")}
+                    className="field-input"
+                    placeholder="Weeknights after 7pm and weekends"
+                    required
+                  />
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-[#243d58]">Typical response time</span>
+                  <input
+                    id="response-time"
+                    value={form.responseTimeSummary}
+                    onChange={updateField("responseTimeSummary")}
+                    className="field-input"
+                    placeholder="Usually responds within 1 hour"
+                    required
+                  />
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset className="rounded-xl border border-[#d8e3eb] bg-white/80 p-4 md:p-5">
+              <legend className="px-1 text-base font-bold text-[#1d3b59]">
+                Regions, Languages &amp; Services
+              </legend>
+              <div className="mt-2 space-y-4">
+                <div id="regions" className="space-y-2">
+                  <p className="text-sm font-semibold text-[#243d58]">Preferred service regions</p>
+                  <div className="space-y-3 rounded-lg border border-[#d8e3eb] bg-white/90 p-3">
+                    {SERVICE_REGION_OPTIONS.map((region) => {
+                      const checked = form.serviceRegions.includes(region.value);
+                      return (
+                        <label
+                          key={region.value}
+                          className="block rounded-md border border-[#e2ebf2] bg-white px-3 py-2"
+                        >
+                          <span className="flex items-start gap-2 text-sm font-semibold text-[#243d58]">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => toggleServiceRegion(region.value)}
+                              className="mt-0.5 h-4 w-4 rounded border-[#b3c6d8] text-[#4338ca] focus:ring-[#4338ca]"
+                            />
+                            <span>{region.value}</span>
+                          </span>
+                          {region.areas && (
+                            <p className="ml-6 mt-1 text-xs leading-5 text-[#5d6d81]">
+                              {region.areas}
+                            </p>
+                          )}
+                        </label>
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-[#5d6d81]">Select at least one region.</p>
+                </div>
+
+                <div id="languages" className="space-y-2">
+                  <p className="text-sm font-semibold text-[#243d58]">Languages you speak</p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {CAREGIVER_LANGUAGE_OPTIONS.map((language) => {
+                      const checked = form.languages.includes(language);
+                      return (
+                        <label
+                          key={language}
+                          className="flex items-center gap-2 rounded-lg border border-[#d8e3eb] bg-white/90 px-3 py-2 text-sm text-[#2f4a67]"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleLanguage(language)}
+                            className="h-4 w-4 rounded border-[#b3c6d8] text-[#4338ca] focus:ring-[#4338ca]"
+                          />
+                          <span>{language}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-[#5d6d81]">Select at least one language.</p>
+                </div>
+
+                <div id="services" className="space-y-2">
+                  <p className="text-sm font-semibold text-[#243d58]">Services you want to provide</p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {CARE_SERVICE_OPTIONS.map((service) => {
+                      const checked = form.services.includes(service);
+                      return (
+                        <label
+                          key={service}
+                          className="flex items-start gap-2 rounded-lg border border-[#d8e3eb] bg-white/90 px-3 py-2 text-sm text-[#2f4a67]"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleService(service)}
+                            className="mt-0.5 h-4 w-4 rounded border-[#b3c6d8] text-[#4338ca] focus:ring-[#4338ca]"
+                          />
+                          <span>{service}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-[#5d6d81]">Select at least one service.</p>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset className="rounded-xl border border-[#d8e3eb] bg-white/80 p-4 md:p-5">
+              <legend className="px-1 text-base font-bold text-[#1d3b59]">About you</legend>
+              <div className="mt-2 space-y-4">
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-[#243d58]">Credentials summary</span>
+                  <input
+                    id="credentials"
                     value={form.credentialsSummary}
                     onChange={updateField("credentialsSummary")}
                     className="field-input"
@@ -965,171 +1153,59 @@ export default function CaregiverDashboardPage() {
                   />
                 </label>
 
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-[#243d58]">
-                  Availability
-                </span>
-                <input
-                  value={form.availabilitySummary}
-                  onChange={updateField("availabilitySummary")}
-                  className="field-input"
-                  placeholder="Weeknights after 7pm and weekends"
-                  required
-                />
-              </label>
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-[#243d58]">Short bio</span>
+                  <textarea
+                    id="bio"
+                    value={form.bio}
+                    onChange={updateField("bio")}
+                    className="field-textarea"
+                    placeholder="Describe your eldercare background, certifications, and availability."
+                    required
+                  />
+                </label>
+              </div>
+            </fieldset>
 
-              <label className="space-y-2 md:col-span-2">
-                <span className="text-sm font-semibold text-[#243d58]">
-                  Typical response time
-                </span>
-                <input
-                  value={form.responseTimeSummary}
-                  onChange={updateField("responseTimeSummary")}
-                  className="field-input"
-                  placeholder="Usually responds within 1 hour"
-                  required
-                />
-              </label>
+            <fieldset className="rounded-xl border border-[#d8e3eb] bg-white/80 p-4 md:p-5">
+              <legend className="px-1 text-base font-bold text-[#1d3b59]">Verification</legend>
+              <div className="mt-2 space-y-4">
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-[#243d58]">Profile photo (public)</span>
+                  <input
+                    id="photo"
+                    ref={profileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={onProfilePhotoChange}
+                    className="field-file file:mr-3 file:rounded-md file:border-0 file:bg-[#edf3f7] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[#28435f] hover:file:bg-[#e2edf4]"
+                    required={requiresProfilePhoto}
+                  />
+                  <p className="text-xs text-[#5d6d81]">
+                    Max {MAX_PROFILE_PHOTO_MB}MB. This image appears on your public directory card.{" "}
+                    {requiresProfilePhoto ? "Required to publish profile." : ""}
+                  </p>
+                </label>
 
-              <fieldset className="space-y-2 md:col-span-2">
-                <legend className="text-sm font-semibold text-[#243d58]">
-                  Preferred service regions
-                </legend>
-                <div className="space-y-3 rounded-lg border border-[#d8e3eb] bg-white/90 p-3">
-                  {SERVICE_REGION_OPTIONS.map((region) => {
-                    const checked = form.serviceRegions.includes(region.value);
-                    return (
-                      <label
-                        key={region.value}
-                        className="block rounded-md border border-[#e2ebf2] bg-white px-3 py-2"
-                      >
-                        <span className="flex items-start gap-2 text-sm font-semibold text-[#243d58]">
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={() => toggleServiceRegion(region.value)}
-                            className="mt-0.5 h-4 w-4 rounded border-[#b3c6d8] text-[#0f766e] focus:ring-[#0f766e]"
-                          />
-                          <span>{region.value}</span>
-                        </span>
-                        {region.areas && (
-                          <p className="ml-6 mt-1 text-xs leading-5 text-[#5d6d81]">
-                            {region.areas}
-                          </p>
-                        )}
-                      </label>
-                    );
-                  })}
-                </div>
-                <p className="text-xs text-[#5d6d81]">
-                  Select at least one region.
-                </p>
-              </fieldset>
-
-              <fieldset className="space-y-2 md:col-span-2">
-                <legend className="text-sm font-semibold text-[#243d58]">
-                  Languages you speak
-                </legend>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {CAREGIVER_LANGUAGE_OPTIONS.map((language) => {
-                    const checked = form.languages.includes(language);
-                    return (
-                      <label
-                        key={language}
-                        className="flex items-center gap-2 rounded-lg border border-[#d8e3eb] bg-white/90 px-3 py-2 text-sm text-[#2f4a67]"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => toggleLanguage(language)}
-                          className="h-4 w-4 rounded border-[#b3c6d8] text-[#0f766e] focus:ring-[#0f766e]"
-                        />
-                        <span>{language}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-                <p className="text-xs text-[#5d6d81]">
-                  Select at least one language.
-                </p>
-              </fieldset>
-
-              <fieldset className="space-y-2 md:col-span-2">
-                <legend className="text-sm font-semibold text-[#243d58]">
-                  Services you want to provide
-                </legend>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {CARE_SERVICE_OPTIONS.map((service) => {
-                    const checked = form.services.includes(service);
-                    return (
-                      <label
-                        key={service}
-                        className="flex items-start gap-2 rounded-lg border border-[#d8e3eb] bg-white/90 px-3 py-2 text-sm text-[#2f4a67]"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => toggleService(service)}
-                          className="mt-0.5 h-4 w-4 rounded border-[#b3c6d8] text-[#0f766e] focus:ring-[#0f766e]"
-                        />
-                        <span>{service}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-                <p className="text-xs text-[#5d6d81]">
-                  Select at least one service.
-                </p>
-              </fieldset>
-            </div>
-
-            <label className="space-y-2">
-              <span className="text-sm font-semibold text-[#243d58]">Short bio</span>
-              <textarea
-                value={form.bio}
-                onChange={updateField("bio")}
-                className="field-textarea"
-                placeholder="Describe your eldercare background, certifications, and availability."
-                required
-              />
-            </label>
-
-            <label className="space-y-2">
-              <span className="text-sm font-semibold text-[#243d58]">
-                Profile photo (public)
-              </span>
-              <input
-                ref={profileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={onProfilePhotoChange}
-                className="field-file file:mr-3 file:rounded-md file:border-0 file:bg-[#edf3f7] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[#28435f] hover:file:bg-[#e2edf4]"
-                required={requiresProfilePhoto}
-              />
-              <p className="text-xs text-[#5d6d81]">
-                Max {MAX_PROFILE_PHOTO_MB}MB. This image appears on your public
-                directory card.{" "}
-                {requiresProfilePhoto ? "Required to publish profile." : ""}
-              </p>
-            </label>
-
-            <label className="space-y-2">
-              <span className="text-sm font-semibold text-[#243d58]">
-                Nursing licence / SNB document (optional)
-              </span>
-              <input
-                ref={verificationInputRef}
-                type="file"
-                accept="image/*,.pdf"
-                onChange={onVerificationDocChange}
-                className="field-file file:mr-3 file:rounded-md file:border-0 file:bg-[#edf3f7] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[#28435f] hover:file:bg-[#e2edf4]"
-              />
-              <p className="text-xs text-[#5d6d81]">
-                Optional. Uploading a licence requests admin review for a public{" "}
-                <span className="font-semibold">Licensed Nurse</span> tag. Your basic caregiver
-                profile remains live while review is pending.
-              </p>
-            </label>
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-[#243d58]">
+                    Nursing licence / SNB document (optional)
+                  </span>
+                  <input
+                    ref={verificationInputRef}
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={onVerificationDocChange}
+                    className="field-file file:mr-3 file:rounded-md file:border-0 file:bg-[#edf3f7] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[#28435f] hover:file:bg-[#e2edf4]"
+                  />
+                  <p className="text-xs text-[#5d6d81]">
+                    Optional. Uploading a licence requests admin review for a public{" "}
+                    <span className="font-semibold">Licensed Nurse</span> tag. Your basic caregiver
+                    profile remains live while review is pending.
+                  </p>
+                </label>
+              </div>
+            </fieldset>
 
             <button
               type="submit"
@@ -1141,7 +1217,7 @@ export default function CaregiverDashboardPage() {
           </form>
         </section>
 
-        <aside className="space-y-5">
+        <aside className="order-first space-y-5 md:order-last">
           <section className="surface-panel p-5">
             <h2 className="text-base font-bold text-[#10243b]">Licensed Nurse tag status</h2>
             <div className="mt-3 space-y-2 text-sm text-[#52657e]">
@@ -1162,31 +1238,31 @@ export default function CaregiverDashboardPage() {
 
           {profile && (
             <section className="surface-panel p-5">
-            <h2 className="text-base font-bold text-[#10243b]">Boost profile</h2>
-            <p className="mt-2 text-sm leading-6 text-[#56677d]">
-              Promote your listing to the top of directory search for 7 days.
-            </p>
-            <p className="mt-2 text-sm text-[#42556f]">
-              Status:{" "}
-              {boostActive && profile?.boost_expires_at ? (
-                <span className="font-semibold text-[#146943]">
-                  Active until {formatDate(profile.boost_expires_at)}
-                </span>
-              ) : (
-                <span className="font-semibold text-[#7a4c1d]">Inactive</span>
-              )}
-            </p>
+              <h2 className="text-base font-bold text-[#10243b]">Boost profile</h2>
+              <p className="mt-2 text-sm leading-6 text-[#56677d]">
+                Promote your listing to the top of directory search for 7 days.
+              </p>
+              <p className="mt-2 text-sm text-[#42556f]">
+                Status:{" "}
+                {boostActive && profile?.boost_expires_at ? (
+                  <span className="font-semibold text-[#146943]">
+                    Active until {formatDate(profile.boost_expires_at)}
+                  </span>
+                ) : (
+                  <span className="font-semibold text-[#7a4c1d]">Inactive</span>
+                )}
+              </p>
 
-            <button
-              type="button"
-              onClick={startBoostCheckout}
-              disabled={isBoosting}
-              className="primary-btn mt-4 w-full disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isBoosting
-                ? "Opening Stripe checkout..."
-                : "Boost profile for 7 days (S$5)"}
-            </button>
+              <button
+                type="button"
+                onClick={startBoostCheckout}
+                disabled={isBoosting}
+                className="primary-btn mt-4 w-full disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isBoosting
+                  ? "Opening Stripe checkout..."
+                  : "Boost profile for 7 days (S$5)"}
+              </button>
             </section>
           )}
 

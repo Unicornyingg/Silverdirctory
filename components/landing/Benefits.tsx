@@ -23,19 +23,19 @@ type BenefitsProps = {
 
 export function Benefits({ imgPos, data }: Readonly<BenefitsProps>) {
   return (
-    <Container className="home-section-surface mb-14 flex flex-wrap p-5 lg:mb-16 lg:flex-nowrap lg:gap-10 lg:p-9">
+    <Container className="home-section-surface mb-14 flex flex-wrap p-6 lg:mb-16 lg:flex-nowrap lg:gap-10 lg:p-10">
       <div
         className={`flex w-full items-center justify-center lg:w-1/2 ${
           imgPos === "right" ? "lg:order-1" : ""
         }`}
       >
-        <div className="image-frame relative w-full max-w-[560px] aspect-[4/3]">
+        <div className="image-frame w-full max-w-[560px]">
           <Image
             src={data.image}
-            fill
-            sizes="(max-width: 1024px) 100vw, 560px"
+            width={data.image.width}
+            height={data.image.height}
             alt={data.imageAlt}
-            className="rounded-[1rem] object-contain"
+            className="h-auto w-full rounded-[1.35rem] object-contain"
             placeholder="blur"
           />
         </div>
@@ -43,7 +43,7 @@ export function Benefits({ imgPos, data }: Readonly<BenefitsProps>) {
 
       <div className="flex w-full flex-wrap items-center lg:w-1/2">
         <div>
-          <div className="mt-4 flex w-full flex-col">
+          <div className="mt-2 flex w-full flex-col">
             <h3 className="mt-3 max-w-2xl text-3xl font-extrabold leading-snug tracking-tight text-gray-900 lg:text-4xl lg:leading-tight">
               {data.title}
             </h3>
@@ -52,7 +52,7 @@ export function Benefits({ imgPos, data }: Readonly<BenefitsProps>) {
             </p>
           </div>
 
-          <div className="mt-5 w-full">
+          <div className="mt-4 w-full">
             {data.bullets.map((item) => (
               <Benefit key={item.title} title={item.title} icon={item.icon}>
                 {item.desc}
@@ -73,7 +73,7 @@ type BenefitProps = {
 
 function Benefit({ title, icon, children }: Readonly<BenefitProps>) {
   return (
-    <div className="mt-7 flex items-start space-x-3.5">
+    <div className="mt-8 flex items-start space-x-4">
       <div className="mt-0.5 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-[0_8px_18px_rgba(67,56,202,0.28)]">
         {cloneElement(icon, {
           className: "h-7 w-7 text-white",

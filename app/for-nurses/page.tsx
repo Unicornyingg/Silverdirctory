@@ -186,6 +186,7 @@ export default function CaregiverAccountCreationPage() {
                 }
                 className="field-input"
                 placeholder="Jane Smith"
+                autoComplete="name"
                 maxLength={MAX_FULL_NAME_LENGTH}
                 required
               />
@@ -201,6 +202,7 @@ export default function CaregiverAccountCreationPage() {
                 }
                 className="field-input"
                 placeholder="jane@domain.com"
+                autoComplete="email"
                 maxLength={MAX_EMAIL_LENGTH}
                 required
               />
@@ -215,6 +217,9 @@ export default function CaregiverAccountCreationPage() {
                 }
                 className="field-input"
                 placeholder="8123 4567"
+                type="tel"
+                inputMode="numeric"
+                autoComplete="tel"
                 maxLength={MAX_PHONE_LENGTH}
                 required
               />
@@ -230,6 +235,7 @@ export default function CaregiverAccountCreationPage() {
                 }
                 className="field-input"
                 placeholder="Minimum 8 characters"
+                autoComplete="new-password"
                 minLength={8}
                 maxLength={MAX_PASSWORD_LENGTH}
                 required
@@ -249,6 +255,7 @@ export default function CaregiverAccountCreationPage() {
                 }
                 className="field-input"
                 placeholder="Re-enter your password"
+                autoComplete="new-password"
                 minLength={8}
                 maxLength={MAX_PASSWORD_LENGTH}
                 required
@@ -256,13 +263,21 @@ export default function CaregiverAccountCreationPage() {
             </label>
 
             {errorMessage && (
-              <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <p
+                role="alert"
+                aria-live="assertive"
+                className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+              >
                 {errorMessage}
               </p>
             )}
 
             {statusMessage && (
-              <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+              <p
+                role="status"
+                aria-live="polite"
+                className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+              >
                 {statusMessage}
               </p>
             )}
@@ -277,7 +292,7 @@ export default function CaregiverAccountCreationPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="primary-btn min-w-[220px] disabled:cursor-not-allowed disabled:opacity-60"
+                className="primary-btn w-full sm:min-w-[220px] sm:w-auto disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isSubmitting ? "Sending OTP..." : "Continue to phone verification"}
               </button>

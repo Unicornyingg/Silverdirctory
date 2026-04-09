@@ -415,7 +415,7 @@ export default function LoginPage() {
                 : "Sign in as: Caregiver account"}
             </div>
           ) : (
-            <div className="mb-5 grid grid-cols-2 gap-2 rounded-xl border border-[#d8e3eb] bg-white/75 p-1">
+            <div className="mb-5 grid gap-3 md:grid-cols-2">
               <button
                 type="button"
                 onClick={() => {
@@ -426,13 +426,16 @@ export default function LoginPage() {
                   setPhoneOtpCode("");
                   setIsPhoneOtpSent(false);
                 }}
-                className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                className={`rounded-xl border px-4 py-4 text-left transition ${
                   accountType === "caregiver"
-                    ? "bg-[#0f766e] text-white"
-                    : "text-[#31506f] hover:bg-[#edf3f7]"
+                    ? "border-[#4338ca] bg-indigo-50 shadow-[0_8px_18px_rgba(67,56,202,0.14)]"
+                    : "border-[#d8e3eb] bg-white/90 hover:border-[#bccddd] hover:bg-[#f5f9fc]"
                 }`}
               >
-                I am offering care
+                <span className="block text-sm font-bold text-[#10233b]">I&apos;m a Caregiver</span>
+                <span className="mt-1 block text-xs text-[#4f647e]">
+                  Offer care services and manage your listing.
+                </span>
               </button>
               <button
                 type="button"
@@ -444,13 +447,16 @@ export default function LoginPage() {
                   setPhoneOtpCode("");
                   setIsPhoneOtpSent(false);
                 }}
-                className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                className={`rounded-xl border px-4 py-4 text-left transition ${
                   accountType === "client"
-                    ? "bg-[#0f766e] text-white"
-                    : "text-[#31506f] hover:bg-[#edf3f7]"
+                    ? "border-[#4338ca] bg-indigo-50 shadow-[0_8px_18px_rgba(67,56,202,0.14)]"
+                    : "border-[#d8e3eb] bg-white/90 hover:border-[#bccddd] hover:bg-[#f5f9fc]"
                 }`}
               >
-                I am looking for care
+                <span className="block text-sm font-bold text-[#10233b]">I&apos;m a Family Member</span>
+                <span className="mt-1 block text-xs text-[#4f647e]">
+                  Browse caregivers and start secure chats.
+                </span>
               </button>
             </div>
           )}
@@ -487,6 +493,9 @@ export default function LoginPage() {
                     onChange={(event) => setPhoneOtp(event.target.value)}
                     className="field-input"
                     placeholder="+65 8123 4567"
+                    type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel"
                     maxLength={MAX_PHONE_LENGTH}
                   />
                 </label>
@@ -550,6 +559,9 @@ export default function LoginPage() {
                   onChange={(event) => setPhoneOtp(event.target.value)}
                   className="field-input"
                   placeholder="+65 8123 4567"
+                  type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel"
                   maxLength={MAX_PHONE_LENGTH}
                 />
               </label>
@@ -606,6 +618,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="you@email.com"
+                autoComplete="email"
                 maxLength={MAX_EMAIL_LENGTH}
                 required
               />
@@ -619,6 +632,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="Your password"
+                autoComplete="current-password"
                 maxLength={MAX_PASSWORD_LENGTH}
                 required
               />
@@ -633,13 +647,21 @@ export default function LoginPage() {
             </button>
 
             {errorMessage && (
-              <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <p
+                role="alert"
+                aria-live="assertive"
+                className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+              >
                 {errorMessage}
               </p>
             )}
 
             {statusMessage && (
-              <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+              <p
+                role="status"
+                aria-live="polite"
+                className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+              >
                 {statusMessage}
               </p>
             )}
@@ -665,13 +687,18 @@ export default function LoginPage() {
                   value={forgotEmail}
                   onChange={(event) => setForgotEmail(event.target.value)}
                   placeholder="you@email.com"
+                  autoComplete="email"
                   maxLength={MAX_EMAIL_LENGTH}
                   required
                 />
               </label>
 
               {forgotMessage && (
-                <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                <p
+                  role="status"
+                  aria-live="polite"
+                  className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+                >
                   {forgotMessage}
                 </p>
               )}

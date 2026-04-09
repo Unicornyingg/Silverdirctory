@@ -25,13 +25,13 @@ export default function FAQAccordion({ sections }: { sections: FAQSection[] }) {
                 open={index === 0}
                 className="group overflow-hidden rounded-xl border border-[#d8e3eb] bg-white/92 shadow-[0_8px_20px_rgba(15,36,58,0.06)]"
               >
-                <summary className="faq-summary">
+                <summary className="faq-summary transition hover:bg-[#f7fbff]">
                   <span>{item.question}</span>
                   <span className="faq-summary-icon" aria-hidden="true">
                     +
                   </span>
                 </summary>
-                <div className="border-t border-[#e4ecf2] bg-white/86 px-4 py-3 text-sm leading-7 text-[#4e637c]">
+                <div className="border-t border-[#e4ecf2] bg-white/86 px-4 py-3 text-sm leading-7 text-[#3a536d]">
                   {item.answer}
                 </div>
               </details>

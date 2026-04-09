@@ -69,6 +69,9 @@ export default function CaregiverDirectoryList({
     () => profiles.find((profile) => profile.id === expandedProfileId) ?? null,
     [expandedProfileId, profiles]
   );
+  const expandedProfileTitleId = expandedProfile
+    ? `caregiver-profile-title-${expandedProfile.id}`
+    : undefined;
 
   useEffect(() => {
     function handleEscape(event: KeyboardEvent) {
@@ -98,34 +101,41 @@ export default function CaregiverDirectoryList({
                 <button
                   type="button"
                   onClick={() => setExpandedProfileId(profile.id)}
-                  className="overflow-hidden rounded-2xl border border-[#d5e1ea] bg-[#ecf3f9] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f766e] focus-visible:ring-offset-2"
-                  aria-label={`Open full profile for ${profile.full_name}`}
+                  className="overflow-hidden rounded-2xl border border-[#d5e1ea] bg-[#ecf3f9] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4338ca] focus-visible:ring-offset-2"
+                  aria-label={`View profile photo for ${profile.full_name}`}
                 >
                   <ProfileAvatar
                     src={profile.profile_photo_url}
                     alt={`${profile.full_name} profile`}
                     fallbackText={getInitials(profile.full_name) || "CG"}
-                    className="h-[120px] w-full md:w-[120px]"
+                    className="h-[120px] w-[120px]"
+                    imageClassName="object-top"
                   />
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setExpandedProfileId(profile.id)}
-                  className="text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f766e] focus-visible:ring-offset-2"
-                  aria-label={`Open full profile for ${profile.full_name}`}
+                  className="order-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4338ca] focus-visible:ring-offset-2 md:order-none"
+                  aria-label={`Open full profile details for ${profile.full_name}`}
                 >
                   <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-2xl font-bold tracking-tight text-[#10233b]">
+                    <span className="text-2xl font-bold tracking-tight text-[#10233b]">
                       {profile.full_name}
-                    </h2>
+                    </span>
                     {profile.hasActiveBoost && (
-                      <span className="rounded-full border border-[#f2cb8f] bg-[#fff4e3] px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.08em] text-[#8a4c08]">
+                      <span
+                        title="This listing is a paid promotion."
+                        className="rounded-full border border-[#f2cb8f] bg-[#fff4e3] px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.08em] text-[#6f3f0b]"
+                      >
                         Boosted
                       </span>
                     )}
                     {isLicensedNurseApproved(profile.licensed_nurse_status) && (
-                      <span className="rounded-full border border-[#c7d7fb] bg-[#edf2ff] px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.08em] text-[#2f3ea3]">
+                      <span
+                        title="SNB nursing licence verified by Silver Directory admin."
+                        className="rounded-full border border-[#c7d7fb] bg-[#edf2ff] px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.08em] text-[#2f3ea3]"
+                      >
                         Licensed Nurse
                       </span>
                     )}
@@ -160,9 +170,9 @@ export default function CaregiverDirectoryList({
 
                   <p className="mt-1 text-xs text-[#5a6f86]">
                     Areas covered: {profile.location}
-                    <span className="ml-2 text-[#7b8da1]">
-                      Last active: {formatLastActive(profile.last_active_at)}
-                    </span>
+                  </p>
+                  <p className="mt-1 text-xs text-[#7b8da1]">
+                    Last active: {formatLastActive(profile.last_active_at)}
                   </p>
 
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -214,8 +224,8 @@ export default function CaregiverDirectoryList({
                   </div>
                 </button>
 
-                <div className="flex min-w-[220px] flex-col items-start gap-3 md:items-end">
-                  <div className="text-right">
+                <div className="order-2 col-span-full flex flex-col items-stretch gap-3 rounded-xl border border-[#dbe6ee] bg-white/80 p-3 md:order-none md:col-span-1 md:items-end md:border-0 md:bg-transparent md:p-0">
+                  <div className="text-left md:text-right">
                     <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#60758d]">
                       Hourly rate
                     </p>
@@ -249,7 +259,7 @@ export default function CaregiverDirectoryList({
           className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f1d2a]/65 px-4 py-8"
           role="dialog"
           aria-modal="true"
-          aria-label={`Caregiver profile for ${expandedProfile.full_name}`}
+          aria-labelledby={expandedProfileTitleId}
         >
           <div className="absolute inset-0" onClick={() => setExpandedProfileId(null)} aria-hidden="true" />
 
@@ -275,8 +285,10 @@ export default function CaregiverDirectoryList({
               </div>
 
               <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-3xl font-bold tracking-tight text-[#10233b]">{expandedProfile.full_name}</h2>
+                <div className="flex flex-wrap items-center gap-2 pr-12">
+                  <h2 id={expandedProfileTitleId} className="text-3xl font-bold tracking-tight text-[#10233b]">
+                    {expandedProfile.full_name}
+                  </h2>
                   {isLicensedNurseApproved(expandedProfile.licensed_nurse_status) && (
                     <span className="rounded-full border border-[#c7d7fb] bg-[#edf2ff] px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.08em] text-[#2f3ea3]">
                       Licensed Nurse

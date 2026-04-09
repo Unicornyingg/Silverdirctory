@@ -22,6 +22,7 @@ export default function CaregiverOtpVerificationPage() {
   const [otpCode, setOtpCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
@@ -69,6 +70,23 @@ export default function CaregiverOtpVerificationPage() {
       active = false;
     };
   }, [router]);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = window.setInterval(() => {
+      setResendCooldown((previous) => {
+        if (previous <= 1) {
+          window.clearInterval(timer);
+          return 0;
+        }
+        return previous - 1;
+      });
+    }, 1000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [resendCooldown]);
 
   async function handleVerify(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -147,6 +165,9 @@ export default function CaregiverOtpVerificationPage() {
   async function handleResend() {
     setErrorMessage(null);
     setStatusMessage(null);
+    if (resendCooldown > 0) {
+      return;
+    }
     const normalizedPhone = normalizePhoneForAuth(phone);
 
     if (normalizedPhone.length < 6) {
@@ -174,6 +195,7 @@ export default function CaregiverOtpVerificationPage() {
         return;
       }
 
+      setResendCooldown(30);
       setStatusMessage(`A new SMS code was sent to ${normalizedPhone}.`);
     } catch (error) {
       setErrorMessage(
@@ -207,6 +229,9 @@ export default function CaregiverOtpVerificationPage() {
                 onChange={(event) => setPhone(event.target.value)}
                 className="field-input"
                 placeholder="8123 4567"
+                type="tel"
+                inputMode="numeric"
+                autoComplete="tel"
                 maxLength={MAX_PHONE_LENGTH}
                 required
               />
@@ -227,13 +252,21 @@ export default function CaregiverOtpVerificationPage() {
             </label>
 
             {errorMessage && (
-              <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <p
+                role="alert"
+                aria-live="assertive"
+                className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+              >
                 {errorMessage}
               </p>
             )}
 
             {statusMessage && (
-              <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+              <p
+                role="status"
+                aria-live="polite"
+                className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+              >
                 {statusMessage}
               </p>
             )}
@@ -243,10 +276,14 @@ export default function CaregiverOtpVerificationPage() {
                 <button
                   type="button"
                   onClick={() => void handleResend()}
-                  disabled={isResending}
+                  disabled={isResending || resendCooldown > 0}
                   className="secondary-btn text-sm disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isResending ? "Resending..." : "Resend OTP"}
+                  {isResending
+                    ? "Resending..."
+                    : resendCooldown > 0
+                      ? `Resend in ${resendCooldown}s`
+                      : "Resend code"}
                 </button>
                 <Link href="/for-nurses" className="text-sm font-semibold text-[#1f6b93]">
                   Edit account details

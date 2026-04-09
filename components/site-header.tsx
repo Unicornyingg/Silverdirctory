@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { MarketplaceUser } from "@/lib/supabase/types";
@@ -20,6 +20,7 @@ function isActivePath(pathname: string, href: string): boolean {
 export default function SiteHeader() {
   const supabase = getSupabaseBrowserClient();
   const pathname = usePathname();
+  const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [accountRole, setAccountRole] = useState<MarketplaceUser["role"] | null>(null);
@@ -66,9 +67,24 @@ export default function SiteHeader() {
     };
   }, [supabase]);
 
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const closeMenu = () => setMobileMenuOpen(false);
+    window.addEventListener("popstate", closeMenu);
+    return () => {
+      window.removeEventListener("popstate", closeMenu);
+    };
+  }, [mobileMenuOpen]);
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    setMobileMenuOpen(false);
+    router.push("/login");
+  }
+
   return (
     <div className="w-full">
-      <nav className="container relative mx-auto flex flex-wrap items-center justify-between p-8 lg:justify-between xl:px-1">
+      <nav className="container relative mx-auto flex flex-wrap items-center justify-between px-4 py-4 sm:px-6 lg:justify-between lg:px-8 lg:py-5 xl:px-10">
         <Link href="/" onClick={() => setMobileMenuOpen(false)}>
           <span className="flex items-center space-x-2 text-2xl font-medium text-indigo-600">
             <span className="inline-flex h-8 w-8 items-center justify-center rounded bg-indigo-600 text-sm font-bold text-white">
@@ -90,6 +106,8 @@ export default function SiteHeader() {
         <button
           type="button"
           aria-label="Toggle Menu"
+          aria-expanded={mobileMenuOpen}
+          aria-controls="mobile-navigation"
           onClick={() => setMobileMenuOpen((previous) => !previous)}
           className="rounded-md px-2 py-1 text-gray-700 hover:text-indigo-700 focus:bg-indigo-100 focus:text-indigo-700 focus:outline-none lg:hidden"
         >
@@ -115,8 +133,10 @@ export default function SiteHeader() {
               <li key={item.href} className="mr-3">
                 <Link
                   href={item.href}
-                  className={`inline-block rounded-md px-4 py-2 text-lg font-normal no-underline transition hover:text-indigo-500 focus:bg-indigo-100 focus:text-indigo-500 focus:outline-none ${
-                    isActivePath(pathname, item.href) ? "text-indigo-600" : "text-gray-800"
+                  className={`inline-block rounded-md px-4 py-2 text-lg no-underline transition hover:text-indigo-500 focus:bg-indigo-100 focus:text-indigo-500 focus:outline-none ${
+                    isActivePath(pathname, item.href)
+                      ? "font-semibold text-indigo-700 underline decoration-2 underline-offset-8"
+                      : "font-normal text-gray-800"
                   }`}
                 >
                   {item.label}
@@ -129,8 +149,10 @@ export default function SiteHeader() {
                 <li className="mr-3">
                   <Link
                     href="/chats"
-                    className={`inline-block rounded-md px-4 py-2 text-lg font-normal no-underline transition hover:text-indigo-500 ${
-                      isActivePath(pathname, "/chats") ? "text-indigo-600" : "text-gray-800"
+                    className={`inline-block rounded-md px-4 py-2 text-lg no-underline transition hover:text-indigo-500 ${
+                      isActivePath(pathname, "/chats")
+                        ? "font-semibold text-indigo-700 underline decoration-2 underline-offset-8"
+                        : "font-normal text-gray-800"
                     }`}
                   >
                     Inbox
@@ -140,10 +162,10 @@ export default function SiteHeader() {
                   <li className="mr-3">
                     <Link
                       href="/caregiver/dashboard"
-                      className={`inline-block rounded-md px-4 py-2 text-lg font-normal no-underline transition hover:text-indigo-500 ${
+                      className={`inline-block rounded-md px-4 py-2 text-lg no-underline transition hover:text-indigo-500 ${
                         isActivePath(pathname, "/caregiver/dashboard")
-                          ? "text-indigo-600"
-                          : "text-gray-800"
+                          ? "font-semibold text-indigo-700 underline decoration-2 underline-offset-8"
+                          : "font-normal text-gray-800"
                       }`}
                     >
                       Dashboard
@@ -154,10 +176,10 @@ export default function SiteHeader() {
                   <li className="mr-3">
                     <Link
                       href="/client/profile"
-                      className={`inline-block rounded-md px-4 py-2 text-lg font-normal no-underline transition hover:text-indigo-500 ${
+                      className={`inline-block rounded-md px-4 py-2 text-lg no-underline transition hover:text-indigo-500 ${
                         isActivePath(pathname, "/client/profile")
-                          ? "text-indigo-600"
-                          : "text-gray-800"
+                          ? "font-semibold text-indigo-700 underline decoration-2 underline-offset-8"
+                          : "font-normal text-gray-800"
                       }`}
                     >
                       Profile
@@ -170,18 +192,22 @@ export default function SiteHeader() {
                 <li className="mr-3">
                   <Link
                     href="/for-nurses"
-                    className={`inline-block rounded-md px-4 py-2 text-lg font-normal no-underline transition hover:text-indigo-500 ${
-                      isActivePath(pathname, "/for-nurses") ? "text-indigo-600" : "text-gray-800"
+                    className={`inline-block rounded-md px-4 py-2 text-lg no-underline transition hover:text-indigo-500 ${
+                      isActivePath(pathname, "/for-nurses")
+                        ? "font-semibold text-indigo-700 underline decoration-2 underline-offset-8"
+                        : "font-normal text-gray-800"
                     }`}
                   >
-                    Sign Up
+                    Caregiver Sign Up
                   </Link>
                 </li>
                 <li className="mr-3">
                   <Link
                     href="/login"
-                    className={`inline-block rounded-md px-4 py-2 text-lg font-normal no-underline transition hover:text-indigo-500 ${
-                      isActivePath(pathname, "/login") ? "text-indigo-600" : "text-gray-800"
+                    className={`inline-block rounded-md px-4 py-2 text-lg no-underline transition hover:text-indigo-500 ${
+                      isActivePath(pathname, "/login")
+                        ? "font-semibold text-indigo-700 underline decoration-2 underline-offset-8"
+                        : "font-normal text-gray-800"
                     }`}
                   >
                     Login
@@ -193,15 +219,15 @@ export default function SiteHeader() {
         </div>
 
         {mobileMenuOpen ? (
-          <div className="my-5 flex w-full flex-wrap lg:hidden">
+          <div id="mobile-navigation" className="my-5 flex w-full flex-col gap-1 px-4 lg:hidden">
             {NAV_LINKS.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`-ml-4 w-full rounded-md px-4 py-2 ${
+                className={`w-full rounded-md px-4 py-2 transition ${
                   isActivePath(pathname, item.href)
-                    ? "bg-indigo-50 text-indigo-600"
-                    : "text-gray-700 hover:text-indigo-700"
+                    ? "bg-indigo-50 font-semibold text-indigo-700"
+                    : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -213,10 +239,10 @@ export default function SiteHeader() {
               <>
                 <Link
                   href="/chats"
-                  className={`-ml-4 w-full rounded-md px-4 py-2 ${
+                  className={`w-full rounded-md px-4 py-2 transition ${
                     isActivePath(pathname, "/chats")
-                      ? "bg-indigo-50 text-indigo-600"
-                      : "text-gray-700 hover:text-indigo-700"
+                      ? "bg-indigo-50 font-semibold text-indigo-700"
+                      : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -225,10 +251,10 @@ export default function SiteHeader() {
                 {accountRole === "caregiver" ? (
                   <Link
                     href="/caregiver/dashboard"
-                    className={`-ml-4 w-full rounded-md px-4 py-2 ${
+                    className={`w-full rounded-md px-4 py-2 transition ${
                       isActivePath(pathname, "/caregiver/dashboard")
-                        ? "bg-indigo-50 text-indigo-600"
-                        : "text-gray-700 hover:text-indigo-700"
+                        ? "bg-indigo-50 font-semibold text-indigo-700"
+                        : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -238,36 +264,43 @@ export default function SiteHeader() {
                 {accountRole === "client" ? (
                   <Link
                     href="/client/profile"
-                    className={`-ml-4 w-full rounded-md px-4 py-2 ${
+                    className={`w-full rounded-md px-4 py-2 transition ${
                       isActivePath(pathname, "/client/profile")
-                        ? "bg-indigo-50 text-indigo-600"
-                        : "text-gray-700 hover:text-indigo-700"
+                        ? "bg-indigo-50 font-semibold text-indigo-700"
+                        : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Profile
                   </Link>
                 ) : null}
+                <button
+                  type="button"
+                  onClick={() => void handleSignOut()}
+                  className="w-full rounded-md px-4 py-2 text-left text-gray-700 transition hover:bg-indigo-50 hover:text-indigo-700"
+                >
+                  Sign out
+                </button>
               </>
             ) : (
               <>
                 <Link
                   href="/for-nurses"
-                  className={`-ml-4 w-full rounded-md px-4 py-2 ${
+                  className={`w-full rounded-md px-4 py-2 transition ${
                     isActivePath(pathname, "/for-nurses")
-                      ? "bg-indigo-50 text-indigo-600"
-                      : "text-gray-700 hover:text-indigo-700"
+                      ? "bg-indigo-50 font-semibold text-indigo-700"
+                      : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Sign Up
+                  Caregiver Sign Up
                 </Link>
                 <Link
                   href="/login"
-                  className={`-ml-4 w-full rounded-md px-4 py-2 ${
+                  className={`w-full rounded-md px-4 py-2 transition ${
                     isActivePath(pathname, "/login")
-                      ? "bg-indigo-50 text-indigo-600"
-                      : "text-gray-700 hover:text-indigo-700"
+                      ? "bg-indigo-50 font-semibold text-indigo-700"
+                      : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >

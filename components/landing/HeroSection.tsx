@@ -27,13 +27,13 @@ export function HeroSection() {
             <div className="flex flex-col items-start space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
               <Link
                 href="/directory"
-                className="primary-btn px-8 py-4 text-center text-lg"
+                className="primary-btn w-full px-8 py-4 text-center text-lg sm:w-auto"
               >
                 Find a Caregiver
               </Link>
               <Link
                 href="/for-nurses"
-                className="primary-btn px-8 py-4 text-center text-lg"
+                className="secondary-btn w-full px-8 py-4 text-center text-lg sm:w-auto"
               >
                 List Your Care Services
               </Link>
@@ -41,15 +41,16 @@ export function HeroSection() {
           </div>
         </div>
         <div className="flex w-full items-center justify-center lg:w-1/2">
-          <div className="image-frame relative w-full max-w-[640px] aspect-[5/4]">
+          <div className="image-frame w-full max-w-[640px]">
             <Image
               src={heroImg}
-              fill
-              sizes="(max-width: 1024px) 100vw, 640px"
-              className="rounded-[1rem] object-contain"
+              width={heroImg.width}
+              height={heroImg.height}
+              className="h-auto w-full rounded-[1.45rem] object-contain"
               alt="Nurse supporting an elderly man while a family member coordinates home care in Singapore"
               loading="eager"
               placeholder="blur"
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>
         </div>

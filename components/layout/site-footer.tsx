@@ -25,20 +25,20 @@ export function SiteFooter() {
               <div className="mb-2 px-4 text-xs font-semibold tracking-[0.12em] text-gray-500 uppercase">
                 Platform
               </div>
-              <div className="-ml-3 -mt-2 flex w-full flex-wrap lg:ml-0">
+              <div className="mt-1 flex w-full flex-wrap">
                 <Link
                   href="/directory"
-                  className="w-full rounded-md px-4 py-2 text-gray-700 hover:text-indigo-500"
+                  className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-indigo-50 hover:text-indigo-600"
                 >
                   Directory
                 </Link>
                 <Link
                   href="/for-nurses"
-                  className="w-full rounded-md px-4 py-2 text-gray-700 hover:text-indigo-500"
+                  className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-indigo-50 hover:text-indigo-600"
                 >
                   Caregiver Signup
                 </Link>
-                <Link href="/chats" className="w-full rounded-md px-4 py-2 text-gray-700 hover:text-indigo-500">
+                <Link href="/chats" className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-indigo-50 hover:text-indigo-600">
                   Inbox
                 </Link>
               </div>
@@ -48,20 +48,20 @@ export function SiteFooter() {
               <div className="mb-2 px-4 text-xs font-semibold tracking-[0.12em] text-gray-500 uppercase">
                 Support
               </div>
-              <div className="-ml-3 -mt-2 flex w-full flex-wrap lg:ml-0">
+              <div className="mt-1 flex w-full flex-wrap">
                 <Link
                   href="/faq/families"
-                  className="w-full rounded-md px-4 py-2 text-gray-700 hover:text-indigo-500"
+                  className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-indigo-50 hover:text-indigo-600"
                 >
                   FAQ for Families
                 </Link>
                 <Link
                   href="/faq/caregivers"
-                  className="w-full rounded-md px-4 py-2 text-gray-700 hover:text-indigo-500"
+                  className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-indigo-50 hover:text-indigo-600"
                 >
                   FAQ for Caregivers
                 </Link>
-                <Link href="/login" className="w-full rounded-md px-4 py-2 text-gray-700 hover:text-indigo-500">
+                <Link href="/login" className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-indigo-50 hover:text-indigo-600">
                   Login
                 </Link>
               </div>

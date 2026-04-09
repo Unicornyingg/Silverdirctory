@@ -120,6 +120,7 @@ export default function ResetPasswordPage() {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="New password"
+                autoComplete="new-password"
                 minLength={8}
                 required
                 disabled={!isReady}
@@ -136,6 +137,7 @@ export default function ResetPasswordPage() {
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
                 placeholder="Confirm password"
+                autoComplete="new-password"
                 minLength={8}
                 required
                 disabled={!isReady}
@@ -143,13 +145,21 @@ export default function ResetPasswordPage() {
             </label>
 
             {errorMessage && (
-              <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <p
+                role="alert"
+                aria-live="assertive"
+                className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+              >
                 {errorMessage}
               </p>
             )}
 
             {successMessage && (
-              <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+              <p
+                role="status"
+                aria-live="polite"
+                className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+              >
                 {successMessage}
               </p>
             )}
