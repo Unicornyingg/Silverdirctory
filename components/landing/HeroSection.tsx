@@ -32,7 +32,7 @@ export function HeroSection() {
                 Find a Caregiver
               </Link>
               <Link
-                href="/for-nurses"
+                href="/signup"
                 className="secondary-btn w-full px-8 py-4 text-center text-lg sm:w-auto"
               >
                 List Your Care Services

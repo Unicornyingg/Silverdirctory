@@ -12,10 +12,12 @@ const ALLOWED_ROUTES = new Set([
   "caregiver_signup",
   "caregiver_verify_otp",
   "caregiver_resend_otp",
+  "client_signup",
   "login_password",
   "login_send_otp",
   "login_verify_otp",
   "login_google",
+  "signup_google",
 ]);
 
 type AuthAttemptPayload = {

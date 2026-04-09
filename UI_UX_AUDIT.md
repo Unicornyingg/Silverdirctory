@@ -1,7 +1,283 @@
 # Silver Directory — UI/UX Audit
-**Date:** 9 April 2026  
-**Scope:** All major user-facing routes, shared components, and design system  
+**Date:** 9 April 2026
+**Scope:** All major user-facing routes, shared components, and design system
 **Status:** In progress — implementation updates are being applied in milestones
+
+---
+
+## Bug Report — Family Signup Routes to Caregiver Form
+**Reported:** 9 April 2026  
+**Severity:** 🔴 High — blocks family account creation entirely  
+**Status:** ✅ Fixed (Option B implemented on 9 April 2026)
+
+### What the user reported
+When a family member clicks "Create account" on the login page, they are taken to the caregiver signup form (`/for-nurses`) instead of a family signup flow.
+
+### Root cause analysis — 3 separate bugs, same root issue
+
+There is **no dedicated family/client signup page**. The login page is patched to serve as both sign-in and family sign-up, but three bugs in that patchwork send families to the wrong place.
+
+---
+
+#### Bug 1 — "Create account" link in `login/page.tsx` goes to `/for-nurses`
+**File:** `app/login/page.tsx`, the "Need an account?" panel (~line 395)
+
+```tsx
+// CURRENT (wrong):
+<div className="mt-5 rounded-xl border ...">
+  Need an account?
+  <Link href="/for-nurses" className="...">   {/* ← sends everyone to caregiver signup */}
+    Create account
+  </Link>
+</div>
+```
+
+`/for-nurses` is explicitly the **caregiver** account creation page. Its `<h1>` reads "Create your caregiver account". Every user — family or caregiver — who clicks "Create account" on the login page lands here.
+
+---
+
+#### Bug 2 — Default `accountType` state is `"caregiver"`, not `"client"`
+**File:** `app/login/page.tsx`, ~line 57
+
+```tsx
+// CURRENT (wrong):
+const [accountType, setAccountType] = useState<AccountType>(
+  initialRequestedRole ?? "caregiver"   // ← defaults to caregiver tab
+);
+```
+
+When a family member visits `/login` with no `?role=` query param, the page silently pre-selects the "I'm a Caregiver" tab. Families have to manually notice and click "I'm a Family Member" before they can proceed.
+
+---
+
+#### Bug 3 — No email+password signup path exists for families
+**File:** `app/login/page.tsx`, `handleSubmit` function
+
+The form's submit handler calls `supabase.auth.signInWithPassword()` — a **sign-in** call, not a sign-up call. There is no `supabase.auth.signUp()` for the client role anywhere in the codebase. If a family member fills in an email+password they haven't registered yet, Supabase returns "Invalid login credentials" with no explanation that they need to register first.
+
+Family signup currently works **only** via:
+- Google OAuth (`Continue with Google`)
+- SMS OTP (`Send SMS code`)
+
+There is no email+password registration path for families at all.
+
+---
+
+### Fix Plan — Two options
+
+#### Option A — Quick fix (30 minutes, no new page)
+Fixes Bugs 1 and 2 only. Families use Google OAuth or SMS OTP to sign up (the existing intended flow).
+
+**Step A1 — Fix `login/page.tsx`: replace the single "Create account" link with two role-specific buttons**
+
+```tsx
+// REPLACE the "Need an account?" panel with:
+<div className="mt-5 rounded-xl border border-[#dbe5ed] bg-white/85 p-4">
+  <p className="text-sm font-semibold text-[#10233b]">New to Silver Directory?</p>
+  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+    <Link
+      href="/login?role=client"
+      className="secondary-btn text-center text-sm"
+    >
+      I&apos;m a family — sign up
+    </Link>
+    <Link
+      href="/for-nurses"
+      className="secondary-btn text-center text-sm"
+    >
+      I&apos;m a caregiver — sign up
+    </Link>
+  </div>
+</div>
+```
+
+**Step A2 — Fix `login/page.tsx`: change default `accountType` to `"client"`**
+
+```tsx
+// BEFORE:
+const [accountType, setAccountType] = useState<AccountType>(
+  initialRequestedRole ?? "caregiver"
+);
+
+// AFTER:
+const [accountType, setAccountType] = useState<AccountType>(
+  initialRequestedRole ?? "client"
+);
+```
+
+Families are the majority of unauthenticated visitors. The default tab should reflect that.
+
+---
+
+#### Option B — Proper fix (2–3 hours) ✅ Recommended
+Build a dedicated `/signup` page that routes to the correct flow based on role. This adds email+password family registration (Bug 3 fix) and gives the product a proper entry point.
+
+**New file: `app/signup/page.tsx`**
+
+The page shows two cards side by side (stacked on mobile):
+
+```
+┌──────────────────────────┐  ┌──────────────────────────┐
+│  👨‍👩‍👧  I'm a Family         │  │  🩺  I'm a Caregiver      │
+│                          │  │                          │
+│  Browse and contact      │  │  Create a listing and    │
+│  caregivers.             │  │  receive enquiries.      │
+│                          │  │                          │
+│  [Continue with Google]  │  │  [Create caregiver       │
+│  ── or ──                │  │    account →]            │
+│  Name                    │  │                          │
+│  Email                   │  │  Already registered?     │
+│  Password                │  │  Sign in →               │
+│  [Create family account] │  │                          │
+│                          │  │                          │
+│  Already registered?     │  │                          │
+│  Sign in →               │  │                          │
+└──────────────────────────┘  └──────────────────────────┘
+```
+
+**Family card signup logic (new `supabase.auth.signUp()` call):**
+
+```tsx
+// In the family signup form handler:
+const { data, error } = await supabase.auth.signUp({
+  email: email.trim().toLowerCase(),
+  password,
+  options: {
+    data: {
+      account_type: "client",
+      full_name: fullName.trim(),
+    },
+  },
+});
+
+if (error) { setErrorMessage(getReadableAuthError(error)); return; }
+
+// After signup, write the users row with role=client
+// (Supabase trigger should handle this, but verify it does for email signups)
+
+// Redirect to profile setup
+router.push("/client/profile?setup=1");
+```
+
+**Caregiver card:** single `<Link href="/for-nurses">` button — no form needed, just route them to the existing flow.
+
+**Update these links once `/signup` exists:**
+
+| File | Current value | Change to |
+|---|---|---|
+| `app/login/page.tsx` | `<Link href="/for-nurses">Create account</Link>` | `<Link href="/signup">Create account</Link>` |
+| `components/site-header.tsx` nav | `href="/login?role=client"` "Family Sign Up" | `href="/signup"` "Sign Up" |
+| `components/site-header.tsx` nav | `href="/for-nurses"` "Caregiver Sign Up" | Remove — merged into `/signup` |
+| `components/landing/CtaBanner.tsx` | Any "Sign Up" CTA | `href="/signup"` |
+| `app/page.tsx` hero | Any CTA pointing to `/for-nurses` | `href="/signup"` |
+
+---
+
+### Recommended order of execution
+
+| Step | What | File | Time |
+|---|---|---|---|
+| 1 | **Do now** — Replace single "Create account" link with two role buttons | `app/login/page.tsx` | 10 min |
+| 2 | **Do now** — Change default `accountType` to `"client"` | `app/login/page.tsx` | 2 min |
+| 3 | Build `app/signup/page.tsx` with role picker + family email+password signup | New file | 2–3 hrs |
+| 4 | Update all nav links and CTAs to point to `/signup` | `site-header.tsx`, `CtaBanner.tsx`, `page.tsx` | 30 min |
+| 5 | Remove standalone "Caregiver Sign Up" nav link — merge into `/signup` | `site-header.tsx` | 15 min |
+
+Steps 1 and 2 can be deployed immediately and stop the wrong-routing bug. Steps 3–5 follow in a separate session.
+
+### Option B implementation result
+- [x] Added dedicated family/caregiver signup hub at `app/signup/page.tsx`
+- [x] Added family email+password signup (`supabase.auth.signUp`) with `account_type: "client"` metadata
+- [x] Updated login "Create account" link to `href="/signup"`
+- [x] Updated unauthenticated header nav to a single `Sign Up` link (`/signup`) and removed split caregiver/family signup links
+- [x] Updated landing hero and CTA banner caregiver-signup CTAs to route through `/signup`
+
+---
+
+### Post-implementation review — remaining issues
+
+#### Issue 1 — Email confirmation gating new family signups ✅ RESOLVED
+Email confirmation was disabled in the Supabase dashboard. Family email signup now completes immediately without a confirmation step. No code change required.
+
+---
+
+#### Issue 2 — Footer still links directly to `/for-nurses`, bypassing `/signup` ✅ RESOLVED
+**File:** `components/layout/site-footer.tsx`, line ~36  
+**Severity:** Medium — inconsistent with every other CTA in the app; caregivers who click the footer link bypass the role picker entirely.
+
+**Root cause:** The footer "Caregiver Signup" link was not updated when the rest of the CTAs were consolidated to `/signup`.
+
+**Fix:**
+```tsx
+// Before (components/layout/site-footer.tsx)
+<Link href="/for-nurses">Caregiver Signup</Link>
+
+// After
+<Link href="/signup">Sign Up</Link>
+```
+
+**Acceptance criteria:** Footer CTA routes to `/signup` role-picker page, not directly to caregiver onboarding.
+
+**Implementation result (10 April 2026):**
+- Footer platform CTA now routes to `/signup` and label is standardized to "Sign Up".
+
+---
+
+#### Issue 3 — `/client/profile` ignores `?setup=1` — no onboarding context for new families ✅ RESOLVED
+**File:** `app/client/profile/page.tsx`  
+**Severity:** Medium — new family users land on a blank profile form with no explanation of why they're there or what to do next. Increases drop-off immediately after signup.
+
+**Root cause:** The Google OAuth signup flow appends `?setup=1` to the redirect URL (`/client/profile?setup=1`) to signal first-time setup, but `client/profile/page.tsx` never reads `searchParams` and renders the same generic heading regardless.
+
+**Fix:** Read the `setup` query param and conditionally render a welcome heading and explanatory copy:
+
+```tsx
+// app/client/profile/page.tsx
+// Add to component — read search params
+const searchParams = useSearchParams()          // or use Next.js page props
+const isSetup = searchParams.get("setup") === "1"
+
+// Render conditionally at the top of the form
+{isSetup && (
+  <div className="mb-6 rounded-lg bg-blue-50 p-4 text-blue-800">
+    <h2 className="text-lg font-semibold">Welcome! Let's set up your profile.</h2>
+    <p className="mt-1 text-sm">
+      Tell us a little about who you're caring for so we can help match you
+      with the right caregivers.
+    </p>
+  </div>
+)}
+```
+
+**Acceptance criteria:** When a new family user arrives via Google OAuth signup, they see a "Welcome! Let's set up your profile." banner above the form. Users who reach the page by navigating normally do not see the banner.
+
+> **Note:** `useSearchParams()` requires wrapping the component (or just the param-reading logic) in a `<Suspense>` boundary in Next.js 13+ App Router. If `client/profile` is already a Server Component, use `searchParams` from the page props instead (no Suspense needed).
+
+**Implementation result (10 April 2026):**
+- `app/client/profile/page.tsx` now reads `setup` query param and conditionally renders a first-time setup welcome banner.
+- Normal visits to `/client/profile` (without `?setup=1`) keep the original layout with no banner.
+
+---
+
+#### Issue 4 — CtaBanner "I'm a Caregiver" now adds an extra click for caregivers ✅ RESOLVED (Option 2)
+**File:** `components/landing/CtaBanner.tsx`  
+**Severity:** Low — minor UX friction; caregivers must pass through the `/signup` role picker before reaching `/for-nurses`.
+
+**Root cause:** The CTA was changed from `href="/for-nurses"` to `href="/signup"` to consolidate routing. This is correct for consistency, but the banner's primary audience is caregivers, so the extra step adds friction for that segment.
+
+**Options:**
+1. **Keep as-is** — Accept one extra click in exchange for consistent routing. Recommended if the banner is also seen by families.
+2. **Restore direct link** — Change `href` back to `/for-nurses` on this specific CTA only, since the banner context makes role intent unambiguous.
+
+```tsx
+// Option 2 — restore direct caregiver path for this specific CTA
+<Link href="/for-nurses">I'm a Caregiver — Get Listed</Link>
+```
+
+**Acceptance criteria (if Option 2 chosen):** Caregiver CTA on banner routes directly to `/for-nurses`; all family-facing CTAs continue to route through `/signup`.
+
+**Implementation result (10 April 2026):**
+- CtaBanner caregiver button now routes directly to `/for-nurses` and label updated to "I'm a Caregiver - Get Listed".
 
 ---
 

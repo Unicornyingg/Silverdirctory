@@ -51,7 +51,7 @@ export default function LoginPage() {
   const router = useRouter();
   const initialRequestedRole = readRequestedRoleFromLocation();
   const [accountType, setAccountType] = useState<AccountType>(
-    initialRequestedRole ?? "caregiver"
+    initialRequestedRole ?? "client"
   );
   const [forcedAccountType, setForcedAccountType] = useState<AccountType | null>(
     initialRequestedRole
@@ -402,7 +402,7 @@ export default function LoginPage() {
 
           <div className="mt-5 rounded-xl border border-[#dbe5ed] bg-white/85 p-4 text-sm text-[#51647b]">
             Need an account?
-            <Link href="/for-nurses" className="ml-2 font-semibold text-[#1f6b93]">
+            <Link href="/signup" className="ml-2 font-semibold text-[#1f6b93]">
               Create account
             </Link>
           </div>

@@ -184,22 +184,14 @@ export default function SiteHeader() {
               <>
                 <li className="mr-1 xl:mr-2">
                   <Link
-                    href="/for-nurses"
+                    href="/signup"
                     className={`inline-block rounded-md px-3 py-2 text-base no-underline transition hover:text-indigo-500 xl:px-4 xl:text-lg ${
-                      isActivePath(pathname, "/for-nurses")
+                      isActivePath(pathname, "/signup")
                         ? "font-semibold text-indigo-700 underline decoration-2 underline-offset-8"
                         : "font-normal text-gray-800"
                     }`}
                   >
-                    Caregiver Sign Up
-                  </Link>
-                </li>
-                <li className="mr-1 xl:mr-2">
-                  <Link
-                    href="/login?role=client"
-                    className="inline-block rounded-md px-3 py-2 text-base font-normal text-gray-800 no-underline transition hover:text-indigo-500 xl:px-4 xl:text-lg"
-                  >
-                    Family Sign Up
+                    Sign Up
                   </Link>
                 </li>
                 <li className="mr-1 xl:mr-2">
@@ -286,22 +278,15 @@ export default function SiteHeader() {
             ) : (
               <>
                 <Link
-                  href="/for-nurses"
+                  href="/signup"
                   className={`w-full rounded-md px-4 py-2 transition ${
-                    isActivePath(pathname, "/for-nurses")
+                    isActivePath(pathname, "/signup")
                       ? "bg-indigo-50 font-semibold text-indigo-700"
                       : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Caregiver Sign Up
-                </Link>
-                <Link
-                  href="/login?role=client"
-                  className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-indigo-50 hover:text-indigo-700"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Family Sign Up
+                  Sign Up
                 </Link>
                 <Link
                   href="/login"

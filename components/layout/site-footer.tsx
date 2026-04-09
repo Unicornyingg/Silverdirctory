@@ -33,10 +33,10 @@ export function SiteFooter() {
                   Directory
                 </Link>
                 <Link
-                  href="/for-nurses"
+                  href="/signup"
                   className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-indigo-50 hover:text-indigo-600"
                 >
-                  Caregiver Signup
+                  Sign Up
                 </Link>
                 <Link href="/chats" className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-indigo-50 hover:text-indigo-600">
                   Inbox

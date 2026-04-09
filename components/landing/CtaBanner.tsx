@@ -24,7 +24,7 @@ export function CtaBanner() {
             href="/for-nurses"
             className="secondary-btn mx-auto inline-block w-full border-[var(--line)] bg-[var(--panel-strong)] px-7 py-3 text-center text-lg font-semibold text-indigo-700 hover:text-indigo-800 sm:w-auto lg:px-10 lg:py-5"
           >
-            I&apos;m a Caregiver
+            I&apos;m a Caregiver - Get Listed
           </Link>
         </div>
       </div>

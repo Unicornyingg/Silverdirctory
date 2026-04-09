@@ -29,6 +29,7 @@ function fallbackNameFromEmail(email: string | null | undefined): string {
 export default function ClientProfilePage() {
   const router = useRouter();
   const supabase = getSupabaseBrowserClient();
+  const [isSetupMode, setIsSetupMode] = useState(false);
 
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [accountRole, setAccountRole] = useState<MarketplaceUser["role"] | null>(
@@ -104,6 +105,12 @@ export default function ClientProfilePage() {
           : "",
     });
   }
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const setupFlag = new URLSearchParams(window.location.search).get("setup") === "1";
+    setIsSetupMode(setupFlag);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -278,6 +285,16 @@ export default function ClientProfilePage() {
           </div>
         </div>
       </section>
+
+      {isSetupMode && (
+        <section className="surface-panel mt-6 border-indigo-200 bg-indigo-50/80 p-5 text-indigo-900">
+          <h2 className="text-lg font-semibold">Welcome! Let&apos;s set up your profile.</h2>
+          <p className="mt-1 text-sm leading-6 text-indigo-900/90">
+            Share who you are and your preferred contact details so caregivers can recognize your
+            requests quickly.
+          </p>
+        </section>
+      )}
 
       {errorMessage && (
         <div
