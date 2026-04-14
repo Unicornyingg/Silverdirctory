@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 const ADMIN_SESSION_COOKIE = "silver_admin_session";
 const ADMIN_SESSION_MAX_AGE_SECONDS = 60 * 60 * 12;
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   if (request.nextUrl.pathname !== "/admin/verify") {
     return NextResponse.next();
   }

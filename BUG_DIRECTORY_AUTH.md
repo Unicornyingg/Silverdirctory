@@ -6,6 +6,38 @@
 
 ---
 
+## Implementation plan
+
+### Summary
+
+Move the auth check from the server (where it always fails) to the client (where the real session lives). Two files, ~10 minutes.
+
+### Checklist
+
+| # | Task | File | Est. |
+|---|---|---|---|
+| 1 | Add `getSupabaseBrowserClient` import | `components/caregiver-directory-list.tsx` | 1 min |
+| 2 | Remove `viewerAuthenticated` prop from component signature | `components/caregiver-directory-list.tsx` | 2 min |
+| 3 | Add `useState(false)` + `useEffect` that calls `getSession()` and sets `viewerAuthenticated` | `components/caregiver-directory-list.tsx` | 3 min |
+| 4 | Delete `supabase.auth.getUser()` call and `isAuthenticated` variable | `app/directory/page.tsx` | 1 min |
+| 5 | Remove `viewerAuthenticated={isAuthenticated}` prop from `<CaregiverDirectoryList>` | `app/directory/page.tsx` | 1 min |
+| 6 | Run verification tests (see Step 3 below) | Browser | 5 min |
+
+### Order of execution
+
+1. **Start with `components/caregiver-directory-list.tsx`** — make all three changes (import, remove prop, add state + effect) in one pass
+2. **Then update `app/directory/page.tsx`** — delete the two dead lines and remove the prop from the JSX
+3. **Restart dev server** (`npm run dev`) — env/cache won't affect this, but good practice
+4. **Run all 5 verification tests** in the table below
+
+### What NOT to change
+
+- Do **not** touch `lib/supabase/server.ts` — it's still used correctly for the public profile data fetch
+- Do **not** install `@supabase/ssr` — that's a larger migration for another day
+- Do **not** change any other references to `viewerAuthenticated` inside `caregiver-directory-list.tsx` — they all read the same variable, which is now state instead of a prop
+
+---
+
 ## What the user sees
 
 After signing in as a family member and navigating to `/directory`, every caregiver card shows:

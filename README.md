@@ -2,6 +2,10 @@
 
 Hyper-local eldercare notice board for families and freelance caregivers.
 
+## Documentation
+- User guide: [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md)
+- Technical documentation: [`docs/TECHNICAL_DOCUMENTATION.md`](docs/TECHNICAL_DOCUMENTATION.md)
+
 ## Product guardrails implemented
 - No payment gateway for caregiver wages.
 - No algorithmic auto-matching.
@@ -71,11 +75,14 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Key routes
 
+- `/signup`:
+  - Family signup (Google OAuth or email/password)
+  - Entry point to caregiver onboarding
 - `/for-nurses`:
-  - Email/password signup
-  - Google OAuth signup (looking-for-care accounts only)
-  - Account type choice: `offering care` or `looking for care`
-- `/login`: email/password login + Google OAuth login (looking-for-care accounts only) + forgot-password request
+  - Caregiver account creation (phone OTP flow)
+- `/for-nurses/verify-otp`:
+  - Caregiver OTP verification
+- `/login`: email/password login + Google OAuth login (family/client only) + phone OTP login + forgot-password request
 - `/oauth-complete`: OAuth role finalization
 - `/reset-password`: set a new password after email reset link
 - `/directory`: verified caregiver cards + location/max-rate/service filters + start-chat action
