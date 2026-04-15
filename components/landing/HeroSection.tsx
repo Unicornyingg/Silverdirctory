@@ -1,6 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Container } from "@/components/landing/Container";
+import { HeroCta } from "@/components/landing/LandingCta";
 import heroImg from "@/public/images/eldercare-hero.png";
 
 export function HeroSection() {
@@ -24,20 +24,7 @@ export function HeroSection() {
               in-app chat without auto-matching or agency lock-in.
             </p>
 
-            <div className="flex flex-col items-start space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
-              <Link
-                href="/directory"
-                className="primary-btn w-full px-8 py-4 text-center text-lg sm:w-auto"
-              >
-                Find a Caregiver
-              </Link>
-              <Link
-                href="/signup"
-                className="secondary-btn w-full px-8 py-4 text-center text-lg sm:w-auto"
-              >
-                List Your Care Services
-              </Link>
-            </div>
+            <HeroCta />
           </div>
         </div>
         <div className="flex w-full items-center justify-center lg:w-1/2">

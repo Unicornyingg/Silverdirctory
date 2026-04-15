@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Container } from "@/components/landing/Container";
+import { BannerCta } from "@/components/landing/LandingCta";
 
 export function CtaBanner() {
   return (
@@ -13,20 +13,7 @@ export function CtaBanner() {
             Join Silver Directory and connect directly without agency lock-in.
           </p>
         </div>
-        <div className="flex w-full flex-shrink-0 flex-col gap-3 text-center sm:flex-row sm:justify-center lg:w-auto lg:justify-end">
-          <Link
-            href="/directory"
-            className="secondary-btn mx-auto inline-block w-full border-[var(--line)] bg-[var(--panel-strong)] px-7 py-3 text-center text-lg font-semibold text-indigo-700 hover:text-indigo-800 sm:w-auto lg:px-10 lg:py-5"
-          >
-            Browse Caregivers
-          </Link>
-          <Link
-            href="/for-nurses"
-            className="secondary-btn mx-auto inline-block w-full border-[var(--line)] bg-[var(--panel-strong)] px-7 py-3 text-center text-lg font-semibold text-indigo-700 hover:text-indigo-800 sm:w-auto lg:px-10 lg:py-5"
-          >
-            I&apos;m a Caregiver - Get Listed
-          </Link>
-        </div>
+        <BannerCta />
       </div>
     </Container>
   );
