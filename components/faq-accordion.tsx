@@ -15,18 +15,21 @@ export type FAQSection = {
 };
 
 export default function FAQAccordion({ sections }: { sections: FAQSection[] }) {
-  const [openBySection, setOpenBySection] = useState<Record<string, string | null>>(() => {
-    const initial: Record<string, string | null> = {};
+  const [openItems, setOpenItems] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
     for (const section of sections) {
-      initial[section.id] = section.items[0]?.id ?? null;
+      if (section.items[0]) {
+        initial[`${section.id}:${section.items[0].id}`] = true;
+      }
     }
     return initial;
   });
 
   function toggleItem(sectionId: string, itemId: string) {
-    setOpenBySection((previous) => ({
+    const key = `${sectionId}:${itemId}`;
+    setOpenItems((previous) => ({
       ...previous,
-      [sectionId]: previous[sectionId] === itemId ? null : itemId,
+      [key]: !previous[key],
     }));
   }
 
@@ -39,7 +42,7 @@ export default function FAQAccordion({ sections }: { sections: FAQSection[] }) {
             {section.items.map((item) => {
               const panelId = `faq-panel-${section.id}-${item.id}`;
               const triggerId = `faq-trigger-${section.id}-${item.id}`;
-              const isOpen = openBySection[section.id] === item.id;
+              const isOpen = !!openItems[`${section.id}:${item.id}`];
 
               return (
                 <div
