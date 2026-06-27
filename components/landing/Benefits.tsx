@@ -31,19 +31,13 @@ export function Benefits({ imgPos, data }: Readonly<BenefitsProps>) {
           imageRight ? "lg:order-1" : ""
         }`}
       >
-        <div className="relative w-full max-w-[560px]">
-          <div
-            className={`absolute -inset-4 rounded-lg ${
-              imageRight ? "bg-[var(--pink-soft)]" : "bg-[var(--aqua-soft)]"
-            }`}
-            aria-hidden="true"
-          />
+        <div className="w-full max-w-[560px]">
           <Image
             src={data.image}
             width={data.image.width}
             height={data.image.height}
             alt={data.imageAlt}
-            className="relative h-auto w-full rounded-lg border border-[var(--line)] bg-white object-contain shadow-[var(--shadow-soft-lg)]"
+            className="h-auto w-full rounded-lg object-contain shadow-[var(--shadow-soft)]"
             placeholder="blur"
           />
         </div>
