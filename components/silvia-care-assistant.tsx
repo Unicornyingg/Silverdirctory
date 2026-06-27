@@ -37,7 +37,7 @@ type BubblePosition = {
 };
 
 const DEFAULT_GREETING =
-  "Hi, I am Silvia. How can I help you today? Tell me the care need, timing, location, budget, and any preferences.";
+  "Hi, I am Silvia. How can I help you today? You can tell me what is going on, where care is needed, your budget, and any timing preferences.";
 
 function buildActiveSearchText({
   initialAiLocation,
@@ -55,18 +55,34 @@ function buildActiveSearchText({
   ].filter(Boolean);
 
   if (parts.length === 0) return "";
-  return `I am currently showing caregivers for ${parts.join(", ")}.`;
+  return `I am showing matches based on ${parts.join(", ")}.`;
 }
 
 function buildSilviaReply(result: AiCareRequestResponse): string {
-  const summary = result.summary ?? "I found the key details in your request.";
   const questions = result.missingQuestions ?? [];
+  const filters = result.filters ?? {};
+  const details = [
+    filters.location ? `around ${filters.location}` : "",
+    filters.maxRate ? `within about S$${filters.maxRate}/hr` : "",
+    filters.service ? `for ${filters.service.toLowerCase()}` : "",
+    filters.availability ? `during ${filters.availability.toLowerCase()}` : "",
+    filters.language ? `with ${filters.language} language support` : "",
+  ].filter(Boolean);
+  const intro =
+    details.length > 0
+      ? `Got it. I will look for caregivers ${details.join(", ")}.`
+      : "Got it. I will look for caregivers who may fit what you shared.";
 
   if (questions.length === 0) {
-    return `${summary} I have updated the caregiver matches below.`;
+    return `${intro} I have updated the matches below.`;
   }
 
-  return `${summary} I have updated the matches below. Before you message someone, also confirm: ${questions.join(" ")}`;
+  const followUp =
+    questions.length === 1
+      ? `One thing to confirm next: ${questions[0]}`
+      : `A few things to confirm next: ${questions.join(" ")}`;
+
+  return `${intro} I have updated the matches below. ${followUp}`;
 }
 
 function createMessage(sender: SilviaMessage["sender"], text: string): SilviaMessage {
