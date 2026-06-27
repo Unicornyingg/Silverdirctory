@@ -1,6 +1,7 @@
 import Link from "next/link";
 import CaregiverDirectoryList from "@/components/caregiver-directory-list";
 import DirectoryFilters from "@/components/directory-filters";
+import SilviaCareAssistant from "@/components/silvia-care-assistant";
 import SiteHeader from "@/components/site-header";
 import { isSupportedCareService } from "@/lib/care-services";
 import { isSupportedCaregiverLanguage } from "@/lib/caregiver-languages";
@@ -92,15 +93,35 @@ export default async function DirectoryPage({
   const requestedService = getParam(params, "service").trim();
   const requestedSort = getParam(params, "sort").trim();
   const availabilityFilter = getParam(params, "availability").trim();
+  const aiLocationFilter = getParam(params, "aiLocation").trim();
+  const aiMaxRateRaw = getParam(params, "aiMaxRate").trim();
+  const requestedAiLanguage = getParam(params, "aiLanguage").trim();
+  const requestedAiService = getParam(params, "aiService").trim();
+  const aiAvailabilityFilter = getParam(params, "aiAvailability").trim();
+  const aiRequest = getParam(params, "aiRequest").trim();
   const languageFilter = isSupportedCaregiverLanguage(requestedLanguage)
     ? requestedLanguage
     : "";
+  const aiLanguageFilter = isSupportedCaregiverLanguage(requestedAiLanguage)
+    ? requestedAiLanguage
+    : "";
   const serviceFilter = isSupportedCareService(requestedService) ? requestedService : "";
+  const aiServiceFilter = isSupportedCareService(requestedAiService)
+    ? requestedAiService
+    : "";
   const sortBy: DirectorySort = isSupportedDirectorySort(requestedSort)
     ? requestedSort
     : "recommended";
   const maxRate = Number(maxRateRaw);
+  const aiMaxRate = Number(aiMaxRateRaw);
   const hasValidMaxRate = Number.isFinite(maxRate) && maxRate > 0;
+  const hasValidAiMaxRate = Number.isFinite(aiMaxRate) && aiMaxRate > 0;
+  const effectiveLocationFilter = locationFilter || aiLocationFilter;
+  const effectiveMaxRate = hasValidMaxRate ? maxRate : aiMaxRate;
+  const hasEffectiveMaxRate = hasValidMaxRate || hasValidAiMaxRate;
+  const effectiveLanguageFilter = languageFilter || aiLanguageFilter;
+  const effectiveServiceFilter = serviceFilter || aiServiceFilter;
+  const effectiveAvailabilityFilter = availabilityFilter || aiAvailabilityFilter;
 
   const supabase = getSupabaseServerClient();
 
@@ -128,22 +149,22 @@ export default async function DirectoryPage({
     .eq("is_verified", true)
     .order("created_at", { ascending: false });
 
-  if (locationFilter) {
-    query = query.filter("location", "ilike", `%${locationFilter}%`);
+  if (effectiveLocationFilter) {
+    query = query.filter("location", "ilike", `%${effectiveLocationFilter}%`);
   }
 
-  if (hasValidMaxRate) {
-    query = query.lte("hourly_rate", maxRate);
+  if (hasEffectiveMaxRate) {
+    query = query.lte("hourly_rate", effectiveMaxRate);
   }
 
-  if (languageFilter) {
-    query = query.contains("languages_spoken", [languageFilter]);
+  if (effectiveLanguageFilter) {
+    query = query.contains("languages_spoken", [effectiveLanguageFilter]);
   }
-  if (serviceFilter) {
-    query = query.contains("care_specialties", [serviceFilter]);
+  if (effectiveServiceFilter) {
+    query = query.contains("care_specialties", [effectiveServiceFilter]);
   }
-  if (availabilityFilter) {
-    query = query.filter("availability_summary", "ilike", `%${availabilityFilter}%`);
+  if (effectiveAvailabilityFilter) {
+    query = query.filter("availability_summary", "ilike", `%${effectiveAvailabilityFilter}%`);
   }
 
   const { data, error } = await query.returns<DirectoryProfile[]>();
@@ -154,6 +175,11 @@ export default async function DirectoryPage({
     !!serviceFilter ||
     !!languageFilter ||
     !!availabilityFilter ||
+    !!aiLocationFilter ||
+    hasValidAiMaxRate ||
+    !!aiServiceFilter ||
+    !!aiLanguageFilter ||
+    !!aiAvailabilityFilter ||
     sortBy !== "recommended";
 
   return (
@@ -183,6 +209,11 @@ export default async function DirectoryPage({
           initialLanguage={languageFilter}
           initialAvailability={availabilityFilter}
           initialSort={sortBy}
+          initialAiLocation={aiLocationFilter}
+          initialAiMaxRate={hasValidAiMaxRate ? aiMaxRateRaw : ""}
+          initialAiService={aiServiceFilter}
+          initialAiLanguage={aiLanguageFilter}
+          initialAiAvailability={aiAvailabilityFilter}
         />
       </section>
 
@@ -244,8 +275,26 @@ export default async function DirectoryPage({
       )}
 
       {!error && orderedProfiles.length > 0 && (
-        <CaregiverDirectoryList profiles={orderedProfiles} />
+        <CaregiverDirectoryList
+          profiles={orderedProfiles}
+          aiMatchCriteria={{
+            location: aiLocationFilter,
+            maxRate: hasValidAiMaxRate ? aiMaxRate : null,
+            service: aiServiceFilter,
+            language: aiLanguageFilter,
+            availability: aiAvailabilityFilter,
+          }}
+        />
       )}
+
+      <SilviaCareAssistant
+        initialAiLocation={aiLocationFilter}
+        initialAiMaxRate={hasValidAiMaxRate ? aiMaxRateRaw : ""}
+        initialAiService={aiServiceFilter}
+        initialAiLanguage={aiLanguageFilter}
+        initialAiAvailability={aiAvailabilityFilter}
+        initialAiRequest={aiRequest}
+      />
     </div>
   );
 }

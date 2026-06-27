@@ -29,6 +29,14 @@ type DirectoryListProfile = {
   languages_spoken: string[];
 };
 
+type AiMatchCriteria = {
+  location: string;
+  maxRate: number | null;
+  service: string;
+  language: string;
+  availability: string;
+};
+
 const currencyFormatter = new Intl.NumberFormat("en-SG", {
   style: "currency",
   currency: "SGD",
@@ -58,10 +66,58 @@ function formatExperienceLabel(yearsExperience: number): string {
   return `${yearsExperience} years`;
 }
 
+function hasAiMatchCriteria(criteria: AiMatchCriteria): boolean {
+  return Boolean(
+    criteria.location ||
+      criteria.maxRate ||
+      criteria.service ||
+      criteria.language ||
+      criteria.availability
+  );
+}
+
+function includesText(source: string, value: string): boolean {
+  return source.toLowerCase().includes(value.toLowerCase());
+}
+
+function buildSilviaMatchNotes(
+  profile: DirectoryListProfile,
+  criteria: AiMatchCriteria
+): string[] {
+  const notes: string[] = [];
+
+  if (criteria.location && includesText(profile.location, criteria.location)) {
+    notes.push(`covers ${criteria.location}`);
+  }
+
+  if (criteria.maxRate && profile.hourly_rate <= criteria.maxRate) {
+    notes.push(`fits S$${criteria.maxRate}/hr budget`);
+  }
+
+  if (criteria.service && profile.care_specialties.includes(criteria.service)) {
+    notes.push(`lists ${criteria.service}`);
+  }
+
+  if (
+    criteria.availability &&
+    includesText(profile.availability_summary, criteria.availability)
+  ) {
+    notes.push(`mentions ${criteria.availability} availability`);
+  }
+
+  if (criteria.language && profile.languages_spoken.includes(criteria.language)) {
+    notes.push(`speaks ${criteria.language}`);
+  }
+
+  return notes.slice(0, 3);
+}
+
 export default function CaregiverDirectoryList({
   profiles,
+  aiMatchCriteria,
 }: {
   profiles: DirectoryListProfile[];
+  aiMatchCriteria: AiMatchCriteria;
 }) {
   const [expandedProfileId, setExpandedProfileId] = useState<string | null>(null);
   const [viewerAuthenticated, setViewerAuthenticated] = useState(false);
@@ -73,6 +129,9 @@ export default function CaregiverDirectoryList({
   const expandedProfileTitleId = expandedProfile
     ? `caregiver-profile-title-${expandedProfile.id}`
     : undefined;
+  const expandedSilviaNotes = expandedProfile
+    ? buildSilviaMatchNotes(expandedProfile, aiMatchCriteria)
+    : [];
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
@@ -118,6 +177,7 @@ export default function CaregiverDirectoryList({
           const shortServices = profile.care_specialties.slice(0, 3);
           const hiddenServiceCount = Math.max(0, profile.care_specialties.length - 3);
           const hasLongBio = profile.bio.trim().length > 180;
+          const silviaNotes = buildSilviaMatchNotes(profile, aiMatchCriteria);
 
           return (
             <article key={profile.id} className="surface-panel overflow-hidden p-4 md:p-5">
@@ -166,6 +226,26 @@ export default function CaregiverDirectoryList({
                       View full profile to read complete bio.
                     </p>
                   )}
+
+                  {silviaNotes.length > 0 ? (
+                    <div className="mt-3 rounded-lg border border-[#d7c1cc] bg-[#fff8fb] px-3 py-2">
+                      <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#7a0b4f]">
+                        Silvia match
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-[#4a062f]">
+                        Good match because this caregiver {silviaNotes.join(", ")}.
+                      </p>
+                    </div>
+                  ) : hasAiMatchCriteria(aiMatchCriteria) ? (
+                    <div className="mt-3 rounded-lg border border-[#eaded3] bg-white/80 px-3 py-2">
+                      <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#7a0b4f]">
+                        Silvia match
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-[#5f7289]">
+                        Shown because this profile passed Silvia&apos;s active search.
+                      </p>
+                    </div>
+                  ) : null}
 
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
                     <p className="rounded-lg border border-[#d8e3eb] bg-white/85 px-2.5 py-2 text-xs font-semibold text-[#375474]">
@@ -322,6 +402,19 @@ export default function CaregiverDirectoryList({
 
                 <p className="mt-2 text-sm font-semibold text-[#58708c]">{expandedProfile.location}</p>
                 <p className="mt-4 text-sm leading-7 text-[#4f647e]">{expandedProfile.bio}</p>
+
+                {hasAiMatchCriteria(aiMatchCriteria) ? (
+                  <div className="mt-5 rounded-xl border border-[#d7c1cc] bg-[#fff8fb] p-3">
+                    <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#7a0b4f]">
+                      Silvia match
+                    </p>
+                    <p className="mt-1 text-sm leading-6 text-[#4a062f]">
+                      {expandedSilviaNotes.length > 0
+                        ? `Good match because this caregiver ${expandedSilviaNotes.join(", ")}.`
+                        : "Shown because this profile passed Silvia's active search."}
+                    </p>
+                  </div>
+                ) : null}
 
                 <div className="mt-5 grid gap-2 rounded-xl border border-[#d8e3eb] bg-white/80 p-3 sm:grid-cols-2">
                   <p className="text-sm text-[#355372]">
