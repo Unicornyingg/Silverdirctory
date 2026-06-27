@@ -95,7 +95,7 @@ export default function SiteHeader() {
           </span>
         </Link>
 
-        <div className="mr-2 ml-auto flex gap-3 lg:order-2 lg:ml-0" />
+        <div className="mr-2 ml-auto flex gap-3 lg:hidden" />
 
         <button
           type="button"
@@ -121,8 +121,8 @@ export default function SiteHeader() {
           </svg>
         </button>
 
-        <div className="hidden text-center lg:flex lg:items-center">
-          <ul className="flex flex-1 items-center justify-end gap-1 pt-6 lg:pt-0">
+        <div className="hidden min-w-0 flex-1 text-center lg:ml-4 lg:flex lg:items-center lg:justify-end">
+          <ul className="flex min-w-0 flex-wrap items-center justify-end gap-1 pt-6 lg:pt-0">
             {NAV_LINKS.map((item) => (
               <li key={item.href}>
                 <Link
