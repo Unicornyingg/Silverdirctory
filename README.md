@@ -39,12 +39,15 @@ VERIFICATION_FROM_EMAIL=...
 VERIFICATION_REPLY_TO_EMAIL=...
 STRIPE_SECRET_KEY=...
 STRIPE_BOOST_PRICE_ID=...
+OPENAI_API_KEY=...
+OPENAI_CARE_HELPER_MODEL=...
 ```
 
 Notes:
 - `SUPABASE_SERVICE_ROLE_KEY` is required for admin review and boost confirmation.
 - `ADMIN_REVIEW_KEY` gates `/admin/verify`.
 - `STRIPE_BOOST_PRICE_ID` is optional. If empty, checkout uses an inline SGD S$5 line item.
+- `OPENAI_API_KEY` and `OPENAI_CARE_HELPER_MODEL` power the AI care request helper on `/directory`.
 
 ## 3) Apply Supabase schema
 
@@ -85,6 +88,7 @@ Open [http://localhost:3000](http://localhost:3000).
 - `/login`: email/password login + phone OTP login + forgot-password request
 - `/reset-password`: set a new password after email reset link
 - `/directory`: verified caregiver cards + location/max-rate/service filters + start-chat action
+- `/api/care-request/parse`: server-side AI parser that converts freeform family care requests into directory filters
 - `/chats`: realtime messaging inbox for clients and caregivers
 - `/caregiver/dashboard`: caregiver profile CRUD, verification doc upload, link to chat inbox, boost checkout button
 - `/admin/verify?key=YOUR_ADMIN_REVIEW_KEY`: approve/reject verification docs and publish caregivers

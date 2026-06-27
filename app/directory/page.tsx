@@ -131,6 +131,7 @@ export default async function DirectoryPage({
   const requestedLanguage = getParam(params, "language").trim();
   const requestedService = getParam(params, "service").trim();
   const requestedSort = getParam(params, "sort").trim();
+  const availabilityFilter = getParam(params, "availability").trim();
   const languageFilter = isSupportedCaregiverLanguage(requestedLanguage)
     ? requestedLanguage
     : "";
@@ -181,6 +182,9 @@ export default async function DirectoryPage({
   if (serviceFilter) {
     query = query.contains("care_specialties", [serviceFilter]);
   }
+  if (availabilityFilter) {
+    query = query.filter("availability_summary", "ilike", `%${availabilityFilter}%`);
+  }
 
   const { data, error } = await query.returns<DirectoryProfile[]>();
   const orderedProfiles = sortProfilesForDirectory(data ?? [], sortBy);
@@ -189,6 +193,7 @@ export default async function DirectoryPage({
     hasValidMaxRate ||
     !!serviceFilter ||
     !!languageFilter ||
+    !!availabilityFilter ||
     sortBy !== "recommended";
 
   return (
@@ -216,6 +221,7 @@ export default async function DirectoryPage({
           initialMaxRate={hasValidMaxRate ? maxRateRaw : ""}
           initialService={serviceFilter}
           initialLanguage={languageFilter}
+          initialAvailability={availabilityFilter}
           initialSort={sortBy}
         />
       </section>

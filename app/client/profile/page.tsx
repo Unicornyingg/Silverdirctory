@@ -287,9 +287,9 @@ export default function ClientProfilePage() {
       </section>
 
       {isSetupMode && (
-        <section className="surface-panel mt-6 border-indigo-200 bg-indigo-50/80 p-5 text-indigo-900">
+        <section className="surface-panel mt-6 border-[var(--line-strong)] bg-[#f7eef2] p-5 text-[var(--brand-strong)]">
           <h2 className="text-lg font-semibold">Welcome! Let&apos;s set up your profile.</h2>
-          <p className="mt-1 text-sm leading-6 text-indigo-900/90">
+          <p className="mt-1 text-sm leading-6 text-[var(--brand)]">
             Share who you are and your preferred contact details so caregivers can recognize your
             requests quickly.
           </p>

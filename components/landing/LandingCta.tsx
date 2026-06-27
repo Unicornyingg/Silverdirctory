@@ -80,14 +80,14 @@ export function BannerCta() {
         {accountRole === "caregiver" ? (
           <Link
             href="/caregiver/dashboard"
-            className="outline-btn mx-auto inline-block w-full border-white/35 px-7 py-3 text-center text-base font-extrabold text-white hover:border-white hover:bg-white/10 hover:text-white sm:w-auto lg:px-8"
+            className="outline-btn on-dark mx-auto inline-block w-full px-7 py-3 text-center text-base font-extrabold sm:w-auto lg:px-8"
           >
             Go to Dashboard
           </Link>
         ) : (
           <Link
             href="/chats"
-            className="outline-btn mx-auto inline-block w-full border-white/35 px-7 py-3 text-center text-base font-extrabold text-white hover:border-white hover:bg-white/10 hover:text-white sm:w-auto lg:px-8"
+            className="outline-btn on-dark mx-auto inline-block w-full px-7 py-3 text-center text-base font-extrabold sm:w-auto lg:px-8"
           >
             My Inbox
           </Link>
@@ -106,7 +106,7 @@ export function BannerCta() {
       </Link>
       <Link
         href="/for-nurses"
-        className="outline-btn mx-auto inline-block w-full border-white/35 px-7 py-3 text-center text-base font-extrabold text-white hover:border-white hover:bg-white/10 hover:text-white sm:w-auto lg:px-8"
+        className="outline-btn on-dark mx-auto inline-block w-full px-7 py-3 text-center text-base font-extrabold sm:w-auto lg:px-8"
       >
         I&apos;m a Caregiver - Get Listed
       </Link>

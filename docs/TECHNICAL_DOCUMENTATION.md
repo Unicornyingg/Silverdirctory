@@ -6,6 +6,7 @@ Silver Directory is a Next.js App Router application backed by Supabase.
 Core capabilities:
 - Family and caregiver account flows.
 - Public caregiver directory with filtering.
+- AI care request helper that turns freeform family needs into directory filters.
 - In-app chat between families and caregivers.
 - Caregiver profile management and verification-doc workflow.
 - Admin moderation and verification review.
@@ -18,6 +19,7 @@ Core capabilities:
 - Supabase (`@supabase/supabase-js` v2)
 - Stripe Checkout API (manual fetch integration)
 - Resend (email delivery via raw `fetch` to Resend API — no SDK)
+- OpenAI Chat Completions API (manual fetch integration for structured filter parsing)
 
 ## 3. Repository structure
 - `app/`: routes and API handlers
@@ -39,10 +41,13 @@ Optional/feature-gated:
 - `VERIFICATION_REPLY_TO_EMAIL`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_BOOST_PRICE_ID`
+- `OPENAI_API_KEY`
+- `OPENAI_CARE_HELPER_MODEL`
 
 Important:
 - `.env*` is gitignored. Environment changes must be set in deployment platform settings as well.
 - `NEXT_PUBLIC_SUPABASE_URL` must be the project URL, not the Postgres connection string.
+- `OPENAI_API_KEY` must stay server-side. Do not expose it through `NEXT_PUBLIC_*`.
 
 ## 5. Auth model
 ### 5.1 Browser auth
@@ -132,6 +137,19 @@ Requirements:
 
 Output:
 - JSON `{ success: true, expiresAt }` on success.
+
+### `POST /api/care-request/parse`
+Purpose:
+- Convert a freeform family care request into supported `/directory` filters.
+
+Requirements:
+- JSON content type.
+- JSON `{ "text": "<family care request>" }`.
+- `OPENAI_API_KEY` and `OPENAI_CARE_HELPER_MODEL` set server-side.
+
+Output:
+- JSON `{ filters, summary, missingQuestions }` on success.
+- `filters` can include `location`, `maxRate`, `service`, `availability`, and `language`.
 
 ## 8. Security and abuse controls
 - Rate limiting utilities in `lib/security/*`.

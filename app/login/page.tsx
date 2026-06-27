@@ -391,8 +391,8 @@ export default function LoginPage() {
                 }}
                 className={`rounded-xl border px-4 py-4 text-left transition ${
                   accountType === "caregiver"
-                    ? "border-[#4338ca] bg-indigo-50 shadow-[0_8px_18px_rgba(67,56,202,0.14)]"
-                    : "border-[#d8e3eb] bg-white/90 hover:border-[#bccddd] hover:bg-[#f5f9fc]"
+                    ? "border-[var(--brand)] bg-[#f7eef2] shadow-[0_8px_18px_rgba(74,6,47,0.14)]"
+                    : "border-[var(--line-strong)] bg-white/90 hover:border-[var(--brand)] hover:bg-[#fbf5f8]"
                 }`}
               >
                 <span className="block text-sm font-bold text-[#10233b]">I&apos;m a Caregiver</span>
@@ -412,8 +412,8 @@ export default function LoginPage() {
                 }}
                 className={`rounded-xl border px-4 py-4 text-left transition ${
                   accountType === "client"
-                    ? "border-[#4338ca] bg-indigo-50 shadow-[0_8px_18px_rgba(67,56,202,0.14)]"
-                    : "border-[#d8e3eb] bg-white/90 hover:border-[#bccddd] hover:bg-[#f5f9fc]"
+                    ? "border-[var(--brand)] bg-[#f7eef2] shadow-[0_8px_18px_rgba(74,6,47,0.14)]"
+                    : "border-[var(--line-strong)] bg-white/90 hover:border-[var(--brand)] hover:bg-[#fbf5f8]"
                 }`}
               >
                 <span className="block text-sm font-bold text-[#10233b]">I&apos;m a Family Member</span>

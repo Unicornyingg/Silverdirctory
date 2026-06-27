@@ -28,15 +28,15 @@
   --btn-secondary-hover-fg: #30031f;
   --btn-secondary-hover-border: #cbd82b;
   --btn-outline-bg: transparent;
-  --btn-outline-fg: #2a2620;
-  --btn-outline-border: #d8c8ae;
-  --btn-outline-hover-bg: #f1e9da;
-  --btn-outline-hover-fg: #264c40;
-  --btn-outline-hover-border: #2f5d4e;
+  --btn-outline-fg: #3f092b;
+  --btn-outline-border: #d7c1cc;
+  --btn-outline-hover-bg: #f7eef2;
+  --btn-outline-hover-fg: #30031f;
+  --btn-outline-hover-border: #4a062f;
   --btn-ghost-bg: transparent;
-  --btn-ghost-fg: #2a2620;
-  --btn-ghost-hover-bg: #f1e9da;
-  --btn-ghost-hover-fg: #264c40;
+  --btn-ghost-fg: #3f092b;
+  --btn-ghost-hover-bg: #f7eef2;
+  --btn-ghost-hover-fg: #30031f;
   --btn-disabled-bg: #eae1d2;
   --btn-disabled-fg: #968b7a;
   --btn-disabled-border: #d8ccb9;
@@ -106,7 +106,7 @@ a:hover {
 }
 
 :where(a, button, input, select, textarea, summary):focus-visible {
-  outline: 2px solid rgba(47, 93, 78, 0.55);
+  outline: 2px solid rgba(74, 6, 47, 0.55);
   outline-offset: 2px;
 }
 
@@ -493,6 +493,22 @@ a:hover {
   color: var(--btn-ghost-hover-fg);
 }
 
+/* Outline/ghost buttons placed on a dark (plum) surface.
+   Two-class selector beats the single-class defaults above. */
+.outline-btn.on-dark,
+.ghost-btn.on-dark {
+  border-color: rgba(255, 253, 247, 0.45);
+  background: transparent;
+  color: #fffdf7;
+}
+
+.outline-btn.on-dark:hover,
+.ghost-btn.on-dark:hover {
+  border-color: var(--signal);
+  background: rgba(255, 253, 247, 0.1);
+  color: var(--signal);
+}
+
 .primary-btn:focus-visible,
 .secondary-btn:focus-visible,
 .outline-btn:focus-visible,
@@ -578,8 +594,8 @@ a:hover {
 .field-input:focus,
 .field-textarea:focus,
 .field-file:focus {
-  border-color: rgba(47, 93, 78, 0.6);
-  box-shadow: 0 0 0 3px rgba(47, 93, 78, 0.14);
+  border-color: rgba(74, 6, 47, 0.55);
+  box-shadow: 0 0 0 3px rgba(74, 6, 47, 0.14);
 }
 
 .field-input:disabled,

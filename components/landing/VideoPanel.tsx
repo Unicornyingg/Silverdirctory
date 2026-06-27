@@ -13,7 +13,7 @@ export function VideoPanel({ videoId }: Readonly<VideoPanelProps>) {
 
   return (
     <Container>
-      <div className="relative mx-auto aspect-video w-full max-w-4xl cursor-pointer overflow-hidden rounded-2xl bg-gradient-to-tr from-purple-400 to-indigo-700 lg:mb-20">
+      <div className="relative mx-auto aspect-video w-full max-w-4xl cursor-pointer overflow-hidden rounded-2xl bg-gradient-to-tr from-[var(--accent)] to-[var(--brand-strong)] lg:mb-20">
         {!playVideo ? (
           <button
             onClick={() => setPlayVideo(true)}

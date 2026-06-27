@@ -15,20 +15,14 @@ export function HeroSection() {
     <section className="plum-frame mt-1">
       <div className="overflow-hidden rounded-lg bg-[var(--background)]">
         <Container className="paper-edge relative grid min-h-[660px] items-stretch gap-0 overflow-hidden !px-0 !py-0 lg:grid-cols-[0.96fr_1.04fr]">
-          <div className="relative z-10 flex flex-col justify-between bg-[linear-gradient(90deg,rgba(48,3,31,0.78),rgba(48,3,31,0.24),rgba(48,3,31,0.05))] px-7 py-8 text-white sm:px-10 lg:absolute lg:inset-y-0 lg:left-0 lg:w-[52%] lg:bg-[linear-gradient(90deg,rgba(48,3,31,0.82),rgba(48,3,31,0.5),rgba(48,3,31,0))] lg:px-12 lg:py-12">
+          <div className="relative z-10 flex flex-col justify-between bg-[var(--brand-strong)] px-7 py-8 text-white sm:px-10 lg:absolute lg:inset-y-0 lg:left-0 lg:w-[52%] lg:bg-[linear-gradient(90deg,rgba(48,3,31,0.92),rgba(48,3,31,0.62),rgba(48,3,31,0))] lg:px-12 lg:py-12">
             <div className="max-w-[40rem]">
               <span className="inline-flex rounded-full border border-white/25 bg-white/12 px-3 py-1 text-xs font-extrabold uppercase tracking-normal text-[var(--signal)]">
                 Care starts with clarity
               </span>
               <h1 className="mt-8 font-display text-[3.35rem] font-semibold leading-[0.98] tracking-normal text-white sm:text-[4.6rem] lg:text-[5.35rem]">
-                Helping care find its{" "}
-                <span className="inline-flex items-center gap-3 whitespace-nowrap">
-                  best
-                  <span className="medical-cross" aria-hidden="true">
-                    +
-                  </span>
-                </span>
-                match
+                Helping care find its best{" "}
+                <span className="text-[var(--signal)]">match</span>
               </h1>
               <p className="mt-7 max-w-lg text-base font-medium leading-7 text-white/88 sm:text-lg">
                 Browse eldercare profiles, compare rates, and message independent caregivers
