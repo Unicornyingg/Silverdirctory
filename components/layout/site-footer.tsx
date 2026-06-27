@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/landing/Container";
 
@@ -9,8 +10,14 @@ export function SiteFooter() {
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-5">
             <div className="lg:col-span-2">
               <Link href="/" className="flex items-center space-x-2.5 font-display text-2xl font-semibold text-[var(--foreground)]">
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--brand)] text-sm font-black text-[var(--signal)]">
-                  SD
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--line)] bg-white p-1.5 shadow-sm">
+                  <Image
+                    src="/images/silver-directory-logo.png"
+                    alt="Silver Directory logo"
+                    width={40}
+                    height={36}
+                    className="h-full w-full object-contain"
+                  />
                 </span>
                 <span>Silver Directory</span>
               </Link>

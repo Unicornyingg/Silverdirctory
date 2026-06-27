@@ -4,7 +4,6 @@ import CareForumPostCard, {
   type ForumPost,
 } from "@/app/care-forum/care-forum-post-card";
 import SiteHeader from "@/components/site-header";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 type ForumSection = {
   title: string;
@@ -13,11 +12,11 @@ type ForumSection = {
 };
 
 const FALLBACK_AUTHORS: CaregiverAuthor[] = [
-  { full_name: "Aisha Rahman", profile_photo_url: null },
-  { full_name: "Mei Lin Tan", profile_photo_url: null },
-  { full_name: "Priya Nair", profile_photo_url: null },
-  { full_name: "Grace Lim", profile_photo_url: null },
-  { full_name: "Maria Santos", profile_photo_url: null },
+  { full_name: "Aisha Rahman", profile_photo_url: "/img/user1.jpg" },
+  { full_name: "Mei Lin Tan", profile_photo_url: "/img/user2.jpg" },
+  { full_name: "Priya Nair", profile_photo_url: "/img/user3.jpg" },
+  { full_name: "Grace Lim", profile_photo_url: "/img/user1.jpg" },
+  { full_name: "Maria Santos", profile_photo_url: "/img/user2.jpg" },
 ];
 
 const TRENDING_POSTS: ForumPost[] = [
@@ -337,31 +336,12 @@ const FORUM_SECTIONS: ForumSection[] = [
   },
 ];
 
-async function loadCaregiverAuthors(): Promise<CaregiverAuthor[]> {
-  const supabase = getSupabaseServerClient();
-  if (!supabase) return FALLBACK_AUTHORS;
-
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("full_name, profile_photo_url")
-    .eq("is_verified", true)
-    .order("created_at", { ascending: false })
-    .limit(20)
-    .returns<CaregiverAuthor[]>();
-
-  if (error || !data?.length) return FALLBACK_AUTHORS;
-  return data.map((author) => ({
-    full_name: author.full_name,
-    profile_photo_url: author.profile_photo_url || null,
-  }));
-}
-
 function getPostAuthor(authors: CaregiverAuthor[], index: number): CaregiverAuthor {
   return authors[(index * 7 + 3) % authors.length] ?? FALLBACK_AUTHORS[0];
 }
 
-export default async function CareForumPage() {
-  const authors = await loadCaregiverAuthors();
+export default function CareForumPage() {
+  const authors = FALLBACK_AUTHORS;
 
   return (
     <div className="site-shell">

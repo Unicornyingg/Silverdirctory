@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -40,8 +41,8 @@ export default function SiteHeader({ variant = "default" }: SiteHeaderProps) {
 
   const logoTextClass = isOverlay ? "text-white" : "text-[var(--foreground)]";
   const logoBadgeClass = isOverlay
-    ? "inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/40 bg-white/15 text-xs font-black text-white"
-    : "inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--brand)] text-xs font-black text-[var(--signal)]";
+    ? "inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/45 bg-white/90 p-1.5"
+    : "inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--line)] bg-white p-1.5 shadow-sm";
 
   const toggleClass = isOverlay
     ? "rounded-full px-2 py-1 text-white hover:text-white/80 focus:bg-white/20 focus:text-white focus:outline-none lg:hidden"
@@ -128,7 +129,16 @@ export default function SiteHeader({ variant = "default" }: SiteHeaderProps) {
       <nav className={navClass}>
         <Link href="/" onClick={() => setMobileMenuOpen(false)}>
           <span className={`flex items-center space-x-2.5 font-display text-xl font-semibold ${logoTextClass}`}>
-            <span className={logoBadgeClass}>SD</span>
+            <span className={logoBadgeClass}>
+              <Image
+                src="/images/silver-directory-logo.png"
+                alt="Silver Directory logo"
+                width={40}
+                height={36}
+                className="h-full w-full object-contain"
+                priority={isOverlay}
+              />
+            </span>
             <span>Silver Directory</span>
           </span>
         </Link>

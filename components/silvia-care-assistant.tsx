@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, PointerEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -464,7 +465,7 @@ export default function SilviaCareAssistant({
         onPointerMove={handleBubbleDragMove}
         onPointerUp={handleBubbleDragEnd}
         onPointerCancel={handleBubbleDragEnd}
-        className="fixed z-50 flex h-16 w-16 touch-none items-center justify-center rounded-full border border-[#f3ff5a] bg-[#5f0b43] text-lg font-extrabold text-[#f3ff5a] shadow-[0_18px_42px_rgba(63,9,43,0.28)] transition hover:bg-[#490631] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f3ff5a] focus-visible:ring-offset-2"
+        className="fixed z-50 flex h-16 w-16 touch-none items-center justify-center overflow-hidden rounded-full border border-[#f3ff5a] bg-white p-1.5 shadow-[0_18px_42px_rgba(63,9,43,0.28)] transition hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f3ff5a] focus-visible:ring-offset-2"
         style={
           position
             ? { left: position.left, top: position.top }
@@ -472,7 +473,13 @@ export default function SilviaCareAssistant({
         }
         aria-label="Open Silvia care assistant"
       >
-        SV
+        <Image
+          src="/images/silvia-bot-logo.png"
+          alt="Silvia chat assistant"
+          width={58}
+          height={52}
+          className="h-full w-full object-contain"
+        />
       </button>
     );
   }
@@ -496,10 +503,23 @@ export default function SilviaCareAssistant({
         className="flex cursor-move touch-none items-center justify-between gap-3 bg-[#4a062f] px-4 py-3 text-white"
       >
         <div className="min-w-0">
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#f3ff5a]">
-            Silvia
-          </p>
-          <h2 className="truncate text-sm font-extrabold">Care concierge</h2>
+          <div className="flex items-center gap-2">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-1">
+              <Image
+                src="/images/silvia-bot-logo.png"
+                alt=""
+                width={32}
+                height={29}
+                className="h-full w-full object-contain"
+              />
+            </span>
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#f3ff5a]">
+                Silvia
+              </p>
+              <h2 className="truncate text-sm font-extrabold">Care concierge</h2>
+            </div>
+          </div>
         </div>
         <button
           type="button"

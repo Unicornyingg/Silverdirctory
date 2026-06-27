@@ -92,6 +92,7 @@ export default function CareForumPostCard({
             fallbackText={getInitials(author.full_name) || "CG"}
             className="h-11 w-11 shrink-0 rounded-full border border-[var(--line)] bg-white"
             imageClassName="object-top"
+            loading={featured ? "eager" : "lazy"}
           />
           <div className="min-w-0">
             <p className={`text-xs font-bold ${featured ? "text-[var(--brand)]" : "text-[var(--muted)]"}`}>
@@ -149,6 +150,7 @@ export default function CareForumPostCard({
                       fallbackText={getInitials(author.full_name) || "CG"}
                       className="h-10 w-10 shrink-0 rounded-full border border-[var(--line)] bg-white"
                       imageClassName="object-top"
+                      loading="eager"
                     />
                     <div>
                       <p className="text-xs font-bold text-[var(--muted)]">Shared by</p>
