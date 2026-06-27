@@ -496,6 +496,15 @@ async function seed() {
       .filter((user) => user.email)
       .map((user) => [user.email.toLowerCase(), user])
   );
+  const { data: existingProfiles, error: existingProfilesError } = await supabase
+    .from("profiles")
+    .select("user_id, profile_photo_url");
+
+  if (existingProfilesError) throw existingProfilesError;
+
+  const existingPhotoUrlsByUserId = new Map(
+    (existingProfiles ?? []).map((profile) => [profile.user_id, profile.profile_photo_url ?? ""])
+  );
 
   console.log("Creating or updating family account...");
   const familyUser = await upsertAuthUser(existingUsersByEmail, {
@@ -543,7 +552,7 @@ async function seed() {
       location: caregiver.location,
       care_specialties: caregiver.specialties,
       languages_spoken: caregiver.languages,
-      profile_photo_url: "",
+      profile_photo_url: existingPhotoUrlsByUserId.get(user.id) ?? "",
       licensed_nurse_status:
         caregiver.licensedNurseStatus ?? "no_licence_uploaded",
       is_verified: true,

@@ -1,0 +1,128 @@
+[
+  {
+    "email": "sd-demo-caregiver01@example.com",
+    "fullName": "Aisha Rahman",
+    "file": "aisha-rahman.jpg",
+    "notes": "Malay-presenting woman, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "sd-demo-caregiver02@example.com",
+    "fullName": "Mei Lin Tan",
+    "file": "mei-lin-tan.jpg",
+    "notes": "Chinese-presenting woman, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "sd-demo-caregiver03@example.com",
+    "fullName": "Priya Nair",
+    "file": "priya-nair.jpg",
+    "notes": "Indian-presenting woman, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "sd-demo-caregiver04@example.com",
+    "fullName": "Nur Hidayah",
+    "file": "nur-hidayah.jpg",
+    "notes": "Malay-presenting woman, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "sd-demo-caregiver05@example.com",
+    "fullName": "Grace Lim",
+    "file": "grace-lim.jpg",
+    "notes": "Chinese-presenting woman, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "sd-demo-caregiver06@example.com",
+    "fullName": "Siti Aminah",
+    "file": "siti-aminah.jpg",
+    "notes": "Malay-presenting woman, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "sd-demo-caregiver07@example.com",
+    "fullName": "Chen Wei Jie",
+    "file": "chen-wei-jie.jpg",
+    "notes": "Chinese-presenting man, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "sd-demo-caregiver08@example.com",
+    "fullName": "Maria Santos",
+    "file": "maria-santos.jpg",
+    "notes": "Filipina-presenting woman, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "sd-demo-caregiver09@example.com",
+    "fullName": "Kavitha Raj",
+    "file": "kavitha-raj.jpg",
+    "notes": "Indian-presenting woman, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "sd-demo-caregiver10@example.com",
+    "fullName": "Hannah Lee",
+    "file": "hannah-lee.jpg",
+    "notes": "Chinese or Korean-presenting woman, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "sd-demo-caregiver11@example.com",
+    "fullName": "Faridah Binte Osman",
+    "file": "faridah-binte-osman.jpg",
+    "notes": "Malay-presenting woman, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "sd-demo-caregiver12@example.com",
+    "fullName": "Ong Kai Ming",
+    "file": "ong-kai-ming.jpg",
+    "notes": "Chinese-presenting man, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "sd-demo-caregiver13@example.com",
+    "fullName": "Anita Devi",
+    "file": "anita-devi.jpg",
+    "notes": "Indian-presenting woman, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "sd-demo-caregiver14@example.com",
+    "fullName": "Rina Wijaya",
+    "file": "rina-wijaya.jpg",
+    "notes": "Indonesian-presenting woman, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "sd-demo-caregiver15@example.com",
+    "fullName": "Lydia Wong",
+    "file": "lydia-wong.jpg",
+    "notes": "Chinese-presenting woman, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "sd-demo-caregiver16@example.com",
+    "fullName": "James Quek",
+    "file": "james-quek.jpg",
+    "notes": "Chinese-presenting man, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "sd-demo-caregiver17@example.com",
+    "fullName": "Malar Selvi",
+    "file": "malar-selvi.jpg",
+    "notes": "Indian-presenting woman, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "sd-demo-caregiver18@example.com",
+    "fullName": "Elaine Chua",
+    "file": "elaine-chua.jpg",
+    "notes": "Chinese-presenting woman, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "sd-demo-caregiver19@example.com",
+    "fullName": "Noor Azlan",
+    "file": "noor-azlan.jpg",
+    "notes": "Malay-presenting man, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "sd-demo-caregiver20@example.com",
+    "fullName": "Catherine Goh",
+    "file": "catherine-goh.jpg",
+    "notes": "Chinese-presenting woman, modest plain T-shirt, natural portrait."
+  },
+  {
+    "email": "testcaregiversd2026@gmail.com",
+    "fullName": "Test Caregiver User",
+    "file": "test-caregiver-user.jpg",
+    "notes": "Asian-presenting caregiver matching the current gender presentation, modest plain T-shirt, natural portrait."
+  }
+]
