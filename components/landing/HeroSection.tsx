@@ -58,14 +58,6 @@ export function HeroSection() {
 
             <div className="mt-8 flex flex-col gap-5 sm:flex-row sm:items-center">
               <HeroCta />
-              <div className="hidden items-center gap-3 text-sm font-bold text-white/90 xl:flex">
-                <span className="grid h-12 w-12 place-items-center rounded-full bg-[var(--signal)] text-[var(--brand)]">
-                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current">
-                    <path d="M8 5v14l11-7-11-7Z" />
-                  </svg>
-                </span>
-                Review caregiver profiles first
-              </div>
             </div>
           </div>
 
