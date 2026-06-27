@@ -77,8 +77,7 @@ Important:
 - `/signup`: account type selector and family signup
 
 ### Auth + onboarding
-- `/login`: email/password, phone OTP, Google (client only)
-- `/oauth-complete`: role finalization after OAuth
+- `/login`: email/password and phone OTP
 - `/reset-password`: password reset completion
 - `/for-nurses`: caregiver signup via phone OTP
 - `/for-nurses/verify-otp`: caregiver OTP verification

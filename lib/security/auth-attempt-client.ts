@@ -5,9 +5,7 @@ type AuthAttemptRoute =
   | "client_signup"
   | "login_password"
   | "login_send_otp"
-  | "login_verify_otp"
-  | "login_google"
-  | "signup_google";
+  | "login_verify_otp";
 
 export async function enforceAuthAttemptLimit(
   route: AuthAttemptRoute

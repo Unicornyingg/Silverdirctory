@@ -16,9 +16,7 @@ Platform guardrails:
 ## 3. Family guide
 ### 3.1 Create a family account
 1. Open `/signup`.
-2. In "I'm a Family", choose:
-- `Continue with Google`, or
-- email + password signup.
+2. In "I'm a Family", create an account with email + password.
 3. After success, continue to `/client/profile?setup=1`.
 
 Notes:
@@ -26,7 +24,7 @@ Notes:
 
 ### 3.2 Sign in as family
 1. Open `/login` (or `/login?role=client`).
-2. Use Google login, SMS code, or email/password.
+2. Use SMS code or email/password.
 3. After sign-in you are sent to `/directory` (or to your `next` URL if present).
 
 ### 3.3 Browse caregivers
@@ -61,7 +59,7 @@ Notes:
 
 ### 4.2 Sign in as caregiver
 1. Open `/login?role=caregiver` (recommended).
-2. Use phone OTP or email/password. Google sign-in is not available for caregiver accounts.
+2. Use phone OTP or email/password.
 3. You are redirected to `/caregiver/dashboard`.
 
 ### 4.3 Complete caregiver profile

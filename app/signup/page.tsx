@@ -21,7 +21,6 @@ export default function SignupPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -129,36 +128,6 @@ export default function SignupPage() {
     }
   }
 
-  async function continueWithGoogle() {
-    setErrorMessage(null);
-    setStatusMessage(null);
-    setIsGoogleSubmitting(true);
-    try {
-      await enforceAuthAttemptLimit("signup_google");
-      const supabase = getSupabaseBrowserClient();
-      const oauthParams = new URLSearchParams({
-        source: "signup",
-        role: "client",
-        next: "/client/profile?setup=1",
-      });
-      const redirectTo = `${window.location.origin}/oauth-complete?${oauthParams.toString()}`;
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo },
-      });
-
-      if (error) {
-        setErrorMessage(getReadableAuthError(error));
-        setIsGoogleSubmitting(false);
-      }
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? getReadableAuthError(error) : "Unable to start Google signup."
-      );
-      setIsGoogleSubmitting(false);
-    }
-  }
-
   return (
     <div className="site-shell">
       <SiteHeader />
@@ -179,24 +148,7 @@ export default function SignupPage() {
               Browse caregiver profiles and start secure in-app chats.
             </p>
 
-            <button
-              type="button"
-              onClick={() => void continueWithGoogle()}
-              disabled={isGoogleSubmitting}
-              className="secondary-btn mt-5 w-full disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isGoogleSubmitting ? "Redirecting to Google..." : "Continue with Google"}
-            </button>
-
-            <div className="my-4 flex items-center gap-3">
-              <div className="h-px flex-1 bg-[#d8e3eb]" />
-              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[#70829a]">
-                or
-              </span>
-              <div className="h-px flex-1 bg-[#d8e3eb]" />
-            </div>
-
-            <form onSubmit={handleFamilySignup} className="space-y-3">
+            <form onSubmit={handleFamilySignup} className="mt-5 space-y-3">
               <label className="space-y-1.5">
                 <span className="text-sm font-semibold text-[#243d58]">Full name</span>
                 <input

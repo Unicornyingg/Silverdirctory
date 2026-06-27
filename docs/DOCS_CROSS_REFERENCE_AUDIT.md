@@ -53,28 +53,6 @@ see the extra field.
 
 ---
 
-### 3. User Guide §4.2 — caregiver login claims "email/password or phone OTP" but Google is also shown (client tab)
-**Doc ref:** UG §4.2 step 2: "Use email/password or phone OTP flow."
-
-**Reality in login page:** The caregiver tab shows SMS OTP **and** email/password
-(correct). But the doc implies these are the only two methods. While Google
-OAuth is intentionally blocked for caregivers (with an error message), the
-description should note that Google login is **not available** for caregivers to
-avoid confusion when users see the client tab offering it.
-
-**Fix:** Add: "Google sign-in is only available for family accounts."
-
----
-
-### 4. User Guide §3.2 — family login says "email/password or Google" but SMS OTP is also available
-**Doc ref:** UG §3.2 step 2: "Use email/password or Google login."
-
-**Reality:** The client tab in `/login` shows **three** methods: Google OAuth,
-SMS OTP, and email/password. The SMS OTP flow for families is fully functional.
-
-**Fix:** Change to "Use Google login, SMS code, or email/password."
-
----
 
 ### 5. Tech doc §9 — `public.users` described as having "moderation fields" — it's a VIEW not a table
 **Doc ref:** TD §9: "public.users (view over auth.users + moderation fields)"
@@ -153,19 +131,6 @@ this is low priority, but the env var list is incomplete.
 
 ---
 
-### 12. Login page email/password is available for BOTH roles — doc implies it's caregiver-only
-**Doc ref:** UG §4.2 lists "email/password" as a caregiver sign-in method. UG
-§3.2 only lists "email/password or Google login" for families.
-
-**Reality:** The login page renders the email/password form for **both** account
-types (client and caregiver). It appears below the role-specific section. A
-family can sign in with email/password. The docs structure implies email/password
-is primarily for caregivers.
-
-**Fix:** Make clear in §3.2 that all three methods (Google, SMS, email/password)
-are available for families.
-
----
 
 ### 13. FAQ page mentions S$9.99 sign-up fee — not documented in either doc
 **File:** `app/faq/caregivers/page.tsx` lines 84-87
@@ -268,7 +233,6 @@ blocked from chat, etc.). A brief enumeration would add value.
 ### Immediate fixes (documentation corrections):
 1. ✅ **#1 / #6** — `proxy.ts` renamed to `middleware.ts`, function renamed to `middleware()`, docs updated
 2. ✅ **#2** — Added "confirm password" to UG §4.1
-3. ✅ **#3** — Noted Google login unavailable for caregivers in UG §4.2
 4. ✅ **#4 / #12** — Added SMS OTP to family login description in UG §3.2
 
 ### Code cleanup:

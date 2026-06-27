@@ -66,7 +66,6 @@ export default function LoginPage() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [forgotMessage, setForgotMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [isPhoneOtpSubmitting, setIsPhoneOtpSubmitting] = useState(false);
   const [isForgotSubmitting, setIsForgotSubmitting] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -203,43 +202,6 @@ export default function LoginPage() {
       setErrorMessage(message);
     } finally {
       setIsSubmitting(false);
-    }
-  }
-
-  async function signInWithGoogle() {
-    setErrorMessage(null);
-    setStatusMessage(null);
-    if (accountType === "caregiver") {
-      setErrorMessage("Offering care accounts must sign in with email/password.");
-      return;
-    }
-    setIsGoogleSubmitting(true);
-    try {
-      await enforceAuthAttemptLimit("login_google");
-      const supabase = getSupabaseBrowserClient();
-      const oauthParams = new URLSearchParams({
-        source: "login",
-        role: "client",
-      });
-      const nextPath = readNextPathFromLocation();
-      if (nextPath) {
-        oauthParams.set("next", nextPath);
-      }
-      const redirectTo = `${window.location.origin}/oauth-complete?${oauthParams.toString()}`;
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo },
-      });
-
-      if (error) {
-        setErrorMessage(getReadableAuthError(error));
-        setIsGoogleSubmitting(false);
-      }
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unable to start Google sign-in.";
-      setErrorMessage(message);
-      setIsGoogleSubmitting(false);
     }
   }
 
@@ -464,25 +426,6 @@ export default function LoginPage() {
 
           {accountType === "client" ? (
             <>
-              <button
-                type="button"
-                onClick={signInWithGoogle}
-                disabled={isGoogleSubmitting}
-                className="secondary-btn w-full disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isGoogleSubmitting
-                  ? "Redirecting to Google..."
-                  : "Continue with Google"}
-              </button>
-
-              <div className="my-4 flex items-center gap-3">
-                <div className="h-px flex-1 bg-[#d8e3eb]" />
-                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[#70829a]">
-                  or
-                </span>
-                <div className="h-px flex-1 bg-[#d8e3eb]" />
-              </div>
-
               <div className="mb-4 space-y-3 rounded-xl border border-[#d8e3eb] bg-white/85 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#61758d]">
                   Family SMS Login

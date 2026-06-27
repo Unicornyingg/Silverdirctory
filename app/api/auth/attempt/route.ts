@@ -16,8 +16,6 @@ const ALLOWED_ROUTES = new Set([
   "login_password",
   "login_send_otp",
   "login_verify_otp",
-  "login_google",
-  "signup_google",
 ]);
 
 type AuthAttemptPayload = {

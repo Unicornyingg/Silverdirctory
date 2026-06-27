@@ -76,14 +76,13 @@ Open [http://localhost:3000](http://localhost:3000).
 ## Key routes
 
 - `/signup`:
-  - Family signup (Google OAuth or email/password)
+  - Family signup (email/password)
   - Entry point to caregiver onboarding
 - `/for-nurses`:
   - Caregiver account creation (phone OTP flow)
 - `/for-nurses/verify-otp`:
   - Caregiver OTP verification
-- `/login`: email/password login + Google OAuth login (family/client only) + phone OTP login + forgot-password request
-- `/oauth-complete`: OAuth role finalization
+- `/login`: email/password login + phone OTP login + forgot-password request
 - `/reset-password`: set a new password after email reset link
 - `/directory`: verified caregiver cards + location/max-rate/service filters + start-chat action
 - `/chats`: realtime messaging inbox for clients and caregivers
