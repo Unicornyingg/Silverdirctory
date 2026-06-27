@@ -4,7 +4,7 @@ import heroImg from "@/public/images/eldercare-hero.png";
 
 export function HeroSection() {
   const featureChips = [
-    "Verified profile cues",
+    "Clear profile cues",
     "Direct family chat",
     "No agency commission",
     "Singapore neighbourhoods",

@@ -83,7 +83,7 @@ Open [http://localhost:3000](http://localhost:3000).
   - Caregiver OTP verification
 - `/login`: email/password login + phone OTP login + forgot-password request
 - `/reset-password`: set a new password after email reset link
-- `/directory`: verified caregiver cards + location/max-rate/service filters + start-chat action
+- `/directory`: published caregiver cards + location/max-rate/service filters + start-chat action
 - `/api/care-request/parse`: server-side AI parser that converts freeform family care requests into directory filters
 - `/chats`: realtime messaging inbox for clients and caregivers
 - `/caregiver/dashboard`: caregiver profile CRUD, verification doc upload, link to chat inbox

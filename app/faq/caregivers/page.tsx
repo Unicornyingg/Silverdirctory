@@ -11,7 +11,7 @@ const CAREGIVER_FAQ_SECTIONS: FAQSection[] = [
         question: "1. Who can register as a caregiver on the platform?",
         answer: (
           <p>
-            Caregivers can register with an email/password account and complete their public profile details.
+            Caregivers register through phone OTP, provide an email and password, then complete their public profile details.
           </p>
         ),
       },
