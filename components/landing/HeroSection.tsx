@@ -23,23 +23,23 @@ export function HeroSection() {
           placeholder="blur"
           sizes="100vw"
         />
-        {/* Left-to-right plum scrim keeps the headline readable */}
+        {/* Left-side plum scrim keeps the headline readable without dimming the people. */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-[linear-gradient(100deg,rgba(48,3,31,0.95)_0%,rgba(48,3,31,0.82)_26%,rgba(48,3,31,0.5)_48%,rgba(48,3,31,0.2)_70%,rgba(48,3,31,0.1)_100%)]"
+          className="absolute inset-0 bg-[linear-gradient(100deg,rgba(48,3,31,0.82)_0%,rgba(48,3,31,0.64)_24%,rgba(48,3,31,0.28)_43%,rgba(48,3,31,0.08)_62%,rgba(48,3,31,0.02)_100%)]"
         />
         {/* Top scrim so the overlaid navigation stays legible */}
         <div
           aria-hidden="true"
-          className="absolute inset-x-0 top-0 h-44 bg-[linear-gradient(to_bottom,rgba(48,3,31,0.65),rgba(48,3,31,0.2)_55%,transparent)]"
+          className="absolute inset-x-0 top-0 h-44 bg-[linear-gradient(to_bottom,rgba(48,3,31,0.42),rgba(48,3,31,0.12)_55%,transparent)]"
         />
 
-        <div className="relative z-10 mx-auto flex min-h-[640px] max-w-7xl flex-col justify-between gap-10 px-5 pb-12 pt-28 text-white sm:min-h-[700px] sm:px-6 sm:pt-32 lg:min-h-[780px] lg:px-8 lg:pb-16 lg:pt-36">
-          <div className="max-w-[40rem]">
+        <div className="relative z-10 flex min-h-[640px] max-w-none flex-col justify-between gap-10 px-6 pb-12 pt-28 text-white sm:min-h-[700px] sm:px-10 sm:pt-32 lg:min-h-[780px] lg:px-16 lg:pb-16 lg:pt-36 2xl:px-20">
+          <div className="max-w-[34rem] xl:max-w-[36rem]">
             <span className="inline-flex rounded-full border border-white/25 bg-white/12 px-3 py-1 text-xs font-extrabold uppercase tracking-normal text-[var(--signal)]">
               Care starts with clarity
             </span>
-            <h1 className="mt-7 font-display text-[3rem] font-semibold leading-[0.98] tracking-normal text-white sm:text-[4.2rem] lg:text-[5rem]">
+            <h1 className="mt-7 font-display text-[3rem] font-semibold leading-[0.98] tracking-normal text-white sm:text-[4.2rem] lg:text-[4.65rem]">
               Helping care find its best{" "}
               <span
                 className="inline-flex translate-y-[0.04em] items-center align-middle text-[var(--accent)]"
