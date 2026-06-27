@@ -606,12 +606,14 @@ a:hover {
   color: #6b7280;
 }
 
-/* Readability guard: prevent white text on white/light buttons */
-:where(a, button, [role="button"])[class*="bg-white"][class*="text-white"] {
+/* Readability guard: prevent white text on white/light buttons.
+   Uses ~= (exact token match) so it only catches a literal `bg-white text-white`
+   pairing, not fractional/stateful utilities like `bg-white/20` or `hover:text-white`. */
+:where(a, button, [role="button"])[class~="bg-white"][class~="text-white"] {
   color: #1f2937 !important;
 }
 
-:where(a, button, [role="button"])[class*="bg-gray-50"][class*="text-white"] {
+:where(a, button, [role="button"])[class~="bg-gray-50"][class~="text-white"] {
   color: #1f2937 !important;
 }
 

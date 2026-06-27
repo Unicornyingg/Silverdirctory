@@ -126,9 +126,12 @@ const faqItems = [
 export default function Home() {
   return (
     <div className="min-h-screen bg-[var(--background)]">
-      <SiteHeader />
-
-      <HeroSection />
+      <div className="relative">
+        <HeroSection />
+        <div className="absolute inset-x-0 top-0 z-30">
+          <SiteHeader variant="overlay" />
+        </div>
+      </div>
 
       <section className="mt-8">
         <SectionTitle

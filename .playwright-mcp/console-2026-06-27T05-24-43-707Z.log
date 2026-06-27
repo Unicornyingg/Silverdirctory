@@ -1,0 +1,3 @@
+[   26910ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://dribbble.com/favicon.ico:0
+[   39024ms] [ERROR] Not signed in with the identity provider. @ https://dribbble.com/shots/26648733-Agewise-Elderly-Care-Web-Design:0
+[   63403ms] [ERROR] [GSI_LOGGER]: FedCM get() rejects with NetworkError: Error retrieving a token. @ https://accounts.google.com/gsi/client:87
