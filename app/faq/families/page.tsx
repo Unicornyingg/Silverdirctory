@@ -41,7 +41,7 @@ const FAMILY_FAQ_SECTIONS: FAQSection[] = [
     items: [
       {
         id: "family-5",
-        question: "5. How are caregiver quotes and rates handled?",
+        question: "4. How are caregiver quotes and rates handled?",
         answer: (
           <p>
             Caregiver quotes and rates can be discussed directly between families and caregivers.
@@ -50,7 +50,7 @@ const FAMILY_FAQ_SECTIONS: FAQSection[] = [
       },
       {
         id: "family-6",
-        question: "6. How much are caregiver rates?",
+        question: "5. How much are caregiver rates?",
         answer: (
           <p>
             Silver Directory does not set rates. Caregivers are independent freelancers and set their own rates based on experience and care complexity. For general pricing context, refer to our{" "}
@@ -60,7 +60,7 @@ const FAMILY_FAQ_SECTIONS: FAQSection[] = [
       },
       {
         id: "family-7",
-        question: "7. How and when do I make payment to the caregiver?",
+        question: "6. How and when do I make payment to the caregiver?",
         answer: (
           <p>
             Payments are not processed through our website. Method (for example: PayNow, cash) and payment timing (for example: end of shift, weekly) are agreed directly between you and the caregiver before care starts.
@@ -69,7 +69,7 @@ const FAMILY_FAQ_SECTIONS: FAQSection[] = [
       },
       {
         id: "family-8",
-        question: "8. Is advance payment required?",
+        question: "7. Is advance payment required?",
         answer: (
           <p>
             Silver Directory does not require deposits or advance payment. Independent caregivers may have their own policies. A practical approach is to pay at the end of each completed shift until trust is established.
@@ -84,7 +84,7 @@ const FAMILY_FAQ_SECTIONS: FAQSection[] = [
     items: [
       {
         id: "family-9",
-        question: "9. Is there a binding contract between me and the caregiver?",
+        question: "8. Is there a binding contract between me and the caregiver?",
         answer: (
           <p>
             No. Silver Directory does not impose a minimum contract or lock-in period. You hire caregivers as independent freelancers and can coordinate directly with them if plans change.
@@ -93,7 +93,7 @@ const FAMILY_FAQ_SECTIONS: FAQSection[] = [
       },
       {
         id: "family-10",
-        question: "10. Can I change the caregiver if I am dissatisfied?",
+        question: "9. Can I change the caregiver if I am dissatisfied?",
         answer: (
           <p>
             Yes. Since there is no lock-in contract from Silver Directory, you can end the private arrangement and contact another caregiver who better fits your needs.
@@ -102,7 +102,7 @@ const FAMILY_FAQ_SECTIONS: FAQSection[] = [
       },
       {
         id: "family-11",
-        question: "11. What should I do before the caregiver comes for the first time?",
+        question: "10. What should I do before the caregiver comes for the first time?",
         answer: (
           <p>
             Before granting home access, do a short 3-minute video call first. This helps you introduce yourself, share the patient condition, and check communication fit before finalizing details.
@@ -111,7 +111,7 @@ const FAMILY_FAQ_SECTIONS: FAQSection[] = [
       },
       {
         id: "family-12",
-        question: "12. How do I give feedback or report a caregiver?",
+        question: "11. How do I give feedback or report a caregiver?",
         answer: (
           <p>
             Reach out to platform support if a caregiver is unresponsive, unprofessional, or appears to provide false credentials. Our trust and safety team can review and take action when needed.
