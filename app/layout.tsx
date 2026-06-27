@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
+import SilviaCareAssistant from "@/components/silvia-care-assistant";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -31,7 +32,10 @@ export default function RootLayout({
       lang="en"
       className={`${plusJakartaSans.variable} ${fraunces.variable}`}
     >
-      <body className="bg-[var(--background)] antialiased text-[15px] md:text-[16px]">{children}</body>
+      <body className="bg-[var(--background)] antialiased text-[15px] md:text-[16px]">
+        {children}
+        <SilviaCareAssistant />
+      </body>
     </html>
   );
 }

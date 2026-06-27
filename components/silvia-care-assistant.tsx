@@ -1,15 +1,15 @@
 "use client";
 
-import { FormEvent, PointerEvent, useMemo, useRef, useState } from "react";
+import { FormEvent, PointerEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type SilviaCareAssistantProps = {
-  initialAiLocation: string;
-  initialAiMaxRate: string;
-  initialAiService: string;
-  initialAiLanguage: string;
-  initialAiAvailability: string;
-  initialAiRequest: string;
+  initialAiLocation?: string;
+  initialAiMaxRate?: string;
+  initialAiService?: string;
+  initialAiLanguage?: string;
+  initialAiAvailability?: string;
+  initialAiRequest?: string;
 };
 
 type AiCareRequestResponse = {
@@ -38,6 +38,7 @@ type BubblePosition = {
 
 const DEFAULT_GREETING =
   "Hi, I am Silvia. How can I help you today? You can tell me what is going on, where care is needed, your budget, and any timing preferences.";
+const SILVIA_MESSAGES_STORAGE_KEY = "silver-directory:silvia-messages";
 
 function buildActiveSearchText({
   initialAiLocation,
@@ -93,40 +94,155 @@ function createMessage(sender: SilviaMessage["sender"], text: string): SilviaMes
   };
 }
 
-export default function SilviaCareAssistant({
+function isSilviaMessage(value: unknown): value is SilviaMessage {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    "sender" in value &&
+    "text" in value &&
+    typeof value.id === "string" &&
+    (value.sender === "silvia" || value.sender === "family") &&
+    typeof value.text === "string"
+  );
+}
+
+function readSavedMessages(): SilviaMessage[] | null {
+  if (typeof window === "undefined") return null;
+
+  const raw = window.localStorage.getItem(SILVIA_MESSAGES_STORAGE_KEY);
+  if (!raw) return null;
+
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return null;
+    const messages = parsed.filter(isSilviaMessage).slice(-24);
+    const hasFamilyMessage = messages.some((message) => message.sender === "family");
+    if (!hasFamilyMessage) return null;
+    return messages.length > 0 ? messages : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveMessages(messages: SilviaMessage[]) {
+  window.localStorage.setItem(
+    SILVIA_MESSAGES_STORAGE_KEY,
+    JSON.stringify(messages.slice(-24))
+  );
+}
+
+function shouldRouteToCareForum(text: string): boolean {
+  const normalized = text.toLowerCase();
+  const asksForAdvice =
+    /\b(tip|tips|advice|guide|learn|article|forum|how do i|how to|what should i|safe way)\b/.test(
+      normalized
+    );
+  const careTopic =
+    /\b(transfer|transfers|fall|falls|bathing|toileting|feeding|dementia|mobility|wheelchair|walker|bed|chair|medication|exercise|companionship|respite)\b/.test(
+      normalized
+    );
+  const caregiverSearch =
+    /\b(caregiver|care giver|budget|\$|sgd|\/hr|per hour|tampines|bedok|pasir ris|morning|mornings|night|weekend|find|match|hire)\b/.test(
+      normalized
+    );
+
+  return asksForAdvice && careTopic && !caregiverSearch;
+}
+
+function shouldRouteToDirectory(text: string): boolean {
+  const normalized = text.toLowerCase();
+  return /\b(caregiver|care giver|budget|\$|sgd|\/hr|per hour|find|match|hire|need help|home care|eldercare|tampines|bedok|pasir ris|jurong|yishun|woodlands|hougang|morning|mornings|night|weekend)\b/.test(
+    normalized
+  );
+}
+
+function buildForumReply(text: string): string {
+  const normalized = text.toLowerCase();
+  if (/\btransfer|transfers|bed|chair|wheelchair\b/.test(normalized)) {
+    return "Of course. I will bring you to the care forum for transfer tips. Look for guidance on moving slowly, clearing the path, locking wheels, and asking the elder to help only as much as they safely can.";
+  }
+  if (/\bfall|falls\b/.test(normalized)) {
+    return "I will bring you to the care forum for fall-prevention tips. The big things to check are lighting, loose rugs, bathroom grip points, footwear, and whether walking support is needed.";
+  }
+  if (/\bdementia|memory\b/.test(normalized)) {
+    return "I will bring you to the care forum for dementia-care tips. Gentle routines, short sentences, familiar objects, and calm redirection usually help more than correcting every mistake.";
+  }
+
+  return "I will bring you to the care forum. You can continue asking me about the care topic there.";
+}
+
+function buildInitialMessages({
   initialAiLocation,
   initialAiMaxRate,
   initialAiService,
   initialAiLanguage,
   initialAiAvailability,
   initialAiRequest,
+}: Required<SilviaCareAssistantProps>): SilviaMessage[] {
+  const activeSearchText = buildActiveSearchText({
+    initialAiLocation,
+    initialAiMaxRate,
+    initialAiService,
+    initialAiLanguage,
+    initialAiAvailability,
+  });
+  const initialMessages = [createMessage("silvia", DEFAULT_GREETING)];
+
+  if (initialAiRequest) {
+    initialMessages.push(createMessage("family", initialAiRequest));
+  }
+  if (activeSearchText) {
+    initialMessages.push(createMessage("silvia", activeSearchText));
+  }
+
+  return initialMessages;
+}
+
+export default function SilviaCareAssistant({
+  initialAiLocation = "",
+  initialAiMaxRate = "",
+  initialAiService = "",
+  initialAiLanguage = "",
+  initialAiAvailability = "",
+  initialAiRequest = "",
 }: SilviaCareAssistantProps) {
   const router = useRouter();
   const dragOffsetRef = useRef({ x: 0, y: 0 });
   const bubbleDragMovedRef = useRef(false);
+  const didCheckSavedMessagesRef = useRef(false);
   const [isOpen, setIsOpen] = useState(Boolean(initialAiRequest));
   const [input, setInput] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "error">("idle");
   const [position, setPosition] = useState<BubblePosition | null>(null);
-  const [messages, setMessages] = useState<SilviaMessage[]>(() => {
-    const activeSearchText = buildActiveSearchText({
+  const [messages, setMessages] = useState<SilviaMessage[]>(() =>
+    buildInitialMessages({
       initialAiLocation,
       initialAiMaxRate,
       initialAiService,
       initialAiLanguage,
       initialAiAvailability,
-    });
-    const initialMessages = [createMessage("silvia", DEFAULT_GREETING)];
+      initialAiRequest,
+    })
+  );
 
-    if (initialAiRequest) {
-      initialMessages.push(createMessage("family", initialAiRequest));
-    }
-    if (activeSearchText) {
-      initialMessages.push(createMessage("silvia", activeSearchText));
-    }
+  useEffect(() => {
+    const restoreTimer = window.setTimeout(() => {
+      const savedMessages = readSavedMessages();
+      didCheckSavedMessagesRef.current = true;
+      if (!savedMessages) return;
 
-    return initialMessages;
-  });
+      setMessages(savedMessages);
+      setIsOpen(true);
+    }, 0);
+
+    return () => window.clearTimeout(restoreTimer);
+  }, []);
+
+  useEffect(() => {
+    if (!didCheckSavedMessagesRef.current) return;
+    saveMessages(messages);
+  }, [messages]);
 
   const activeCareContext = useMemo(
     () =>
@@ -235,7 +351,38 @@ export default function SilviaCareAssistant({
 
     setState("loading");
     setInput("");
-    setMessages((current) => [...current, createMessage("family", trimmed)]);
+    const familyMessage = createMessage("family", trimmed);
+    setMessages((current) => {
+      const nextMessages = [...current, familyMessage].slice(-24);
+      saveMessages(nextMessages);
+      return nextMessages;
+    });
+
+    if (shouldRouteToCareForum(trimmed)) {
+      const forumReply = createMessage("silvia", buildForumReply(trimmed));
+      setState("idle");
+      setMessages((current) => {
+        const nextMessages = [...current, forumReply].slice(-24);
+        saveMessages(nextMessages);
+        return nextMessages;
+      });
+      router.push(`/care-forum?silviaTopic=${encodeURIComponent(trimmed)}`);
+      return;
+    }
+
+    if (!shouldRouteToDirectory(trimmed)) {
+      const redirectReply = createMessage(
+        "silvia",
+        "I can help in two ways: tell me the kind of caregiver you need and I will find matches, or ask me for care tips and I will take you to the care forum."
+      );
+      setState("idle");
+      setMessages((current) => {
+        const nextMessages = [...current, redirectReply].slice(-24);
+        saveMessages(nextMessages);
+        return nextMessages;
+      });
+      return;
+    }
 
     let response: Response;
     let result: AiCareRequestResponse;
@@ -249,23 +396,30 @@ export default function SilviaCareAssistant({
       });
       result = (await response.json()) as AiCareRequestResponse;
     } catch {
+      const errorReply = createMessage(
+        "silvia",
+        "I could not reach the care helper. Please try again."
+      );
       setState("error");
-      setMessages((current) => [
-        ...current,
-        createMessage("silvia", "I could not reach the care helper. Please try again."),
-      ]);
+      setMessages((current) => {
+        const nextMessages = [...current, errorReply].slice(-24);
+        saveMessages(nextMessages);
+        return nextMessages;
+      });
       return;
     }
 
     if (!response.ok) {
+      const errorReply = createMessage(
+        "silvia",
+        result.error ?? "I could not understand that request yet. Please try again."
+      );
       setState("error");
-      setMessages((current) => [
-        ...current,
-        createMessage(
-          "silvia",
-          result.error ?? "I could not understand that request yet. Please try again."
-        ),
-      ]);
+      setMessages((current) => {
+        const nextMessages = [...current, errorReply].slice(-24);
+        saveMessages(nextMessages);
+        return nextMessages;
+      });
       return;
     }
 
@@ -282,7 +436,12 @@ export default function SilviaCareAssistant({
     if (parsedFilters.language) nextParams.set("aiLanguage", parsedFilters.language);
 
     setState("idle");
-    setMessages((current) => [...current, createMessage("silvia", buildSilviaReply(result))]);
+    const directoryReply = createMessage("silvia", buildSilviaReply(result));
+    setMessages((current) => {
+      const nextMessages = [...current, directoryReply].slice(-24);
+      saveMessages(nextMessages);
+      return nextMessages;
+    });
     router.push(`/directory?${nextParams.toString()}`);
   }
 
@@ -397,7 +556,12 @@ export default function SilviaCareAssistant({
           </button>
           <button
             type="button"
-            onClick={() => router.push("/directory")}
+            onClick={() => {
+              const resetMessages = [createMessage("silvia", DEFAULT_GREETING)];
+              setMessages(resetMessages);
+              window.localStorage.removeItem(SILVIA_MESSAGES_STORAGE_KEY);
+              router.push("/directory");
+            }}
             className="secondary-btn h-10 px-3 text-sm"
           >
             Clear

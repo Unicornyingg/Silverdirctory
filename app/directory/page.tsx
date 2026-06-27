@@ -1,7 +1,6 @@
 import Link from "next/link";
 import CaregiverDirectoryList from "@/components/caregiver-directory-list";
 import DirectoryFilters from "@/components/directory-filters";
-import SilviaCareAssistant from "@/components/silvia-care-assistant";
 import SiteHeader from "@/components/site-header";
 import { isSupportedCareService } from "@/lib/care-services";
 import { isSupportedCaregiverLanguage } from "@/lib/caregiver-languages";
@@ -98,7 +97,6 @@ export default async function DirectoryPage({
   const requestedAiLanguage = getParam(params, "aiLanguage").trim();
   const requestedAiService = getParam(params, "aiService").trim();
   const aiAvailabilityFilter = getParam(params, "aiAvailability").trim();
-  const aiRequest = getParam(params, "aiRequest").trim();
   const languageFilter = isSupportedCaregiverLanguage(requestedLanguage)
     ? requestedLanguage
     : "";
@@ -287,14 +285,6 @@ export default async function DirectoryPage({
         />
       )}
 
-      <SilviaCareAssistant
-        initialAiLocation={aiLocationFilter}
-        initialAiMaxRate={hasValidAiMaxRate ? aiMaxRateRaw : ""}
-        initialAiService={aiServiceFilter}
-        initialAiLanguage={aiLanguageFilter}
-        initialAiAvailability={aiAvailabilityFilter}
-        initialAiRequest={aiRequest}
-      />
     </div>
   );
 }
