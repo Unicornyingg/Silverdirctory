@@ -57,8 +57,6 @@ export type CaregiverProfile = {
     | "licensed_nurse_approved"
     | "licence_rejected";
   is_verified: boolean;
-  is_boosted: boolean;
-  boost_expires_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -202,8 +200,6 @@ export type Database = {
             | "licensed_nurse_approved"
             | "licence_rejected";
           is_verified?: boolean;
-          is_boosted?: boolean;
-          boost_expires_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -232,8 +228,6 @@ export type Database = {
             | "licensed_nurse_approved"
             | "licence_rejected";
           is_verified: boolean;
-          is_boosted: boolean;
-          boost_expires_at: string | null;
           updated_at: string;
         }>;
         Relationships: [];

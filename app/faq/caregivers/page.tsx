@@ -82,8 +82,8 @@ const CAREGIVER_FAQ_SECTIONS: FAQSection[] = [
         question: "8. Do I have to pay anything to use the platform?",
         answer: (
           <p>
-            Yes. A sign up fee of S$9.99 is required for caregiver accounts. An optional
-            &quot;Profile Boost&quot; feature is available at S$5 to raise visibility for 7 days.
+            No. Silver Directory does not charge caregiver sign-up fees, listing fees, or
+            visibility fees.
           </p>
         ),
       },
@@ -98,7 +98,7 @@ const CAREGIVER_FAQ_SECTIONS: FAQSection[] = [
         question: "9. Do I need to pay a sign up fee?",
         answer: (
           <p>
-            Yes. A sign up fee of S$9.99 is required.
+            No. Caregiver accounts can be created without a platform sign-up fee.
           </p>
         ),
       },

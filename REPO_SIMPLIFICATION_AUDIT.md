@@ -167,7 +167,6 @@ These were investigated and confirmed actively imported/linked:
 | `lib/security/api-guard.ts` | auth attempt API route |
 | `lib/security/rate-limit.ts` | api-guard |
 | `lib/email/send-verification-email.ts` | admin/verify |
-| `lib/supabase/auth-session.ts` | boost API routes |
 | `lib/supabase/auth-errors.ts` | signup, login, for-nurses |
 | `lib/caregiver-license-status.ts` | directory list, admin, dashboard |
 | `lib/caregiver-languages.ts` | filters, directory, dashboard, admin |
@@ -177,8 +176,6 @@ These were investigated and confirmed actively imported/linked:
 | `lib/phone-format.ts` | multiple auth pages |
 | `lib/care-services.ts` | directory filters, dashboard |
 | `app/api/auth/attempt/route.ts` | auth-attempt-client calls this |
-| `app/api/boost/checkout/route.ts` | boost feature |
-| `app/api/boost/confirm/route.ts` | boost feature |
 | `app/admin/verify/page.tsx` | admin tool (intentionally unlisted) |
 | `app/chats/page.tsx` | active chat system |
 | All `components/landing/*.tsx` | landing page |

@@ -25,7 +25,6 @@ type DirectoryListProfile = {
     | "pending_admin_review"
     | "licensed_nurse_approved"
     | "licence_rejected";
-  hasActiveBoost: boolean;
   care_specialties: string[];
   languages_spoken: string[];
 };
@@ -148,14 +147,6 @@ export default function CaregiverDirectoryList({
                     <span className="text-2xl font-bold tracking-tight text-[#10233b]">
                       {profile.full_name}
                     </span>
-                    {profile.hasActiveBoost && (
-                      <span
-                        title="This listing is a paid promotion."
-                        className="rounded-full border border-[#f2cb8f] bg-[#fff4e3] px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.08em] text-[#6f3f0b]"
-                      >
-                        Boosted
-                      </span>
-                    )}
                     {isLicensedNurseApproved(profile.licensed_nurse_status) && (
                       <span
                         title="SNB nursing licence verified by Silver Directory admin."

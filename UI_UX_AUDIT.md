@@ -531,21 +531,6 @@ function useFlashMessage() {
 
 ---
 
-### #10 — "Boosted" and "Licensed Nurse" badges have no explanation — erodes trust
-**File:** `components/caregiver-directory-list.tsx`, badge `<span>` elements inside the card button
-
-**Root cause:** Both badges are plain `<span>` elements with no `title`, no tooltip, and no info link. "Boosted" reads as paid placement — and it is — with zero disclosure. "Licensed Nurse" has no link explaining the verification process. For families comparing caregivers, unexplained paid placement is a dark pattern.
-
-**Minimum fix:**
-```tsx
-<span title="This listing is a paid promotion" className="...">Boosted</span>
-<span title="SNB nursing licence verified by Silver Directory admin" className="...">Licensed Nurse</span>
-```
-
-**Better fix:** Add a `?` icon that opens a tooltip, and add a footnote to the directory page: *"★ Boosted listings appear first and are paid promotions."*
-
----
-
 ## 2. Mobile-Only Issues to Fix First
 
 Ordered by frequency of breakage and visibility on phones.
@@ -612,10 +597,10 @@ useEffect(() => {
 
 ---
 
-### M6 — Dashboard sidebar stacks below entire form on mobile — "Boost profile" is unreachable
+### M6 — Dashboard sidebar stacks below entire form on mobile
 **File:** `app/caregiver/dashboard/page.tsx`
 
-`lg:grid-cols-[1.15fr_0.85fr]` collapses to one column below 1024 px. The `<aside>` is the second DOM child so it renders below the entire 1207-line form. Caregivers on mobile must scroll through the complete form before they can see their license status or boost option.
+`lg:grid-cols-[1.15fr_0.85fr]` collapses to one column below 1024 px. The `<aside>` is the second DOM child so it renders below the entire form. Caregivers on mobile must scroll through the complete form before they can see their license status and directory link.
 
 **Fix:**
 ```tsx
@@ -659,7 +644,6 @@ Each takes under 30 minutes and produces immediately visible improvement.
 | QW5 | Add `autoComplete` attributes to all auth inputs | `login/page.tsx`, `for-nurses/page.tsx` | 10 min |
 | QW6 | Add `type="tel" inputMode="numeric"` to phone input | `for-nurses/page.tsx` | 5 min |
 | QW7 | Remove `min-w-[220px]` from directory card action column | `caregiver-directory-list.tsx` | 10 min |
-| QW8 | Add `title="Paid promotion"` to Boosted badge | `caregiver-directory-list.tsx` | 2 min |
 | QW9 | Add `aria-labelledby` to profile modal (replace `aria-label`) | `caregiver-directory-list.tsx` | 5 min |
 | QW10 | Add `w-full sm:w-auto` to CtaBanner button | `CtaBanner.tsx` | 2 min |
 | QW11 | Add `order-first lg:order-last` to dashboard aside | `caregiver/dashboard/page.tsx` | 2 min |
@@ -701,11 +685,10 @@ Contained to individual files. All are well-defined, no design decisions needed.
 | 9 | Fix Testimonials to `overflow-x-auto snap-x` or responsive grid | `Testimonials.tsx` | 30 min |
 | 10 | Add `pr-12` to modal name wrapper to clear close button | `caregiver-directory-list.tsx` | 5 min |
 | 11 | Add `order-first lg:order-last` to dashboard aside | `caregiver/dashboard/page.tsx` | 5 min |
-| 12 | Add `title` attributes to Boosted and Licensed Nurse badges | `caregiver-directory-list.tsx` | 5 min |
-| 13 | Add `aria-labelledby` to profile modal, replace `aria-label` | `caregiver-directory-list.tsx` | 5 min |
-| 14 | Fix mobile nav: `popstate` close + remove `-ml-4` link bleed | `site-header.tsx` | 30 min |
-| 15 | Add `w-full sm:w-auto` to CtaBanner button | `CtaBanner.tsx` | 5 min |
-| 16 | Add `sizes` prop to hero `<Image>` for LCP optimization | `HeroSection.tsx` | 10 min |
+| 12 | Add `aria-labelledby` to profile modal, replace `aria-label` | `caregiver-directory-list.tsx` | 5 min |
+| 13 | Fix mobile nav: `popstate` close + remove `-ml-4` link bleed | `site-header.tsx` | 30 min |
+| 14 | Add `w-full sm:w-auto` to CtaBanner button | `CtaBanner.tsx` | 5 min |
+| 15 | Add `sizes` prop to hero `<Image>` for LCP optimization | `HeroSection.tsx` | 10 min |
 
 ---
 
@@ -773,8 +756,7 @@ High value but require product/design decisions or touch many files.
 | ID | Finding | File | Severity |
 |---|---|---|---|
 | C1 | CtaBanner `text/90` on gradient background — ~3.5:1, fails WCAG AA (4.5:1 required) | `CtaBanner.tsx` | 🔴 High |
-| C2 | "Boosted" badge `#8a4c08` on `#fff4e3` — ~4.2:1, marginal pass, risky at small size | `caregiver-directory-list.tsx` | 🟠 Medium |
-| C3 | FAQ answer text contrast marginal at `text-[#56677c]` on white | `faq-accordion.tsx` | 🟠 Medium |
+| C2 | FAQ answer text contrast marginal at `text-[#56677c]` on white | `faq-accordion.tsx` | 🟠 Medium |
 
 ### Visual Hierarchy
 
@@ -906,13 +888,12 @@ High value but require product/design decisions or touch many files.
 
 | ID | Finding | File | Severity |
 |---|---|---|---|
-| TR1 | "Boosted" badge — unexplained paid placement (see #10) | `caregiver-directory-list.tsx` | 🔴 High |
-| TR2 | "Licensed Nurse" badge — no verification context (see #10) | `caregiver-directory-list.tsx` | 🟠 Medium |
-| TR3 | "Sign Up" nav link goes to caregiver-only `/for-nurses` — families are misled | `site-header.tsx` | 🔴 High |
-| TR4 | Banned user oauth error has no recovery path or support contact | `oauth-complete/page.tsx` | 🟠 Medium |
-| TR5 | "Draft saved" message is always static text — doesn't confirm actual save time | `caregiver/dashboard/page.tsx` | 🟡 Low |
-| TR6 | No session expiry handling — expired sessions silently fail on next action | Multiple pages | 🟠 Medium |
-| TR7 | "Start chat" link navigates unauthenticated users without warning | `caregiver-directory-list.tsx` | 🟠 Medium |
+| TR1 | "Licensed Nurse" badge — no verification context | `caregiver-directory-list.tsx` | 🟠 Medium |
+| TR2 | "Sign Up" nav link goes to caregiver-only `/for-nurses` — families are misled | `site-header.tsx` | 🔴 High |
+| TR3 | Banned user oauth error has no recovery path or support contact | `oauth-complete/page.tsx` | 🟠 Medium |
+| TR4 | "Draft saved" message is always static text — doesn't confirm actual save time | `caregiver/dashboard/page.tsx` | 🟡 Low |
+| TR5 | No session expiry handling — expired sessions silently fail on next action | Multiple pages | 🟠 Medium |
+| TR6 | "Start chat" link navigates unauthenticated users without warning | `caregiver-directory-list.tsx` | 🟠 Medium |
 
 **On TR3:** The nav "Sign Up" link routes to `/for-nurses` which is caregiver signup only. Families who click it are taken to a phone number entry form with no explanation that it's caregiver-only. Fix: Change to `/login` or a role-selection page.
 

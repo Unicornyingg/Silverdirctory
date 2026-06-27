@@ -93,8 +93,6 @@ create table if not exists public.profiles (
       )
     ),
   is_verified boolean not null default false,
-  is_boosted boolean not null default false,
-  boost_expires_at timestamptz,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );
@@ -123,8 +121,8 @@ alter table public.profiles add column if not exists home_nursing_rate numeric(1
 alter table public.profiles add column if not exists home_personal_care_rate numeric(10,2);
 alter table public.profiles add column if not exists languages_spoken text[] not null default '{}';
 alter table public.profiles add column if not exists licensed_nurse_status text not null default 'no_licence_uploaded';
-alter table public.profiles add column if not exists is_boosted boolean not null default false;
-alter table public.profiles add column if not exists boost_expires_at timestamptz;
+alter table public.profiles drop column if exists is_boosted;
+alter table public.profiles drop column if exists boost_expires_at;
 alter table public.client_profiles add column if not exists phone text;
 alter table public.client_profiles add column if not exists location text;
 alter table public.user_moderation add column if not exists is_suspended boolean not null default false;
@@ -570,8 +568,7 @@ $$;
 create index if not exists profiles_verified_idx
 on public.profiles (is_verified, created_at desc);
 
-create index if not exists profiles_boost_idx
-on public.profiles (is_boosted, boost_expires_at desc);
+drop index if exists profiles_boost_idx;
 
 create index if not exists profiles_care_specialties_gin_idx
 on public.profiles using gin (care_specialties);
@@ -867,8 +864,6 @@ with check (
     where current_row.id = id
       and current_row.user_id = auth.uid()
       and current_row.is_verified = is_verified
-      and current_row.is_boosted = is_boosted
-      and current_row.boost_expires_at is not distinct from boost_expires_at
       and current_row.created_at = created_at
   )
 );

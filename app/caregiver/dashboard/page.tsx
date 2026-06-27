@@ -153,10 +153,8 @@ export default function CaregiverDashboardPage() {
   const [isOnboardingMode, setIsOnboardingMode] = useState(false);
   const [isBootLoading, setIsBootLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isBoosting, setIsBoosting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const boostConfirmedRef = useRef(false);
   const profileInputRef = useRef<HTMLInputElement | null>(null);
   const verificationInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -166,7 +164,7 @@ export default function CaregiverDashboardPage() {
     const { data: profileRow, error: profileError } = await supabase
       .from("profiles")
       .select(
-        "id, user_id, full_name, service_category, service_categories, bio, years_experience, credentials_summary, availability_summary, response_time_summary, minimum_shift_hours, last_active_at, hourly_rate, home_nursing_rate, home_personal_care_rate, location, care_specialties, languages_spoken, profile_photo_url, licensed_nurse_status, is_verified, is_boosted, boost_expires_at, created_at, updated_at"
+        "id, user_id, full_name, service_category, service_categories, bio, years_experience, credentials_summary, availability_summary, response_time_summary, minimum_shift_hours, last_active_at, hourly_rate, home_nursing_rate, home_personal_care_rate, location, care_specialties, languages_spoken, profile_photo_url, licensed_nurse_status, is_verified, created_at, updated_at"
       )
       .eq("user_id", user.id)
       .limit(1)
@@ -349,66 +347,6 @@ export default function CaregiverDashboardPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    if (!authUser || boostConfirmedRef.current) return;
-    const params = new URLSearchParams(window.location.search);
-    const boostState = params.get("boost");
-    const sessionId = params.get("session_id");
-
-    if (boostState === "cancelled") {
-      setSuccessMessage("Boost checkout was cancelled.");
-      boostConfirmedRef.current = true;
-      return;
-    }
-
-    if (boostState !== "success" || !sessionId) {
-      return;
-    }
-
-    boostConfirmedRef.current = true;
-    void (async () => {
-      try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const token = sessionData.session?.access_token;
-        if (!token) {
-          setErrorMessage("Please log in again to finish boost activation.");
-          return;
-        }
-
-        const response = await fetch("/api/boost/confirm", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ sessionId }),
-        });
-
-        const payload = (await response.json()) as {
-          error?: string;
-          expiresAt?: string;
-        };
-
-        if (!response.ok) {
-          setErrorMessage(payload.error ?? "Unable to confirm boost payment.");
-          return;
-        }
-
-        setSuccessMessage(
-          payload.expiresAt
-            ? `Boost activated until ${formatDate(payload.expiresAt)}.`
-            : "Boost activated successfully."
-        );
-        await loadDashboard(authUser);
-      } catch (error) {
-        const msg =
-          error instanceof Error ? error.message : "Unable to confirm boost.";
-        setErrorMessage(msg);
-      }
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authUser]);
 
   useEffect(() => {
     if (!authUser) return;
@@ -648,7 +586,7 @@ export default function CaregiverDashboardPage() {
         .from("profiles")
         .upsert(profilePayload, { onConflict: "user_id" })
         .select(
-          "id, user_id, full_name, service_category, service_categories, bio, years_experience, credentials_summary, availability_summary, response_time_summary, minimum_shift_hours, last_active_at, hourly_rate, home_nursing_rate, home_personal_care_rate, location, care_specialties, languages_spoken, profile_photo_url, licensed_nurse_status, is_verified, is_boosted, boost_expires_at, created_at, updated_at"
+          "id, user_id, full_name, service_category, service_categories, bio, years_experience, credentials_summary, availability_summary, response_time_summary, minimum_shift_hours, last_active_at, hourly_rate, home_nursing_rate, home_personal_care_rate, location, care_specialties, languages_spoken, profile_photo_url, licensed_nurse_status, is_verified, created_at, updated_at"
         )
         .limit(1)
         .single()
@@ -714,47 +652,6 @@ export default function CaregiverDashboardPage() {
     }
   }
 
-  async function startBoostCheckout() {
-    setErrorMessage(null);
-    setSuccessMessage(null);
-
-    if (!authUser) {
-      setErrorMessage("Please log in again.");
-      return;
-    }
-
-    setIsBoosting(true);
-    try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
-      if (!token) {
-        setErrorMessage("Please log in again to start checkout.");
-        return;
-      }
-
-      const response = await fetch("/api/boost/checkout", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const payload = (await response.json()) as { error?: string; url?: string };
-      if (!response.ok || !payload.url) {
-        setErrorMessage(payload.error ?? "Unable to start Stripe checkout.");
-        return;
-      }
-
-      window.location.assign(payload.url);
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unable to start boost checkout.";
-      setErrorMessage(message);
-    } finally {
-      setIsBoosting(false);
-    }
-  }
-
   async function handleSignOut(redirectTo = "/login") {
     await supabase.auth.signOut();
     router.push(redirectTo);
@@ -806,10 +703,6 @@ export default function CaregiverDashboardPage() {
     );
   }
 
-  const boostActive =
-    !!profile?.is_boosted &&
-    !!profile.boost_expires_at &&
-    new Date(profile.boost_expires_at).getTime() > Date.now();
   const requiresProfilePhoto = !profile?.profile_photo_url;
   const licenseStatus: CaregiverLicenseStatus =
     profile?.licensed_nurse_status ?? "no_licence_uploaded";
@@ -1238,36 +1131,6 @@ export default function CaregiverDashboardPage() {
               )}
             </div>
           </section>
-
-          {profile && (
-            <section className="surface-panel p-5">
-              <h2 className="text-base font-bold text-[#10243b]">Boost profile</h2>
-              <p className="mt-2 text-sm leading-6 text-[#56677d]">
-                Promote your listing to the top of directory search for 7 days.
-              </p>
-              <p className="mt-2 text-sm text-[#42556f]">
-                Status:{" "}
-                {boostActive && profile?.boost_expires_at ? (
-                  <span className="font-semibold text-[#146943]">
-                    Active until {formatDate(profile.boost_expires_at)}
-                  </span>
-                ) : (
-                  <span className="font-semibold text-[#7a4c1d]">Inactive</span>
-                )}
-              </p>
-
-              <button
-                type="button"
-                onClick={startBoostCheckout}
-                disabled={isBoosting}
-                className="primary-btn mt-4 w-full disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isBoosting
-                  ? "Opening Stripe checkout..."
-                  : "Boost profile for 7 days (S$5)"}
-              </button>
-            </section>
-          )}
 
           <section className="surface-panel p-5">
             <h2 className="text-base font-bold text-[#10243b]">Your public page</h2>

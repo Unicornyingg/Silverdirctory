@@ -619,8 +619,6 @@ async function handleReportResolution(formData: FormData) {
       .from("profiles")
       .update({
         is_verified: false,
-        is_boosted: false,
-        boost_expires_at: null,
       })
       .eq("user_id", report.reported_user_id);
   }
@@ -788,7 +786,6 @@ async function handleUserOverride(formData: FormData) {
       care_specialties: string[];
       languages_spoken: string[];
       is_verified?: boolean;
-      is_boosted?: boolean;
     } = {
       full_name: fullName,
       bio,
@@ -800,9 +797,6 @@ async function handleUserOverride(formData: FormData) {
     };
     if (isSuspended || isBanned) {
       caregiverPatch.is_verified = false;
-    }
-    if (isBanned || isSuspended) {
-      caregiverPatch.is_boosted = false;
     }
 
     const { error: caregiverUpdateError } = await supabase

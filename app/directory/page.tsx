@@ -29,18 +29,12 @@ type DirectoryProfile = Pick<
   | "minimum_shift_hours"
   | "last_active_at"
   | "hourly_rate"
-  | "is_boosted"
-  | "boost_expires_at"
   | "care_specialties"
   | "languages_spoken"
   | "licensed_nurse_status"
   | "is_verified"
   | "created_at"
 >;
-
-type DirectoryCardProfile = DirectoryProfile & {
-  hasActiveBoost: boolean;
-};
 
 function isSupportedDirectorySort(value: string): value is DirectorySort {
   return (
@@ -60,41 +54,11 @@ function getParam(
   return value ?? "";
 }
 
-function shuffle<T>(input: T[]): T[] {
-  const arr = [...input];
-  for (let i = arr.length - 1; i > 0; i -= 1) {
-    const randomIndex = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[randomIndex]] = [arr[randomIndex], arr[i]];
-  }
-  return arr;
-}
-
 function sortProfilesForDirectory(
   profiles: DirectoryProfile[],
   sortBy: DirectorySort
-): DirectoryCardProfile[] {
-  const now = Date.now();
-  const boosted: DirectoryCardProfile[] = [];
-  const regular: DirectoryCardProfile[] = [];
-
-  for (const profile of profiles) {
-    const boostedNow =
-      profile.is_boosted &&
-      !!profile.boost_expires_at &&
-      new Date(profile.boost_expires_at).getTime() > now;
-    const enriched = {
-      ...profile,
-      hasActiveBoost: boostedNow,
-    };
-
-    if (boostedNow) {
-      boosted.push(enriched);
-    } else {
-      regular.push(enriched);
-    }
-  }
-
-  const compare = (left: DirectoryCardProfile, right: DirectoryCardProfile): number => {
+): DirectoryProfile[] {
+  const compare = (left: DirectoryProfile, right: DirectoryProfile): number => {
     if (sortBy === "rate_low") {
       return left.hourly_rate - right.hourly_rate;
     }
@@ -113,11 +77,7 @@ function sortProfilesForDirectory(
     return new Date(right.created_at).getTime() - new Date(left.created_at).getTime();
   };
 
-  const boostedOrdered =
-    sortBy === "recommended" ? shuffle(boosted) : [...boosted].sort(compare);
-  const regularOrdered = [...regular].sort(compare);
-
-  return [...boostedOrdered, ...regularOrdered];
+  return [...profiles].sort(compare);
 }
 
 export default async function DirectoryPage({
@@ -163,7 +123,7 @@ export default async function DirectoryPage({
   let query = supabase
     .from("profiles")
     .select(
-      "id, full_name, profile_photo_url, location, bio, years_experience, credentials_summary, availability_summary, response_time_summary, minimum_shift_hours, last_active_at, hourly_rate, is_boosted, boost_expires_at, care_specialties, languages_spoken, licensed_nurse_status, is_verified, created_at"
+      "id, full_name, profile_photo_url, location, bio, years_experience, credentials_summary, availability_summary, response_time_summary, minimum_shift_hours, last_active_at, hourly_rate, care_specialties, languages_spoken, licensed_nurse_status, is_verified, created_at"
     )
     .eq("is_verified", true)
     .order("created_at", { ascending: false });
@@ -237,9 +197,6 @@ export default async function DirectoryPage({
             first visit.
           </p>
         </div>
-        <p className="mt-3 text-xs text-[#5f7289]">
-          Boosted listings appear first and are paid promotions.
-        </p>
       </section>
 
       {error && (

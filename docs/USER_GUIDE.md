@@ -84,12 +84,6 @@ Important:
 - Saving profile publishes a basic caregiver listing.
 - Uploading verification docs enables licensed nurse review; basic listing remains available.
 
-### 4.4 Boost profile (optional paid feature)
-1. In dashboard, start boost checkout.
-2. Complete Stripe checkout.
-3. Return to dashboard to confirm activation.
-4. Active boosts are surfaced first in directory.
-
 ## 5. Messaging guide (both roles)
 - Route: `/chats`
 - Families: see caregiver threads.

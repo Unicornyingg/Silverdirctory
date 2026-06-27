@@ -10,14 +10,12 @@ Core capabilities:
 - In-app chat between families and caregivers.
 - Caregiver profile management and verification-doc workflow.
 - Admin moderation and verification review.
-- Optional Stripe profile-boost checkout and confirmation.
 
 ## 2. Tech stack
 - Next.js `16.1.6` (App Router)
 - React `19`
 - TypeScript
 - Supabase (`@supabase/supabase-js` v2)
-- Stripe Checkout API (manual fetch integration)
 - Resend (email delivery via raw `fetch` to Resend API — no SDK)
 - OpenAI Chat Completions API (manual fetch integration for structured filter parsing)
 
@@ -39,8 +37,6 @@ Optional/feature-gated:
 - `RESEND_API_KEY`
 - `VERIFICATION_FROM_EMAIL`
 - `VERIFICATION_REPLY_TO_EMAIL`
-- `STRIPE_SECRET_KEY`
-- `STRIPE_BOOST_PRICE_ID`
 - `OPENAI_API_KEY`
 - `OPENAI_CARE_HELPER_MODEL`
 
@@ -60,16 +56,12 @@ Important:
 - Built with `persistSession: false`, no cookie/session forwarding.
 - Suitable for public/read server queries, not browser-session identity detection.
 
-### 5.3 API auth with bearer token
-- `lib/supabase/auth-session.ts` reads `Authorization: Bearer <token>`.
-- API routes that require logged-in user call `getAuthenticatedUserFromRequest`.
-
-### 5.4 Admin (service-role) client
+### 5.3 Admin (service-role) client
 - `lib/supabase/admin.ts` creates a Supabase client using `SUPABASE_SERVICE_ROLE_KEY`.
-- Used by boost API routes (`/api/boost/*`) and the admin verify page (`/admin/verify`).
+- Used by the admin verify page (`/admin/verify`).
 - Bypasses RLS — must only be used in trusted server-side contexts.
 
-### 5.5 Directory auth behavior
+### 5.4 Directory auth behavior
 - Directory profile data is fetched server-side.
 - Directory card CTA auth state is detected client-side in `components/caregiver-directory-list.tsx`.
 - This avoids false signed-out state caused by server anon client not having browser session context.
@@ -90,7 +82,7 @@ Important:
 
 ### Authenticated user areas
 - `/client/profile`: family profile management
-- `/caregiver/dashboard`: caregiver profile setup/edit, doc upload, boost controls
+- `/caregiver/dashboard`: caregiver profile setup/edit and doc upload
 - `/chats`: threaded real-time messaging
 
 ### Legacy redirects
@@ -112,31 +104,6 @@ Behavior:
 - Validates JSON size and route key.
 - Enforces per-IP per-route limits.
 - Returns `429` with retry metadata when exceeded.
-
-### `POST /api/boost/checkout`
-Purpose:
-- Create Stripe Checkout session for caregiver profile boost.
-
-Requirements:
-- Valid bearer token.
-- Existing caregiver profile.
-- `STRIPE_SECRET_KEY` set.
-
-Output:
-- JSON `{ url }` on success.
-
-### `POST /api/boost/confirm`
-Purpose:
-- Confirm paid Stripe checkout session and activate boost.
-
-Requirements:
-- Valid bearer token.
-- JSON content type.
-- Valid `sessionId`.
-- Stripe session belongs to caller and is `paid`.
-
-Output:
-- JSON `{ success: true, expiresAt }` on success.
 
 ### `POST /api/care-request/parse`
 Purpose:

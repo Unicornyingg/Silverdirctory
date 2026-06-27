@@ -556,11 +556,6 @@ async function seed() {
       licensed_nurse_status:
         caregiver.licensedNurseStatus ?? "no_licence_uploaded",
       is_verified: true,
-      is_boosted: index < 4,
-      boost_expires_at:
-        index < 4
-          ? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
-          : null,
     });
   }
 

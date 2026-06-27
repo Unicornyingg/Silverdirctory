@@ -7,7 +7,7 @@ Hyper-local eldercare notice board for families and freelance caregivers.
 - Technical documentation: [`docs/TECHNICAL_DOCUMENTATION.md`](docs/TECHNICAL_DOCUMENTATION.md)
 
 ## Product guardrails implemented
-- No payment gateway for caregiver wages.
+- No payment gateway.
 - No algorithmic auto-matching.
 - No built-in scheduling calendar.
 - Families and caregivers negotiate terms directly off-platform.
@@ -17,7 +17,6 @@ Hyper-local eldercare notice board for families and freelance caregivers.
 - React + TypeScript
 - Supabase (Auth, Postgres, Storage)
 - Resend (transactional emails)
-- Stripe Checkout (profile boost payment only)
 
 ## 1) Install dependencies
 
@@ -37,16 +36,13 @@ ADMIN_REVIEW_KEY=...
 RESEND_API_KEY=...
 VERIFICATION_FROM_EMAIL=...
 VERIFICATION_REPLY_TO_EMAIL=...
-STRIPE_SECRET_KEY=...
-STRIPE_BOOST_PRICE_ID=...
 OPENAI_API_KEY=...
 OPENAI_CARE_HELPER_MODEL=...
 ```
 
 Notes:
-- `SUPABASE_SERVICE_ROLE_KEY` is required for admin review and boost confirmation.
+- `SUPABASE_SERVICE_ROLE_KEY` is required for admin review.
 - `ADMIN_REVIEW_KEY` gates `/admin/verify`.
-- `STRIPE_BOOST_PRICE_ID` is optional. If empty, checkout uses an inline SGD S$5 line item.
 - `OPENAI_API_KEY` and `OPENAI_CARE_HELPER_MODEL` power the AI care request helper on `/directory`.
 
 ## 3) Apply Supabase schema
@@ -90,7 +86,7 @@ Open [http://localhost:3000](http://localhost:3000).
 - `/directory`: verified caregiver cards + location/max-rate/service filters + start-chat action
 - `/api/care-request/parse`: server-side AI parser that converts freeform family care requests into directory filters
 - `/chats`: realtime messaging inbox for clients and caregivers
-- `/caregiver/dashboard`: caregiver profile CRUD, verification doc upload, link to chat inbox, boost checkout button
+- `/caregiver/dashboard`: caregiver profile CRUD, verification doc upload, link to chat inbox
 - `/admin/verify?key=YOUR_ADMIN_REVIEW_KEY`: approve/reject verification docs and publish caregivers
 
 ## Realtime chat flow
@@ -102,12 +98,3 @@ Open [http://localhost:3000](http://localhost:3000).
 5. Both sides receive updates live via Supabase Realtime subscriptions.
 
 This now behaves as in-app two-way messaging.
-
-## Boost flow
-
-1. Caregiver clicks `Boost profile for 7 days (S$5)` on dashboard.
-2. Stripe Checkout opens.
-3. On success, app confirms the paid session and updates:
-   - `profiles.is_boosted = true`
-   - `profiles.boost_expires_at = now + 7 days`
-4. Directory sorts active boosted profiles first (randomized among boosted).

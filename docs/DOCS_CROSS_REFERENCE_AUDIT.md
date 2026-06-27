@@ -89,8 +89,7 @@ The button text in `caregiver/dashboard/page.tsx` line 1218 is exactly
 **Reality:** There is no `resend` npm package in `package.json`. Both
 `lib/email/send-verification-email.ts` and `lib/email/send-inquiry-email.ts` use
 raw `fetch("https://api.resend.com/emails", ...)`. The description is not wrong
-per se (Resend IS used), but readers may expect an SDK import. Stripe is
-already described as "manual fetch integration" — Resend should match.
+per se (Resend IS used), but readers may expect an SDK import.
 
 **Fix:** Change to: "Resend (email delivery via raw fetch to Resend API)"
 
@@ -128,17 +127,6 @@ should be cleaned up.
 `INQUIRY_FROM_EMAIL` as a separate env var (falling back to
 `VERIFICATION_FROM_EMAIL`). Since this code is currently dead (finding #10),
 this is low priority, but the env var list is incomplete.
-
----
-
-
-### 13. FAQ page mentions S$9.99 sign-up fee — not documented in either doc
-**File:** `app/faq/caregivers/page.tsx` lines 84-87
-
-**Reality:** The FAQ says "A sign up fee of S$9.99 is required for caregiver
-accounts" — but neither the technical docs nor the user guide mention a signup
-fee. The `/for-nurses` signup flow has no payment step. This is either outdated
-FAQ content or a planned feature not yet implemented.
 
 ---
 
@@ -187,8 +175,8 @@ listed in the route table.
 token auth, but does not mention the admin client.
 
 **Reality:** `lib/supabase/admin.ts` exports `getSupabaseAdminClient()` using
-`SUPABASE_SERVICE_ROLE_KEY`. It's used by boost API routes and the admin verify
-page. This is a fourth auth/client pattern that should be documented.
+`SUPABASE_SERVICE_ROLE_KEY`. It's used by the admin verify page. This is a
+third auth/client pattern that should be documented.
 
 ---
 
@@ -214,14 +202,7 @@ Could add "(via `useEffect` + `getSupabaseBrowserClient`)" for clarity.
 
 ---
 
-### 23. UG §4.4: "start boost checkout" — no specific UI label given
-The user guide says "In dashboard, start boost checkout" without specifying the
-button label. The actual button reads "Boost profile for 7 days (S$5)". Adding
-the label would help users locate it.
-
----
-
-### 24. TD §8 mentions "Role restrictions" — could reference specific RLS policies
+### 23. TD §8 mentions "Role restrictions" — could reference specific RLS policies
 Currently vague. The schema has detailed RLS policies (client can only create
 client profiles, caregiver can only create caregiver profiles, suspended users
 blocked from chat, etc.). A brief enumeration would add value.
@@ -240,7 +221,6 @@ blocked from chat, etc.). A brief enumeration would add value.
 7. ✅ **#9** — Fixed "Golden Directory" → "Silver Directory" in inquiry email
 8. **#14 / #15** — Delete empty `app/api/inquiries/` folder — deferred for dev decision
 9. **#16** — Delete `app/page 2.tsx` backup file — deferred for dev decision
-10. **#13** — Reconcile FAQ S$9.99 signup fee claim with actual flow — needs product decision
 
 ### Documentation additions:
 11. ✅ **#5** — Clarified `public.users` is a read-only view in TD §9
