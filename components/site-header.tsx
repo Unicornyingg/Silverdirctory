@@ -86,8 +86,8 @@ export default function SiteHeader() {
     <div className="w-full">
       <nav className="container relative mx-auto flex flex-wrap items-center justify-between px-4 py-4 sm:px-6 lg:justify-between lg:px-8 lg:py-5 xl:px-10">
         <Link href="/" onClick={() => setMobileMenuOpen(false)}>
-          <span className="flex items-center space-x-2 text-2xl font-medium text-indigo-600">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded bg-indigo-600 text-sm font-bold text-white">
+          <span className="flex items-center space-x-2.5 font-display text-2xl font-semibold text-[var(--foreground)]">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--brand)] text-sm font-semibold text-[#f8f4ec]">
               SD
             </span>
             <span>Silver Directory</span>
@@ -102,7 +102,7 @@ export default function SiteHeader() {
           aria-expanded={mobileMenuOpen}
           aria-controls="mobile-navigation"
           onClick={() => setMobileMenuOpen((previous) => !previous)}
-          className="rounded-md px-2 py-1 text-gray-700 hover:text-indigo-700 focus:bg-indigo-100 focus:text-indigo-700 focus:outline-none lg:hidden"
+          className="rounded-md px-2 py-1 text-gray-700 hover:text-[var(--brand-strong)] focus:bg-[var(--accent-soft)] focus:text-[var(--brand-strong)] focus:outline-none lg:hidden"
         >
           <svg className="h-6 w-6 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             {mobileMenuOpen ? (
@@ -126,9 +126,9 @@ export default function SiteHeader() {
               <li key={item.href} className="mr-1 xl:mr-2">
                 <Link
                   href={item.href}
-                  className={`inline-block rounded-md px-3 py-2 text-base no-underline transition hover:text-indigo-500 focus:bg-indigo-100 focus:text-indigo-500 focus:outline-none xl:px-4 xl:text-lg ${
+                  className={`inline-block rounded-md px-3 py-2 text-base no-underline transition hover:text-[var(--brand)] focus:bg-[var(--accent-soft)] focus:text-[var(--brand)] focus:outline-none xl:px-4 xl:text-lg ${
                     isActivePath(pathname, item.href)
-                      ? "font-semibold text-indigo-700 underline decoration-2 underline-offset-8"
+                      ? "font-semibold text-[var(--brand-strong)] underline decoration-2 underline-offset-8"
                       : "font-normal text-gray-800"
                   }`}
                 >
@@ -142,9 +142,9 @@ export default function SiteHeader() {
                 <li className="mr-3">
                   <Link
                     href="/chats"
-                    className={`inline-block rounded-md px-3 py-2 text-base no-underline transition hover:text-indigo-500 xl:px-4 xl:text-lg ${
+                    className={`inline-block rounded-md px-3 py-2 text-base no-underline transition hover:text-[var(--brand)] xl:px-4 xl:text-lg ${
                       isActivePath(pathname, "/chats")
-                        ? "font-semibold text-indigo-700 underline decoration-2 underline-offset-8"
+                        ? "font-semibold text-[var(--brand-strong)] underline decoration-2 underline-offset-8"
                         : "font-normal text-gray-800"
                     }`}
                   >
@@ -155,9 +155,9 @@ export default function SiteHeader() {
                   <li className="mr-1 xl:mr-2">
                     <Link
                       href="/caregiver/dashboard"
-                      className={`inline-block rounded-md px-3 py-2 text-base no-underline transition hover:text-indigo-500 xl:px-4 xl:text-lg ${
+                      className={`inline-block rounded-md px-3 py-2 text-base no-underline transition hover:text-[var(--brand)] xl:px-4 xl:text-lg ${
                         isActivePath(pathname, "/caregiver/dashboard")
-                          ? "font-semibold text-indigo-700 underline decoration-2 underline-offset-8"
+                          ? "font-semibold text-[var(--brand-strong)] underline decoration-2 underline-offset-8"
                           : "font-normal text-gray-800"
                       }`}
                     >
@@ -169,9 +169,9 @@ export default function SiteHeader() {
                   <li className="mr-1 xl:mr-2">
                     <Link
                       href="/client/profile"
-                      className={`inline-block rounded-md px-3 py-2 text-base no-underline transition hover:text-indigo-500 xl:px-4 xl:text-lg ${
+                      className={`inline-block rounded-md px-3 py-2 text-base no-underline transition hover:text-[var(--brand)] xl:px-4 xl:text-lg ${
                         isActivePath(pathname, "/client/profile")
-                          ? "font-semibold text-indigo-700 underline decoration-2 underline-offset-8"
+                          ? "font-semibold text-[var(--brand-strong)] underline decoration-2 underline-offset-8"
                           : "font-normal text-gray-800"
                       }`}
                     >
@@ -185,9 +185,9 @@ export default function SiteHeader() {
                 <li className="mr-1 xl:mr-2">
                   <Link
                     href="/signup"
-                    className={`inline-block rounded-md px-3 py-2 text-base no-underline transition hover:text-indigo-500 xl:px-4 xl:text-lg ${
+                    className={`inline-block rounded-md px-3 py-2 text-base no-underline transition hover:text-[var(--brand)] xl:px-4 xl:text-lg ${
                       isActivePath(pathname, "/signup")
-                        ? "font-semibold text-indigo-700 underline decoration-2 underline-offset-8"
+                        ? "font-semibold text-[var(--brand-strong)] underline decoration-2 underline-offset-8"
                         : "font-normal text-gray-800"
                     }`}
                   >
@@ -197,9 +197,9 @@ export default function SiteHeader() {
                 <li className="mr-1 xl:mr-2">
                   <Link
                     href="/login"
-                    className={`inline-block rounded-md px-3 py-2 text-base no-underline transition hover:text-indigo-500 xl:px-4 xl:text-lg ${
+                    className={`inline-block rounded-md px-3 py-2 text-base no-underline transition hover:text-[var(--brand)] xl:px-4 xl:text-lg ${
                       isActivePath(pathname, "/login")
-                        ? "font-semibold text-indigo-700 underline decoration-2 underline-offset-8"
+                        ? "font-semibold text-[var(--brand-strong)] underline decoration-2 underline-offset-8"
                         : "font-normal text-gray-800"
                     }`}
                   >
@@ -219,8 +219,8 @@ export default function SiteHeader() {
                 href={item.href}
                 className={`w-full rounded-md px-4 py-2 transition ${
                   isActivePath(pathname, item.href)
-                    ? "bg-indigo-50 font-semibold text-indigo-700"
-                    : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
+                    ? "bg-[var(--accent-soft)] font-semibold text-[var(--brand-strong)]"
+                    : "text-gray-700 hover:bg-[var(--accent-soft)] hover:text-[var(--brand-strong)]"
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -234,8 +234,8 @@ export default function SiteHeader() {
                   href="/chats"
                   className={`w-full rounded-md px-4 py-2 transition ${
                     isActivePath(pathname, "/chats")
-                      ? "bg-indigo-50 font-semibold text-indigo-700"
-                      : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
+                      ? "bg-[var(--accent-soft)] font-semibold text-[var(--brand-strong)]"
+                      : "text-gray-700 hover:bg-[var(--accent-soft)] hover:text-[var(--brand-strong)]"
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -246,8 +246,8 @@ export default function SiteHeader() {
                     href="/caregiver/dashboard"
                     className={`w-full rounded-md px-4 py-2 transition ${
                       isActivePath(pathname, "/caregiver/dashboard")
-                        ? "bg-indigo-50 font-semibold text-indigo-700"
-                        : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
+                        ? "bg-[var(--accent-soft)] font-semibold text-[var(--brand-strong)]"
+                        : "text-gray-700 hover:bg-[var(--accent-soft)] hover:text-[var(--brand-strong)]"
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -259,8 +259,8 @@ export default function SiteHeader() {
                     href="/client/profile"
                     className={`w-full rounded-md px-4 py-2 transition ${
                       isActivePath(pathname, "/client/profile")
-                        ? "bg-indigo-50 font-semibold text-indigo-700"
-                        : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
+                        ? "bg-[var(--accent-soft)] font-semibold text-[var(--brand-strong)]"
+                        : "text-gray-700 hover:bg-[var(--accent-soft)] hover:text-[var(--brand-strong)]"
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -270,7 +270,7 @@ export default function SiteHeader() {
                 <button
                   type="button"
                   onClick={() => void handleSignOut()}
-                  className="w-full rounded-md px-4 py-2 text-left text-gray-700 transition hover:bg-indigo-50 hover:text-indigo-700"
+                  className="w-full rounded-md px-4 py-2 text-left text-gray-700 transition hover:bg-[var(--accent-soft)] hover:text-[var(--brand-strong)]"
                 >
                   Sign out
                 </button>
@@ -281,8 +281,8 @@ export default function SiteHeader() {
                   href="/signup"
                   className={`w-full rounded-md px-4 py-2 transition ${
                     isActivePath(pathname, "/signup")
-                      ? "bg-indigo-50 font-semibold text-indigo-700"
-                      : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
+                      ? "bg-[var(--accent-soft)] font-semibold text-[var(--brand-strong)]"
+                      : "text-gray-700 hover:bg-[var(--accent-soft)] hover:text-[var(--brand-strong)]"
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -292,8 +292,8 @@ export default function SiteHeader() {
                   href="/login"
                   className={`w-full rounded-md px-4 py-2 transition ${
                     isActivePath(pathname, "/login")
-                      ? "bg-indigo-50 font-semibold text-indigo-700"
-                      : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
+                      ? "bg-[var(--accent-soft)] font-semibold text-[var(--brand-strong)]"
+                      : "text-gray-700 hover:bg-[var(--accent-soft)] hover:text-[var(--brand-strong)]"
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >

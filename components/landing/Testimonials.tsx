@@ -22,8 +22,8 @@ export function Testimonials({ items }: Readonly<TestimonialsProps>) {
             key={item.name}
             className={index === 0 ? "lg:col-span-2 xl:col-auto" : ""}
           >
-            <div className="flex h-full w-full flex-col justify-between rounded-[1.4rem] border border-[var(--line)] bg-[var(--panel-strong)] px-6 py-7 shadow-[0_10px_26px_rgba(59,40,20,0.07)] sm:px-8 sm:py-9 lg:px-10 lg:py-10">
-              <p className="text-lg leading-8 text-gray-900 sm:text-xl">{item.quote}</p>
+            <div className="flex h-full w-full flex-col justify-between rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--panel-strong)] px-6 py-7 shadow-[var(--shadow-soft)] sm:px-8 sm:py-9 lg:px-10 lg:py-10">
+              <p className="font-display text-lg leading-[1.55] text-[var(--foreground)] sm:text-xl">{item.quote}</p>
               <Avatar image={item.image} name={item.name} title={item.title} />
             </div>
           </div>
@@ -55,7 +55,7 @@ function Avatar({ image, name, title }: Readonly<AvatarProps>) {
 
 export function Mark({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <mark className="rounded-md bg-indigo-100 text-indigo-800 ring-4 ring-indigo-100/80">
+    <mark className="rounded bg-[var(--accent-soft)] text-[var(--accent-strong)] ring-4 ring-[var(--accent-soft)]">
       {children}
     </mark>
   );

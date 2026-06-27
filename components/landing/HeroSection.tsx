@@ -16,12 +16,12 @@ export function HeroSection() {
       <Container className="flex flex-wrap items-center">
         <div className="flex w-full items-center lg:w-1/2">
           <div className="mb-8 max-w-2xl lg:pr-8">
-            <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-gray-900 lg:text-4xl lg:leading-tight xl:text-6xl xl:leading-tight">
-              Find trusted eldercare support directly in your neighborhood
+            <h1 className="font-display text-4xl font-semibold leading-[1.08] tracking-[-0.01em] text-[var(--foreground)] lg:text-5xl lg:leading-[1.06] xl:text-6xl xl:leading-[1.04]">
+              Find trusted eldercare support, right in your neighbourhood
             </h1>
-            <p className="copy-soft py-6 text-xl lg:text-xl xl:text-2xl">
-              Silver Directory helps families browse caregiver profiles, compare rates, and start
-              in-app chat without auto-matching or agency lock-in.
+            <p className="copy-soft py-6 text-lg lg:text-xl">
+              Browse caregiver profiles, compare rates, and message directly. No auto-matching,
+              no agency lock-in, no commission skimmed from wages.
             </p>
 
             <HeroCta />
@@ -44,8 +44,8 @@ export function HeroSection() {
       </Container>
       <Container>
         <div className="flex flex-col justify-center">
-          <div className="text-center text-xl font-medium text-gray-800">
-            Built for <span className="text-indigo-600">families and independent caregivers</span>{" "}
+          <div className="text-center text-lg font-medium text-[var(--muted)]">
+            Built for <span className="font-semibold text-[var(--accent-strong)]">families and independent caregivers</span>{" "}
             across Singapore
           </div>
 

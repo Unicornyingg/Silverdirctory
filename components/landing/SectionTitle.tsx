@@ -21,13 +21,13 @@ export function SectionTitle({
       }`}
     >
       {preTitle ? (
-        <div className="rounded-full border border-[var(--line)] bg-[var(--panel)] px-4 py-1.5 text-xs font-bold tracking-[0.14em] text-indigo-600 uppercase shadow-[0_6px_16px_rgba(59,40,20,0.05)]">
+        <div className={`eyebrow ${align === "center" ? "justify-center" : ""}`}>
           {preTitle}
         </div>
       ) : null}
 
       {title ? (
-        <h2 className="mt-4 max-w-2xl text-3xl font-extrabold leading-[1.18] tracking-tight text-gray-900 lg:text-4xl lg:leading-[1.14]">
+        <h2 className="mt-4 max-w-2xl font-display text-3xl font-semibold leading-[1.14] tracking-[-0.01em] text-[var(--foreground)] lg:text-[2.6rem] lg:leading-[1.1]">
           {title}
         </h2>
       ) : null}

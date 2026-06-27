@@ -73,21 +73,21 @@ export function BannerCta() {
       <div className="flex w-full flex-shrink-0 flex-col gap-3 text-center sm:flex-row sm:justify-center lg:w-auto lg:justify-end">
         <Link
           href="/directory"
-          className="secondary-btn mx-auto inline-block w-full border-[var(--line)] bg-[var(--panel-strong)] px-7 py-3 text-center text-lg font-semibold text-indigo-700 hover:text-indigo-800 sm:w-auto lg:px-10 lg:py-5"
+          className="secondary-btn mx-auto inline-block w-full border-[var(--line)] bg-[var(--panel-strong)] px-7 py-3 text-center text-lg font-semibold text-[var(--brand-strong)] hover:text-[var(--brand)] sm:w-auto lg:px-10 lg:py-5"
         >
           Browse Directory
         </Link>
         {accountRole === "caregiver" ? (
           <Link
             href="/caregiver/dashboard"
-            className="secondary-btn mx-auto inline-block w-full border-[var(--line)] bg-[var(--panel-strong)] px-7 py-3 text-center text-lg font-semibold text-indigo-700 hover:text-indigo-800 sm:w-auto lg:px-10 lg:py-5"
+            className="secondary-btn mx-auto inline-block w-full border-[var(--line)] bg-[var(--panel-strong)] px-7 py-3 text-center text-lg font-semibold text-[var(--brand-strong)] hover:text-[var(--brand)] sm:w-auto lg:px-10 lg:py-5"
           >
             Go to Dashboard
           </Link>
         ) : (
           <Link
             href="/chats"
-            className="secondary-btn mx-auto inline-block w-full border-[var(--line)] bg-[var(--panel-strong)] px-7 py-3 text-center text-lg font-semibold text-indigo-700 hover:text-indigo-800 sm:w-auto lg:px-10 lg:py-5"
+            className="secondary-btn mx-auto inline-block w-full border-[var(--line)] bg-[var(--panel-strong)] px-7 py-3 text-center text-lg font-semibold text-[var(--brand-strong)] hover:text-[var(--brand)] sm:w-auto lg:px-10 lg:py-5"
           >
             My Inbox
           </Link>
@@ -100,13 +100,13 @@ export function BannerCta() {
     <div className="flex w-full flex-shrink-0 flex-col gap-3 text-center sm:flex-row sm:justify-center lg:w-auto lg:justify-end">
       <Link
         href="/directory"
-        className="secondary-btn mx-auto inline-block w-full border-[var(--line)] bg-[var(--panel-strong)] px-7 py-3 text-center text-lg font-semibold text-indigo-700 hover:text-indigo-800 sm:w-auto lg:px-10 lg:py-5"
+        className="secondary-btn mx-auto inline-block w-full border-[var(--line)] bg-[var(--panel-strong)] px-7 py-3 text-center text-lg font-semibold text-[var(--brand-strong)] hover:text-[var(--brand)] sm:w-auto lg:px-10 lg:py-5"
       >
         Browse Caregivers
       </Link>
       <Link
         href="/for-nurses"
-        className="secondary-btn mx-auto inline-block w-full border-[var(--line)] bg-[var(--panel-strong)] px-7 py-3 text-center text-lg font-semibold text-indigo-700 hover:text-indigo-800 sm:w-auto lg:px-10 lg:py-5"
+        className="secondary-btn mx-auto inline-block w-full border-[var(--line)] bg-[var(--panel-strong)] px-7 py-3 text-center text-lg font-semibold text-[var(--brand-strong)] hover:text-[var(--brand)] sm:w-auto lg:px-10 lg:py-5"
       >
         I&apos;m a Caregiver - Get Listed
       </Link>

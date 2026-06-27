@@ -8,8 +8,8 @@ export function SiteFooter() {
         <div className="home-section-surface mx-auto max-w-screen-xl px-6 py-8 lg:px-10 lg:py-10">
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-5">
             <div className="lg:col-span-2">
-              <Link href="/" className="flex items-center space-x-2 text-2xl font-medium text-indigo-600">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded bg-indigo-600 text-sm font-bold text-white">
+              <Link href="/" className="flex items-center space-x-2.5 font-display text-2xl font-semibold text-[var(--foreground)]">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--brand)] text-sm font-semibold text-[#f8f4ec]">
                   SD
                 </span>
                 <span>Silver Directory</span>
@@ -28,17 +28,17 @@ export function SiteFooter() {
               <div className="mt-1 flex w-full flex-wrap">
                 <Link
                   href="/directory"
-                  className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-indigo-50 hover:text-indigo-600"
+                  className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-[var(--accent-soft)] hover:text-[var(--brand-strong)]"
                 >
                   Directory
                 </Link>
                 <Link
                   href="/signup"
-                  className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-indigo-50 hover:text-indigo-600"
+                  className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-[var(--accent-soft)] hover:text-[var(--brand-strong)]"
                 >
                   Sign Up
                 </Link>
-                <Link href="/chats" className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-indigo-50 hover:text-indigo-600">
+                <Link href="/chats" className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-[var(--accent-soft)] hover:text-[var(--brand-strong)]">
                   Inbox
                 </Link>
               </div>
@@ -51,17 +51,17 @@ export function SiteFooter() {
               <div className="mt-1 flex w-full flex-wrap">
                 <Link
                   href="/faq/families"
-                  className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-indigo-50 hover:text-indigo-600"
+                  className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-[var(--accent-soft)] hover:text-[var(--brand-strong)]"
                 >
                   FAQ for Families
                 </Link>
                 <Link
                   href="/faq/caregivers"
-                  className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-indigo-50 hover:text-indigo-600"
+                  className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-[var(--accent-soft)] hover:text-[var(--brand-strong)]"
                 >
                   FAQ for Caregivers
                 </Link>
-                <Link href="/login" className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-indigo-50 hover:text-indigo-600">
+                <Link href="/login" className="w-full rounded-md px-4 py-2 text-gray-700 transition hover:bg-[var(--accent-soft)] hover:text-[var(--brand-strong)]">
                   Login
                 </Link>
               </div>

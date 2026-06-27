@@ -4,13 +4,13 @@ import { BannerCta } from "@/components/landing/LandingCta";
 export function CtaBanner() {
   return (
     <Container>
-      <div className="mx-auto flex w-full max-w-4xl flex-wrap items-center justify-between gap-5 rounded-[1.7rem] border border-indigo-300/55 bg-gradient-to-br from-indigo-700 to-indigo-600 px-7 py-7 text-white shadow-[0_18px_36px_rgba(67,56,202,0.3)] lg:flex-nowrap lg:px-12 lg:py-12">
+      <div className="mx-auto flex w-full max-w-4xl flex-wrap items-center justify-between gap-5 rounded-[1.4rem] bg-[var(--brand)] px-7 py-8 text-[#f3ece0] shadow-[var(--shadow-soft-lg)] lg:flex-nowrap lg:px-12 lg:py-12">
         <div className="flex-grow text-center lg:text-left">
-          <h2 className="text-2xl font-semibold lg:text-3xl">
+          <h2 className="font-display text-2xl font-semibold leading-tight lg:text-[2rem]">
             Ready to find or offer eldercare support?
           </h2>
-          <p className="mt-2 text-white lg:text-xl">
-            Join Silver Directory and connect directly without agency lock-in.
+          <p className="mt-2.5 text-[#e3ddd0] lg:text-lg">
+            Join Silver Directory and connect directly &mdash; without agency lock-in.
           </p>
         </div>
         <BannerCta />

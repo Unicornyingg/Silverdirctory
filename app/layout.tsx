@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
+import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -8,17 +8,11 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
 });
 
-const spaceGrotesk = Space_Grotesk({
+const fraunces = Fraunces({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-space-grotesk",
-});
-
-const ibmPlexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-ibm-plex-mono",
-  weight: ["400", "500", "600"],
+  variable: "--font-fraunces",
+  axes: ["opsz"],
 });
 
 export const metadata: Metadata = {
@@ -35,7 +29,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${plusJakartaSans.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable}`}
+      className={`${plusJakartaSans.variable} ${fraunces.variable}`}
     >
       <body className="bg-[var(--background)] antialiased text-[15px] md:text-[16px]">{children}</body>
     </html>

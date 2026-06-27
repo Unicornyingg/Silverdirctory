@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { CARE_SERVICE_OPTIONS } from "@/lib/care-services";
 import { CAREGIVER_LANGUAGE_OPTIONS } from "@/lib/caregiver-languages";
@@ -33,6 +33,7 @@ export default function DirectoryFilters({
   initialLanguage,
   initialSort,
 }: DirectoryFiltersProps) {
+  const router = useRouter();
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [location, setLocation] = useState(initialLocation);
   const [maxRate, setMaxRate] = useState(initialMaxRate);
@@ -209,20 +210,11 @@ export default function DirectoryFilters({
         </button>
         <button
           type="button"
-          onClick={() => {
-            setLocation("");
-            setMaxRate("");
-            setService("");
-            setLanguage("");
-            setSort("recommended");
-          }}
+          onClick={() => router.push("/directory")}
           className="secondary-btn h-[2.9rem] w-full sm:min-w-[120px] sm:w-auto"
         >
-          Reset form
+          Clear filters
         </button>
-        <Link href="/directory" className="secondary-btn h-[2.9rem] w-full sm:min-w-[120px] sm:w-auto">
-          Clear URL
-        </Link>
       </div>
     </form>
   );
