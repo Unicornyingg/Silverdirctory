@@ -22,37 +22,48 @@ type BenefitsProps = {
 };
 
 export function Benefits({ imgPos, data }: Readonly<BenefitsProps>) {
+  const imageRight = imgPos === "right";
+
   return (
-    <Container className="home-section-surface mb-14 flex flex-wrap p-6 lg:mb-16 lg:flex-nowrap lg:gap-10 lg:p-10">
+    <Container className="mb-6 grid items-center gap-10 py-12 lg:mb-10 lg:grid-cols-2 lg:py-16">
       <div
-        className={`flex w-full items-center justify-center lg:w-1/2 ${
-          imgPos === "right" ? "lg:order-1" : ""
+        className={`flex w-full items-center justify-center ${
+          imageRight ? "lg:order-1" : ""
         }`}
       >
-        <div className="image-frame w-full max-w-[560px]">
+        <div className="relative w-full max-w-[560px]">
+          <div
+            className={`absolute -inset-4 rounded-lg ${
+              imageRight ? "bg-[var(--pink-soft)]" : "bg-[var(--aqua-soft)]"
+            }`}
+            aria-hidden="true"
+          />
           <Image
             src={data.image}
             width={data.image.width}
             height={data.image.height}
             alt={data.imageAlt}
-            className="h-auto w-full rounded-[1.35rem] object-contain"
+            className="relative h-auto w-full rounded-lg border border-[var(--line)] bg-white object-contain shadow-[var(--shadow-soft-lg)]"
             placeholder="blur"
           />
         </div>
       </div>
 
-      <div className="flex w-full flex-wrap items-center lg:w-1/2">
+      <div className="flex w-full flex-wrap items-center">
         <div>
           <div className="mt-2 flex w-full flex-col">
-            <h3 className="mt-3 max-w-2xl font-display text-3xl font-semibold leading-[1.14] tracking-[-0.01em] text-[var(--foreground)] lg:text-[2.4rem] lg:leading-[1.1]">
+            <span className="eyebrow w-fit">
+              {imageRight ? "Caregiver control" : "Family confidence"}
+            </span>
+            <h3 className="mt-5 max-w-2xl font-display text-4xl font-semibold leading-[1.03] tracking-normal text-[var(--foreground)] lg:text-[4rem]">
               {data.title}
             </h3>
-            <p className="copy-soft max-w-2xl py-5 text-lg lg:text-xl xl:text-xl">
+            <p className="copy-soft max-w-2xl py-6 text-lg lg:text-xl xl:text-xl">
               {data.desc}
             </p>
           </div>
 
-          <div className="mt-4 w-full">
+          <div className="mt-2 w-full border-y border-[var(--line)]">
             {data.bullets.map((item) => (
               <Benefit key={item.title} title={item.title} icon={item.icon}>
                 {item.desc}
@@ -73,12 +84,12 @@ type BenefitProps = {
 
 function Benefit({ title, icon, children }: Readonly<BenefitProps>) {
   return (
-    <div className="mt-8 flex items-start space-x-4">
-      <div className="mt-0.5 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-[var(--brand-strong)] bg-[var(--brand)] text-white [&_svg]:h-6 [&_svg]:w-6 [&_svg]:fill-none [&_svg]:stroke-current">
+    <div className="flex items-start gap-4 border-b border-[var(--line)] py-5 last:border-b-0">
+      <div className="mt-0.5 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--panel-strong)] text-[var(--accent-strong)] shadow-[var(--shadow-soft)] [&_svg]:h-6 [&_svg]:w-6 [&_svg]:fill-none [&_svg]:stroke-current">
         {icon}
       </div>
       <div>
-        <h4 className="text-lg font-semibold text-[var(--foreground)]">{title}</h4>
+        <h4 className="text-lg font-extrabold text-[var(--foreground)]">{title}</h4>
         <p className="copy-soft mt-1.5">{children}</p>
       </div>
     </div>

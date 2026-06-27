@@ -20,21 +20,21 @@ export function HeroCta() {
       <div className="flex flex-col items-start space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
         <Link
           href="/directory"
-          className="primary-btn w-full px-8 py-4 text-center text-lg sm:w-auto"
+          className="secondary-btn w-full px-7 py-3.5 text-center text-base sm:w-auto"
         >
           Browse Directory
         </Link>
         {accountRole === "caregiver" ? (
           <Link
             href="/caregiver/dashboard"
-            className="secondary-btn w-full px-8 py-4 text-center text-lg sm:w-auto"
+            className="primary-btn w-full px-7 py-3.5 text-center text-base sm:w-auto"
           >
             Go to Dashboard
           </Link>
         ) : (
           <Link
             href="/client/profile"
-            className="secondary-btn w-full px-8 py-4 text-center text-lg sm:w-auto"
+            className="primary-btn w-full px-7 py-3.5 text-center text-base sm:w-auto"
           >
             My Profile
           </Link>
@@ -47,13 +47,13 @@ export function HeroCta() {
     <div className="flex flex-col items-start space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
       <Link
         href="/directory"
-        className="primary-btn w-full px-8 py-4 text-center text-lg sm:w-auto"
+        className="secondary-btn w-full px-7 py-3.5 text-center text-base sm:w-auto"
       >
         Find a Caregiver
       </Link>
       <Link
         href="/signup"
-        className="secondary-btn w-full px-8 py-4 text-center text-lg sm:w-auto"
+        className="primary-btn w-full px-7 py-3.5 text-center text-base sm:w-auto"
       >
         List Your Care Services
       </Link>
@@ -73,21 +73,21 @@ export function BannerCta() {
       <div className="flex w-full flex-shrink-0 flex-col gap-3 text-center sm:flex-row sm:justify-center lg:w-auto lg:justify-end">
         <Link
           href="/directory"
-          className="secondary-btn mx-auto inline-block w-full border-[var(--line)] bg-[var(--panel-strong)] px-7 py-3 text-center text-lg font-semibold text-[var(--brand-strong)] hover:text-[var(--brand)] sm:w-auto lg:px-10 lg:py-5"
+          className="secondary-btn mx-auto inline-block w-full px-7 py-3 text-center text-base font-extrabold sm:w-auto lg:px-8"
         >
           Browse Directory
         </Link>
         {accountRole === "caregiver" ? (
           <Link
             href="/caregiver/dashboard"
-            className="secondary-btn mx-auto inline-block w-full border-[var(--line)] bg-[var(--panel-strong)] px-7 py-3 text-center text-lg font-semibold text-[var(--brand-strong)] hover:text-[var(--brand)] sm:w-auto lg:px-10 lg:py-5"
+            className="outline-btn mx-auto inline-block w-full border-white/35 px-7 py-3 text-center text-base font-extrabold text-white hover:border-white hover:bg-white/10 hover:text-white sm:w-auto lg:px-8"
           >
             Go to Dashboard
           </Link>
         ) : (
           <Link
             href="/chats"
-            className="secondary-btn mx-auto inline-block w-full border-[var(--line)] bg-[var(--panel-strong)] px-7 py-3 text-center text-lg font-semibold text-[var(--brand-strong)] hover:text-[var(--brand)] sm:w-auto lg:px-10 lg:py-5"
+            className="outline-btn mx-auto inline-block w-full border-white/35 px-7 py-3 text-center text-base font-extrabold text-white hover:border-white hover:bg-white/10 hover:text-white sm:w-auto lg:px-8"
           >
             My Inbox
           </Link>
@@ -100,13 +100,13 @@ export function BannerCta() {
     <div className="flex w-full flex-shrink-0 flex-col gap-3 text-center sm:flex-row sm:justify-center lg:w-auto lg:justify-end">
       <Link
         href="/directory"
-        className="secondary-btn mx-auto inline-block w-full border-[var(--line)] bg-[var(--panel-strong)] px-7 py-3 text-center text-lg font-semibold text-[var(--brand-strong)] hover:text-[var(--brand)] sm:w-auto lg:px-10 lg:py-5"
+        className="secondary-btn mx-auto inline-block w-full px-7 py-3 text-center text-base font-extrabold sm:w-auto lg:px-8"
       >
         Browse Caregivers
       </Link>
       <Link
         href="/for-nurses"
-        className="secondary-btn mx-auto inline-block w-full border-[var(--line)] bg-[var(--panel-strong)] px-7 py-3 text-center text-lg font-semibold text-[var(--brand-strong)] hover:text-[var(--brand)] sm:w-auto lg:px-10 lg:py-5"
+        className="outline-btn mx-auto inline-block w-full border-white/35 px-7 py-3 text-center text-base font-extrabold text-white hover:border-white hover:bg-white/10 hover:text-white sm:w-auto lg:px-8"
       >
         I&apos;m a Caregiver - Get Listed
       </Link>

@@ -125,18 +125,18 @@ const faqItems = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[var(--background)] pb-8">
+    <div className="min-h-screen bg-[var(--background)]">
       <SiteHeader />
 
       <HeroSection />
 
-      <section className="mt-5">
+      <section className="mt-8">
         <SectionTitle
-          preTitle="Silver Directory Benefits"
-          title="A caregiving marketplace shaped around direct, transparent connection"
+          preTitle="Our Mission"
+          title="Unlock calmer care decisions for families and caregivers"
         >
-          Families can discover local caregivers quickly, and caregivers can present their services
-          clearly with no hidden matching logic.
+          Families can discover local caregivers quickly, and caregivers can present services
+          clearly with no hidden matching logic or wage commission.
         </SectionTitle>
 
         <Benefits data={benefitOne} />
@@ -144,7 +144,7 @@ export default function Home() {
       </section>
 
       <section className="mt-2">
-        <SectionTitle preTitle="Community Feedback" title="What users value about Silver Directory">
+        <SectionTitle preTitle="Clients Thought About Us" title="What users value about Silver Directory">
           Real experiences from families and caregivers using a direct listing model.
         </SectionTitle>
 
@@ -169,7 +169,7 @@ function iconWrapper(path: ReactElement): ReactElement {
     <svg
       viewBox="0 0 24 24"
       fill="none"
-      stroke="#ffffff"
+      stroke="currentColor"
       strokeWidth="1.9"
       strokeLinecap="round"
       strokeLinejoin="round"

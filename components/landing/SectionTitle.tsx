@@ -27,7 +27,7 @@ export function SectionTitle({
       ) : null}
 
       {title ? (
-        <h2 className="mt-4 max-w-2xl font-display text-3xl font-semibold leading-[1.14] tracking-[-0.01em] text-[var(--foreground)] lg:text-[2.6rem] lg:leading-[1.1]">
+        <h2 className="mt-5 max-w-4xl font-display text-4xl font-semibold leading-[1.04] tracking-normal text-[var(--foreground)] lg:text-[4.25rem]">
           {title}
         </h2>
       ) : null}
