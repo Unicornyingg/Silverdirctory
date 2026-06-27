@@ -575,6 +575,15 @@ a:hover {
   padding: 0.75rem 0.82rem;
 }
 
+.silvia-chat-textarea {
+  height: 3.05rem;
+  min-height: 3.05rem;
+  max-height: 3.05rem;
+  resize: none;
+  line-height: 1.35;
+  padding: 0.5rem 0.82rem;
+}
+
 .field-input::placeholder,
 .field-textarea::placeholder {
   color: #6b7280;

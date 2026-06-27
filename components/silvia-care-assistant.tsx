@@ -504,7 +504,10 @@ export default function SilviaCareAssistant({
         <button
           type="button"
           onPointerDown={(event) => event.stopPropagation()}
-          onClick={() => setIsOpen(false)}
+          onClick={() => {
+            setPosition(null);
+            setIsOpen(false);
+          }}
           className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-lg leading-none text-white transition hover:bg-white/10"
           aria-label="Collapse Silvia"
         >
@@ -541,8 +544,7 @@ export default function SilviaCareAssistant({
               setInput(event.target.value);
               if (state === "error") setState("idle");
             }}
-            className="field-textarea min-h-[5.2rem] resize-none"
-            placeholder="My mum needs morning help in Tampines, budget around $25/hr..."
+            className="field-textarea silvia-chat-textarea"
             maxLength={1200}
           />
         </label>
