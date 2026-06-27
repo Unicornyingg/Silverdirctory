@@ -8,6 +8,7 @@ import type { MarketplaceUser } from "@/lib/supabase/types";
 
 const NAV_LINKS = [
   { href: "/directory", label: "Browse Caregivers" },
+  { href: "/care-forum", label: "Care Forum" },
   { href: "/faq/families", label: "Families FAQ" },
   { href: "/faq/caregivers", label: "Caregivers FAQ" },
 ] as const;
