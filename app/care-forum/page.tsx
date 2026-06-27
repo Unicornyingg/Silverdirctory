@@ -1,14 +1,10 @@
 import Link from "next/link";
+import CareForumPostCard, {
+  type CaregiverAuthor,
+  type ForumPost,
+} from "@/app/care-forum/care-forum-post-card";
 import SiteHeader from "@/components/site-header";
-
-type ForumPost = {
-  title: string;
-  category: string;
-  summary: string;
-  author: string;
-  readTime: string;
-  tags: string[];
-};
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 type ForumSection = {
   title: string;
@@ -16,33 +12,73 @@ type ForumSection = {
   posts: ForumPost[];
 };
 
+const FALLBACK_AUTHORS: CaregiverAuthor[] = [
+  { full_name: "Aisha Rahman", profile_photo_url: null },
+  { full_name: "Mei Lin Tan", profile_photo_url: null },
+  { full_name: "Priya Nair", profile_photo_url: null },
+  { full_name: "Grace Lim", profile_photo_url: null },
+  { full_name: "Maria Santos", profile_photo_url: null },
+];
+
 const TRENDING_POSTS: ForumPost[] = [
   {
     title: "5 things to prepare before a caregiver's first visit",
     category: "Home Safety",
     summary:
       "A quick checklist for emergency contacts, access instructions, routines, and home hazards before care begins.",
-    author: "Caregiver note",
     readTime: "4 min read",
-    tags: ["First visit", "Checklist"],
+    comments: [
+      {
+        name: "Daniel Koh",
+        body: "This helped us prepare a one-page handover before our first caregiver visit. It made the first day much less stressful.",
+      },
+      {
+        name: "Mdm Lim",
+        body: "I would add the Wi-Fi password and where spare keys are kept. Small details save a lot of back-and-forth.",
+      },
+      {
+        name: "Rachel Tan",
+        body: "The emergency contact list is so important. We now keep one copy near the fridge and one in the care notebook.",
+      },
+    ],
   },
   {
     title: "How to help someone out of bed without pulling their arms",
     category: "Mobility & Transfers",
     summary:
       "Simple body-positioning reminders that make morning transfers safer for both the elder and the helper.",
-    author: "Caregiver note",
     readTime: "5 min read",
-    tags: ["Transfers", "Bed care"],
+    comments: [
+      {
+        name: "Joanna Seah",
+        body: "Very useful reminder not to pull the arms. We started using a clear countdown and it helped my dad feel less rushed.",
+      },
+      {
+        name: "Mr Ong",
+        body: "A stable chair beside the bed also helps when the person needs to pause halfway through standing.",
+      },
+    ],
   },
   {
     title: "A simple medication list every family should keep updated",
     category: "Medication Basics",
     summary:
       "What to record in one shared list so caregivers can quickly understand timing, dosage notes, and recent changes.",
-    author: "Caregiver note",
     readTime: "3 min read",
-    tags: ["Medicine list", "Handover"],
+    comments: [
+      {
+        name: "Samantha Lee",
+        body: "We added a 'last updated' date at the top of the list. That made it clearer for weekend caregivers.",
+      },
+      {
+        name: "Vincent Goh",
+        body: "Helpful post. I also keep a photo of the medicine packaging in case the printed label is hard to read.",
+      },
+      {
+        name: "Nur Izzati",
+        body: "Good point about recent changes. That is often what gets missed during handover.",
+      },
+    ],
   },
 ];
 
@@ -56,27 +92,55 @@ const FORUM_SECTIONS: ForumSection[] = [
         category: "Home Safety",
         summary:
           "Look for loose mats, slippery thresholds, low lighting, and towel racks that are being used like grab bars.",
-        author: "Caregiver note",
         readTime: "3 min read",
-        tags: ["Falls", "Bathroom"],
+        comments: [
+          {
+            name: "Elaine Ng",
+            body: "We removed the bathroom mat after reading similar advice. It felt minor, but it really reduced slipping.",
+          },
+          {
+            name: "Jason Teo",
+            body: "Grab bars made a big difference for my grandmother. Towel racks are definitely not strong enough.",
+          },
+        ],
       },
       {
         title: "How to set up a night-time walking path",
         category: "Home Safety",
         summary:
           "A clear path from bed to toilet can reduce confusion and lower the chance of tripping after dark.",
-        author: "Caregiver note",
         readTime: "3 min read",
-        tags: ["Night care", "Lighting"],
+        comments: [
+          {
+            name: "Farah Ahmad",
+            body: "Night lights helped my mum a lot. We placed one near the bed and one just outside the bathroom.",
+          },
+          {
+            name: "Kelvin Chua",
+            body: "We also moved a small side table that was always in the walkway. Simple but effective.",
+          },
+          {
+            name: "Anita Menon",
+            body: "Clear slippers with non-slip soles are another useful thing to check before bedtime.",
+          },
+        ],
       },
       {
         title: "What to check before leaving an elder alone for an hour",
         category: "Home Safety",
         summary:
           "A calm routine for water, phone access, mobility aids, door safety, and reachable essentials.",
-        author: "Caregiver note",
         readTime: "4 min read",
-        tags: ["Routine", "Supervision"],
+        comments: [
+          {
+            name: "Hui Min",
+            body: "The reachable essentials point is very practical. My father gets anxious when his phone is not within reach.",
+          },
+          {
+            name: "Syafiq Rahman",
+            body: "We added a whiteboard note saying when we will be back. It helps reduce repeated calls.",
+          },
+        ],
       },
     ],
   },
@@ -89,27 +153,59 @@ const FORUM_SECTIONS: ForumSection[] = [
         category: "Mobility & Transfers",
         summary:
           "Use stable footwear, count down clearly, and encourage pushing from the chair instead of pulling from the arms.",
-        author: "Caregiver note",
         readTime: "4 min read",
-        tags: ["Chair transfer", "Balance"],
+        comments: [
+          {
+            name: "Clara Wong",
+            body: "The countdown is such a good tip. It lets everyone move together instead of guessing.",
+          },
+          {
+            name: "Mr Tan",
+            body: "We changed to a chair with firm armrests. It made standing much easier for my wife.",
+          },
+          {
+            name: "Nadia Lim",
+            body: "Helpful and easy to understand. I shared this with my siblings who rotate caregiving duties.",
+          },
+        ],
       },
       {
         title: "Bed-to-wheelchair transfer basics",
         category: "Mobility & Transfers",
         summary:
           "Prepare the wheelchair position, clear the floor, lock brakes, and pause if the person feels dizzy.",
-        author: "Caregiver note",
         readTime: "5 min read",
-        tags: ["Wheelchair", "Bed care"],
+        comments: [
+          {
+            name: "Terence Foo",
+            body: "Locking the brakes sounds obvious, but it is exactly the step people forget when rushing.",
+          },
+          {
+            name: "Priya S.",
+            body: "The pause for dizziness is important. My mum needs a few seconds after sitting up.",
+          },
+        ],
       },
       {
         title: "When not to move a loved one without help",
         category: "Mobility & Transfers",
         summary:
           "Warning signs such as sudden pain, new weakness, confusion, or a recent fall should be handled with proper support.",
-        author: "Caregiver note",
         readTime: "4 min read",
-        tags: ["Safety", "Red flags"],
+        comments: [
+          {
+            name: "Benjamin Low",
+            body: "This is a good reminder that not every situation should be handled at home by family alone.",
+          },
+          {
+            name: "Michelle Yeo",
+            body: "I like that it tells people when to stop and ask for help. That is just as important as transfer technique.",
+          },
+          {
+            name: "Arun Kumar",
+            body: "After a fall, we now call for advice first instead of trying to lift immediately.",
+          },
+        ],
       },
     ],
   },
@@ -122,27 +218,55 @@ const FORUM_SECTIONS: ForumSection[] = [
         category: "Medication Basics",
         summary:
           "Keep medicine timing visible, separate current medicines from old ones, and record who gave the last dose.",
-        author: "Caregiver note",
         readTime: "4 min read",
-        tags: ["Timing", "Organization"],
+        comments: [
+          {
+            name: "Pei Shan",
+            body: "Separating old medicine from current medicine prevented a lot of confusion in our home.",
+          },
+          {
+            name: "Ravi Nair",
+            body: "We use a simple notebook to record the last dose. It works better than relying on memory.",
+          },
+        ],
       },
       {
         title: "What medicines should be reviewed before hiring care",
         category: "Medication Basics",
         summary:
           "Prepare a current list for the caregiver and check unclear instructions with a pharmacist or doctor.",
-        author: "Caregiver note",
         readTime: "3 min read",
-        tags: ["Handover", "Review"],
+        comments: [
+          {
+            name: "Lydia Koh",
+            body: "I brought the full list to our pharmacist and they helped us spot duplicate items.",
+          },
+          {
+            name: "Marcus Lee",
+            body: "Good advice. Caregivers can support routines better when the instructions are clear from the start.",
+          },
+          {
+            name: "Fatimah Noor",
+            body: "We also include allergies and food restrictions beside the medicine list.",
+          },
+        ],
       },
       {
         title: "Questions to ask when a new medicine is added",
         category: "Medication Basics",
         summary:
           "Ask about timing, food instructions, missed doses, side effects to watch for, and who to contact with concerns.",
-        author: "Caregiver note",
         readTime: "4 min read",
-        tags: ["Questions", "Care notes"],
+        comments: [
+          {
+            name: "Janice Ho",
+            body: "The missed dose question is one I always forget to ask. Adding it to my clinic notes now.",
+          },
+          {
+            name: "Wei Lun",
+            body: "Very helpful for families with multiple caregivers. Everyone should know who to call if unsure.",
+          },
+        ],
       },
     ],
   },
@@ -155,80 +279,90 @@ const FORUM_SECTIONS: ForumSection[] = [
         category: "Dementia Care",
         summary:
           "Reduce noise, keep lighting warm, avoid rushing, and use familiar routines to make evenings calmer.",
-        author: "Caregiver note",
         readTime: "4 min read",
-        tags: ["Evening care", "Calm routines"],
+        comments: [
+          {
+            name: "Olivia Chan",
+            body: "Lowering TV volume in the evening really helped my grandfather settle down.",
+          },
+          {
+            name: "Hafiz Rahim",
+            body: "Warm lighting and a fixed tea-time routine worked well for us too.",
+          },
+          {
+            name: "Serene Lim",
+            body: "This post is gentle and practical. Avoiding rush makes such a big difference.",
+          },
+        ],
       },
       {
         title: "How to reduce repeated questions without arguing",
         category: "Dementia Care",
         summary:
           "Use short reassurance, visible reminders, and gentle redirection instead of correcting every repeated question.",
-        author: "Caregiver note",
         readTime: "5 min read",
-        tags: ["Communication", "Patience"],
+        comments: [
+          {
+            name: "Charmaine Tan",
+            body: "The reminder card idea helped my aunt. We wrote the day's plan in large text.",
+          },
+          {
+            name: "Rajesh Pillai",
+            body: "I used to correct every question. Redirection is much calmer for everyone.",
+          },
+        ],
       },
       {
         title: "Simple routines that make care calmer",
         category: "Dementia Care",
         summary:
           "Consistent wake times, meals, activities, and rest periods can help the day feel more predictable.",
-        author: "Caregiver note",
         readTime: "3 min read",
-        tags: ["Routine", "Daily care"],
+        comments: [
+          {
+            name: "Melissa Aw",
+            body: "A simple daily routine reduced a lot of afternoon restlessness for my mum.",
+          },
+          {
+            name: "Eugene Tan",
+            body: "We printed the routine and placed it near the dining table. Caregivers and family all follow the same plan.",
+          },
+          {
+            name: "Siti H.",
+            body: "Predictable meal times have been the most helpful part for our family.",
+          },
+        ],
       },
     ],
   },
 ];
 
-function PostCard({ post, featured = false }: { post: ForumPost; featured?: boolean }) {
-  return (
-    <article
-      className={`flex h-full flex-col rounded-lg border p-5 shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-medium)] ${
-        featured
-          ? "border-[var(--btn-secondary-border)] bg-[var(--signal)] text-[var(--foreground)]"
-          : "border-[var(--line)] bg-[var(--panel-strong)] text-[var(--foreground)]"
-      }`}
-    >
-      <div className="flex flex-wrap items-center gap-2 text-xs font-extrabold uppercase">
-        <span
-          className={`rounded-full px-3 py-1 ${
-            featured ? "bg-white text-[var(--brand)]" : "bg-[var(--accent-soft)] text-[var(--brand)]"
-          }`}
-        >
-          {post.category}
-        </span>
-        <span className={featured ? "text-[var(--brand)]" : "text-[var(--muted)]"}>{post.readTime}</span>
-      </div>
+async function loadCaregiverAuthors(): Promise<CaregiverAuthor[]> {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return FALLBACK_AUTHORS;
 
-      <h3 className="mt-4 text-xl font-extrabold leading-snug">{post.title}</h3>
-      <p className={`mt-3 flex-1 text-sm leading-6 ${featured ? "text-[var(--brand)]" : "text-[var(--muted)]"}`}>
-        {post.summary}
-      </p>
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("full_name, profile_photo_url")
+    .eq("is_verified", true)
+    .order("created_at", { ascending: false })
+    .limit(20)
+    .returns<CaregiverAuthor[]>();
 
-      <div className="mt-5 flex flex-wrap gap-2">
-        {post.tags.map((tag) => (
-          <span
-            key={tag}
-            className={`rounded-full border px-3 py-1 text-xs font-bold ${
-              featured
-                ? "border-[var(--btn-secondary-border)] bg-white text-[var(--brand)]"
-                : "border-[var(--line)] bg-white text-[var(--muted)]"
-            }`}
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
-
-      <p className={`mt-5 text-xs font-bold ${featured ? "text-[var(--brand)]" : "text-[var(--muted)]"}`}>
-        {post.author}
-      </p>
-    </article>
-  );
+  if (error || !data?.length) return FALLBACK_AUTHORS;
+  return data.map((author) => ({
+    full_name: author.full_name,
+    profile_photo_url: author.profile_photo_url || null,
+  }));
 }
 
-export default function CareForumPage() {
+function getPostAuthor(authors: CaregiverAuthor[], index: number): CaregiverAuthor {
+  return authors[(index * 7 + 3) % authors.length] ?? FALLBACK_AUTHORS[0];
+}
+
+export default async function CareForumPage() {
+  const authors = await loadCaregiverAuthors();
+
   return (
     <div className="site-shell">
       <SiteHeader />
@@ -242,8 +376,8 @@ export default function CareForumPage() {
                 Practical eldercare tips from people who care every day
               </h1>
               <p className="mt-5 max-w-3xl text-base leading-7 text-[var(--muted)] md:text-lg">
-                A static preview of community posts for families and caregivers, focused on safer homes, clearer handovers,
-                and calmer daily routines.
+                Community posts for families and caregivers, focused on safer homes, clearer handovers, and calmer daily
+                routines.
               </p>
             </div>
 
@@ -277,13 +411,13 @@ export default function CareForumPage() {
           </div>
 
           <div className="stagger mt-5 grid gap-4 md:grid-cols-3">
-            {TRENDING_POSTS.map((post) => (
-              <PostCard key={post.title} post={post} featured />
+            {TRENDING_POSTS.map((post, index) => (
+              <CareForumPostCard key={post.title} post={post} author={getPostAuthor(authors, index)} featured />
             ))}
           </div>
         </section>
 
-        {FORUM_SECTIONS.map((section) => (
+        {FORUM_SECTIONS.map((section, sectionIndex) => (
           <section key={section.title} className="page-enter">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
@@ -294,8 +428,12 @@ export default function CareForumPage() {
             </div>
 
             <div className="stagger mt-5 grid gap-4 md:grid-cols-3">
-              {section.posts.map((post) => (
-                <PostCard key={post.title} post={post} />
+              {section.posts.map((post, postIndex) => (
+                <CareForumPostCard
+                  key={post.title}
+                  post={post}
+                  author={getPostAuthor(authors, TRENDING_POSTS.length + sectionIndex * 3 + postIndex)}
+                />
               ))}
             </div>
           </section>

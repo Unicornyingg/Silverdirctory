@@ -223,10 +223,18 @@ export default function LoginPage() {
     try {
       await enforceAuthAttemptLimit("login_send_otp");
       const supabase = getSupabaseBrowserClient();
+      const shouldCreateFamilyUser = accountType === "client";
       const { error } = await supabase.auth.signInWithOtp({
         phone: normalizedPhone,
         options: {
-          shouldCreateUser: false,
+          shouldCreateUser: shouldCreateFamilyUser,
+          data: shouldCreateFamilyUser
+            ? {
+                account_type: "client",
+                full_name: "Family Phone User",
+                phone: normalizedPhone,
+              }
+            : undefined,
         },
       });
 
